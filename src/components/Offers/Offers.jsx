@@ -1,31 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { getOffers, getFeaturedOffers, searchOffers } from '../../services/offersService';
+import { initializeOffers, getOffers, getFeaturedOffers, searchOffers, getOffersByCategory, offerCategories } from '../../services/offersService';
 import { AccessibleInput } from '../Accessibility/AccessibleInput';
-import AccessibleButton from '../Accessibility/AccessibleButton';
+import OfferDetailsModal from './OfferDetailsModal';
 
 const Offers = () => {
+  const [loading, setLoading] = useState(true);
   const [allOffers, setAllOffers] = useState([]);
   const [featuredOffers, setFeaturedOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [displayedOffers, setDisplayedOffers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('');
+  const [activeCategoryGroup, setActiveCategoryGroup] = useState('');
   
-  // Load offers on component mount
+  // Load offers once on component mount
   useEffect(() => {
-    loadOffers();
+    // Initialize the offers data
+    initializeOffers();
+    
+    // Get the offers
+    const offers = getOffers();
+    setAllOffers(offers);
+    setDisplayedOffers(offers);
+    setFeaturedOffers(getFeaturedOffers());
+    setLoading(false);
   }, []);
   
-  // Load all offers and featured offers
-  const loadOffers = () => {
-    setLoading(true);
-    // Initialize offers in localStorage if needed
-    const offers = getOffers();
-    const featured = getFeaturedOffers();
+  // Update displayed offers when filter changes
+  useEffect(() => {
+    if (!activeCategory) {
+      setDisplayedOffers(allOffers);
+      return;
+    }
     
-    setAllOffers(offers);
-    setFeaturedOffers(featured);
-    setLoading(false);
+    setDisplayedOffers(getOffersByCategory(activeCategory));
+  }, [activeCategory, allOffers]);
+  
+  // Handle view details
+  const handleViewDetails = (offer) => {
+    setSelectedOffer(offer);
+    setShowDetailsModal(true);
+  };
+  
+  // Close details modal
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
   };
   
   // Handle search input change
@@ -42,6 +64,23 @@ const Offers = () => {
     }
   };
   
+  // Handle category filter
+  const handleCategoryFilter = (category, group) => {
+    if (activeCategory === category) {
+      // If clicking the active category, clear the filter
+      setActiveCategory('');
+      setActiveCategoryGroup('');
+    } else {
+      setActiveCategory(category);
+      setActiveCategoryGroup(group);
+    }
+  };
+  
+  // Calculate discounted price
+  const calculateDiscountedPrice = (price, discountPercent) => {
+    return price - (price * (discountPercent / 100));
+  };
+  
   // Format date range for display
   const formatDateRange = (startDate, endDate) => {
     const start = new Date(startDate);
@@ -50,70 +89,94 @@ const Offers = () => {
     return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   };
   
-  // Calculate discounted price
-  const calculateDiscountedPrice = (price, discountPercent) => {
-    return price - (price * (discountPercent / 100));
-  };
-  
   // Render an offer card
-  const OfferCard = ({ offer }) => (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover-card transform transition-transform hover:-translate-y-1">
-      <div className="relative">
-        <img 
-          src={offer.imageUrl} 
-          alt={offer.title} 
-          className="w-full h-48 object-cover"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "/api/placeholder/800/400";
-          }} 
-        />
-        {offer.featured && (
-          <div className="absolute top-0 right-0 bg-yellow-500 text-white px-3 py-1 rounded-bl-lg">
-            Featured
-          </div>
-        )}
-        {offer.discountPercent > 0 && (
-          <div className="absolute top-0 left-0 bg-red-500 text-white px-3 py-1 rounded-br-lg">
-            {offer.discountPercent}% OFF
-          </div>
-        )}
-      </div>
-      
-      <div className="p-4">
-        <h3 className="text-xl font-bold text-gray-800 mb-1">{offer.title}</h3>
-        <p className="text-gray-600 mb-2">{offer.destination}</p>
+  const OfferCard = ({ offer }) => {
+    return (
+      <div className="bg-white rounded-lg shadow-md overflow-hidden hover-card transform transition-transform hover:-translate-y-1">
+        <div className="relative">
+          {/* Using a placeholder image directly instead of trying to load potentially broken URLs */}
+          <img 
+            src="/api/placeholder/800/400" 
+            alt={offer.title} 
+            className="w-full h-48 object-cover"
+          />
+          {offer.featured && (
+            <div className="absolute top-0 right-0 bg-yellow-500 text-white px-3 py-1 rounded-bl-lg">
+              Featured
+            </div>
+          )}
+          {offer.discountPercent > 0 && (
+            <div className="absolute top-0 left-0 bg-red-500 text-white px-3 py-1 rounded-br-lg">
+              {offer.discountPercent}% OFF
+            </div>
+          )}
+        </div>
         
-        <p className="text-sm text-gray-700 mb-3">{offer.description}</p>
-        
-        <div className="flex justify-between items-center">
-          <div>
-            {offer.discountPercent > 0 ? (
-              <>
-                <span className="text-gray-500 line-through mr-2">${offer.price}</span>
-                <span className="text-xl font-bold text-green-600">
-                  ${calculateDiscountedPrice(offer.price, offer.discountPercent).toFixed(0)}
+        <div className="p-4">
+          <h3 className="text-xl font-bold text-gray-800 mb-1">{offer.title}</h3>
+          <p className="text-gray-600 mb-2">{offer.destination}</p>
+          
+          {/* Categories */}
+          {offer.categories && offer.categories.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {offer.categories.slice(0, 3).map((category, index) => (
+                <span 
+                  key={index} 
+                  className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full cursor-pointer hover:bg-blue-200"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Find which group this category belongs to
+                    let foundGroup = '';
+                    Object.entries(offerCategories).forEach(([group, categories]) => {
+                      if (categories.includes(category)) {
+                        foundGroup = group;
+                      }
+                    });
+                    handleCategoryFilter(category, foundGroup);
+                  }}
+                >
+                  {category}
                 </span>
-              </>
-            ) : (
-              <span className="text-xl font-bold text-gray-800">${offer.price}</span>
-            )}
+              ))}
+              {offer.categories.length > 3 && (
+                <span className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded-full">
+                  +{offer.categories.length - 3} more
+                </span>
+              )}
+            </div>
+          )}
+          
+          <p className="text-sm text-gray-700 mb-3">{offer.description}</p>
+          
+          <div className="flex justify-between items-center">
+            <div>
+              {offer.discountPercent > 0 ? (
+                <>
+                  <span className="text-gray-500 line-through mr-2">${offer.price}</span>
+                  <span className="text-xl font-bold text-green-600">
+                    ${calculateDiscountedPrice(offer.price, offer.discountPercent).toFixed(0)}
+                  </span>
+                </>
+              ) : (
+                <span className="text-xl font-bold text-gray-800">${offer.price}</span>
+              )}
+            </div>
+            
+            <button 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              onClick={() => handleViewDetails(offer)}
+            >
+              View Details
+            </button>
           </div>
           
-          <AccessibleButton 
-            variant="primary"
-            size="small"
-          >
-            View Details
-          </AccessibleButton>
-        </div>
-        
-        <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
-          Valid: {formatDateRange(offer.startDate, offer.endDate)}
+          <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
+            Valid: {formatDateRange(offer.startDate, offer.endDate)}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
   
   if (loading) {
     return (
@@ -137,6 +200,53 @@ const Offers = () => {
             onChange={handleSearch}
             className="w-full"
           />
+        </div>
+      </div>
+      
+      {/* Category Filters */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">
+            Categories
+          </h3>
+          {activeCategory && (
+            <button 
+              onClick={() => {
+                setActiveCategory('');
+                setActiveCategoryGroup('');
+              }}
+              className="text-blue-600 text-sm"
+            >
+              Clear Filter
+            </button>
+          )}
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Object.entries(offerCategories).map(([categoryGroup, categories]) => (
+            <div key={categoryGroup} className={`p-4 rounded-lg border ${
+              activeCategoryGroup === categoryGroup ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+            }`}>
+              <h4 className="font-medium text-gray-800 mb-2 capitalize">
+                {categoryGroup.replace(/([A-Z])/g, ' $1').trim()}
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category, index) => (
+                  <button
+                    key={index}
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      activeCategory === category
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    }`}
+                    onClick={() => handleCategoryFilter(category, categoryGroup)}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       
@@ -172,8 +282,31 @@ const Offers = () => {
         </div>
       )}
       
+      {/* Active Category Filter */}
+      {activeCategory && !showSearch && (
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              {activeCategory} ({displayedOffers.length})
+            </h3>
+          </div>
+          
+          {displayedOffers.length === 0 ? (
+            <div className="bg-gray-100 p-6 rounded-lg text-center">
+              <p className="text-gray-600">No offers available in this category.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedOffers.map(offer => (
+                <OfferCard key={offer.id} offer={offer} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
       {/* Featured Offers */}
-      {featuredOffers.length > 0 && !showSearch && (
+      {featuredOffers.length > 0 && !showSearch && !activeCategory && (
         <div className="mb-10">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Featured Offers</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -185,7 +318,7 @@ const Offers = () => {
       )}
       
       {/* All Offers */}
-      {!showSearch && (
+      {!showSearch && !activeCategory && (
         <div className="mb-10">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">All Available Offers</h3>
           {allOffers.length === 0 ? (
@@ -201,6 +334,13 @@ const Offers = () => {
           )}
         </div>
       )}
+      
+      {/* Offer Details Modal */}
+      <OfferDetailsModal 
+        isOpen={showDetailsModal}
+        onClose={closeDetailsModal}
+        offer={selectedOffer}
+      />
     </div>
   );
 };

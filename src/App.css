@@ -134,3 +134,22 @@
     height: 1.5rem;
   }
 }
+/* Add these styles to App.css */
+
+/* Hide admin login button by default */
+.admin-login-btn {
+  display: none !important;
+}
+
+/* Show admin access trigger when a special condition is met */
+#admin-login-trigger.show {
+  display: inline-block !important;
+}
+
+/* Admin access panel styling */
+.admin-access-panel {
+  position: relative;
+}
+
+/* Add a special key combination script to reveal admin login */
+/* We'll add this JavaScript to App.jsx */

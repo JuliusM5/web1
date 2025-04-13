@@ -1,100 +1,88 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Create the authentication context
-const AuthContext = createContext(null);
+// Create the auth context
+const AuthContext = createContext();
 
-// Custom hook to use auth context
-export const useAuth = () => useContext(AuthContext);
+// Mock user data for demo purposes
+const mockUsers = [
+  { id: 1, username: 'admin', password: 'admin123', isAdmin: true },
+  { id: 2, username: 'user', password: 'user123', isAdmin: false }
+];
 
+// AuthProvider component
 export const AuthProvider = ({ children }) => {
+  // Get user from localStorage or set to null
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Initialize auth state from localStorage on component mount
+  
+  // Read from localStorage on initial load
   useEffect(() => {
-    const storedUser = localStorage.getItem('travelEaseCurrentUser');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error('Error parsing saved user', e);
+        localStorage.removeItem('currentUser');
+      }
     }
-    setLoading(false);
   }, []);
-
-  // Get users from localStorage
-  const getUsers = () => {
-    const users = localStorage.getItem('travelEaseUsers');
-    return users ? JSON.parse(users) : [];
-  };
-
-  // Initialize default users if none exist
-  const initializeUsers = () => {
-    const users = getUsers();
-    
-    if (users.length === 0) {
-      const defaultUsers = [
-        {
-          id: 1,
-          username: 'admin',
-          password: 'admin123', // In a real app, this would be hashed
-          role: 'admin'
-        },
-        {
-          id: 2,
-          username: 'user',
-          password: 'user123',
-          role: 'user'
-        }
-      ];
-      
-      localStorage.setItem('travelEaseUsers', JSON.stringify(defaultUsers));
-      return defaultUsers;
-    }
-    
-    return users;
-  };
-
+  
   // Login function
   const login = (username, password) => {
-    const users = initializeUsers();
-    
-    const user = users.find(
-      user => user.username === username && user.password === password
+    // Find user with matching credentials
+    const user = mockUsers.find(u => 
+      u.username === username && u.password === password
     );
     
     if (user) {
-      // Never store the password in the current user state
-      const { password, ...userWithoutPassword } = user;
-      localStorage.setItem('travelEaseCurrentUser', JSON.stringify(userWithoutPassword));
+      // Create a user object without the password for security
+      const userWithoutPassword = { 
+        id: user.id, 
+        username: user.username, 
+        isAdmin: user.isAdmin 
+      };
+      
+      // Set the current user
       setCurrentUser(userWithoutPassword);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+      
       return true;
     }
     
     return false;
   };
-
+  
   // Logout function
   const logout = () => {
-    localStorage.removeItem('travelEaseCurrentUser');
     setCurrentUser(null);
+    localStorage.removeItem('currentUser');
   };
-
+  
   // Check if user is admin
   const isAdmin = () => {
-    return currentUser?.role === 'admin';
+    return currentUser?.isAdmin === true;
   };
-
+  
+  // Create the context value
   const value = {
     currentUser,
     login,
     logout,
-    isAdmin,
-    loading
+    isAdmin
   };
-
+  
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
+};
+
+// Custom hook to use the auth context
+export const useAuth = () => {
+  return useContext(AuthContext);
 };
 
 export default AuthContext;

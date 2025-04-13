@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Offers from './Offers';
 import AdminOffers from '../Admin/AdminOffers';
 import Login from '../Auth/Login';
-import AccessibleButton from '../Accessibility/AccessibleButton';
 
 const OffersMain = () => {
   const { currentUser, isAdmin, logout } = useAuth();
   const [showAdminView, setShowAdminView] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
+  
+  // Check if user is admin and update showAdminView if needed
+  useEffect(() => {
+    if (isAdmin() && currentUser) {
+      setShowAdminView(true);
+    } else {
+      setShowAdminView(false);
+    }
+  }, [isAdmin, currentUser]);
   
   // Handle successful login
   const handleLoginSuccess = () => {
@@ -34,31 +42,33 @@ const OffersMain = () => {
               </span>
               
               {isAdmin() && (
-                <AccessibleButton
-                  variant={showAdminView ? "secondary" : "primary"}
+                <button
+                  className={`px-4 py-2 rounded ${
+                    showAdminView 
+                      ? 'bg-gray-200 text-gray-800' 
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
                   onClick={() => setShowAdminView(!showAdminView)}
-                  size="small"
                 >
                   {showAdminView ? "View Customer View" : "Manage Offers"}
-                </AccessibleButton>
+                </button>
               )}
               
-              <AccessibleButton
-                variant="outline"
+              <button
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
                 onClick={logout}
-                size="small"
               >
                 Logout
-              </AccessibleButton>
+              </button>
             </>
           ) : (
-            <AccessibleButton
-              variant="primary"
+            // Admin login button is now visible
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               onClick={() => setShowLoginForm(true)}
-              size="small"
             >
               Admin Login
-            </AccessibleButton>
+            </button>
           )}
         </div>
       </div>
@@ -85,6 +95,11 @@ const OffersMain = () => {
       ) : (
         <Offers />
       )}
+
+      {/* Admin access info in footer */}
+      <div className="text-center mt-16 pt-8 border-t border-gray-200">
+        <p className="text-xs text-gray-400">© 2025 TravelEase. All rights reserved.</p>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getOffers, createOffer, updateOffer, deleteOffer } from '../../services/offersService';
+import { getOffers, createOffer, updateOffer, deleteOffer, offerCategories } from '../../services/offersService';
 import { useAuth } from '../../context/AuthContext';
 import AccessibleButton from '../Accessibility/AccessibleButton';
 import { AccessibleInput, AccessibleTextarea, AccessibleSelect, AccessibleCheckbox } from '../Accessibility/AccessibleInput';
@@ -13,6 +13,8 @@ const AdminOffers = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingOffer, setEditingOffer] = useState(null);
   const [formError, setFormError] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -24,7 +26,8 @@ const AdminOffers = () => {
     startDate: '',
     endDate: '',
     imageUrl: '',
-    featured: false
+    featured: false,
+    categories: []
   });
   
   // Initialize offer data on component mount
@@ -36,7 +39,7 @@ const AdminOffers = () => {
   const loadOffers = () => {
     setLoading(true);
     const offersData = getOffers();
-    setOffers(offersData);
+    setOffers([...offersData]); // Create a new array to ensure React detects the change
     setLoading(false);
   };
   
@@ -60,8 +63,10 @@ const AdminOffers = () => {
       startDate: '',
       endDate: '',
       imageUrl: '',
-      featured: false
+      featured: false,
+      categories: []
     });
+    setSelectedCategories([]);
     setEditingOffer(null);
     setFormError('');
   };
@@ -78,8 +83,10 @@ const AdminOffers = () => {
       startDate: offer.startDate,
       endDate: offer.endDate,
       imageUrl: offer.imageUrl,
-      featured: offer.featured
+      featured: offer.featured,
+      categories: offer.categories || []
     });
+    setSelectedCategories(offer.categories || []);
     setShowAddModal(true);
   };
   
@@ -99,20 +106,28 @@ const AdminOffers = () => {
       const offerData = {
         ...formData,
         price: parseFloat(formData.price),
-        discountPercent: parseFloat(formData.discountPercent) || 0
+        discountPercent: parseFloat(formData.discountPercent) || 0,
+        categories: selectedCategories
       };
       
       // Create or update offer
       if (editingOffer) {
-        updateOffer(editingOffer.id, offerData);
+        const updated = updateOffer(editingOffer.id, offerData);
+        if (updated) {
+          // Update was successful
+          loadOffers(); // Reload offers to get the latest state
+          setShowAddModal(false);
+          resetForm();
+        }
       } else {
-        createOffer(offerData);
+        const created = createOffer(offerData);
+        if (created) {
+          // Creation was successful
+          loadOffers(); // Reload offers to get the latest state
+          setShowAddModal(false);
+          resetForm();
+        }
       }
-      
-      // Reload offers
-      loadOffers();
-      setShowAddModal(false);
-      resetForm();
     } catch (error) {
       setFormError('An error occurred while saving the offer.');
       console.error('Error saving offer:', error);
@@ -122,8 +137,10 @@ const AdminOffers = () => {
   // Handle delete
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this offer?')) {
-      deleteOffer(id);
-      loadOffers();
+      const deleted = deleteOffer(id);
+      if (deleted) {
+        loadOffers(); // Reload offers to get the latest state
+      }
     }
   };
   
@@ -135,6 +152,29 @@ const AdminOffers = () => {
       month: 'short', 
       day: 'numeric' 
     });
+  };
+  
+  // Toggle category selection
+  const toggleCategory = (category) => {
+    if (selectedCategories.includes(category)) {
+      setSelectedCategories(selectedCategories.filter(c => c !== category));
+    } else {
+      setSelectedCategories([...selectedCategories, category]);
+    }
+  };
+  
+  // Open category selection modal
+  const openCategoryModal = () => {
+    setShowCategoryModal(true);
+  };
+  
+  // Save selected categories
+  const saveCategories = () => {
+    setFormData({
+      ...formData,
+      categories: selectedCategories
+    });
+    setShowCategoryModal(false);
   };
   
   if (!isAdmin()) {
@@ -187,7 +227,7 @@ const AdminOffers = () => {
                 Validity
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Featured
+                Categories
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -209,12 +249,8 @@ const AdminOffers = () => {
                       <div className="h-10 w-10 flex-shrink-0">
                         <img 
                           className="h-10 w-10 rounded-full object-cover" 
-                          src={offer.imageUrl || '/api/placeholder/100/100'} 
+                          src="/api/placeholder/100/100" 
                           alt={offer.title}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/api/placeholder/100/100";
-                          }}
                         />
                       </div>
                       <div className="ml-4">
@@ -245,16 +281,23 @@ const AdminOffers = () => {
                       {formatDate(offer.startDate)} - {formatDate(offer.endDate)}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {offer.featured ? (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                        No
-                      </span>
-                    )}
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {offer.categories && offer.categories.length > 0 ? (
+                        offer.categories.slice(0, 2).map((category, index) => (
+                          <span key={index} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                            {category}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-500 text-sm">No categories</span>
+                      )}
+                      {offer.categories && offer.categories.length > 2 && (
+                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
+                          +{offer.categories.length - 2} more
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
@@ -399,6 +442,32 @@ const AdminOffers = () => {
             </div>
             
             <div className="md:col-span-2">
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-gray-700">Categories</label>
+                <button
+                  type="button"
+                  onClick={openCategoryModal}
+                  className="text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  Select Categories
+                </button>
+              </div>
+              {selectedCategories.length > 0 ? (
+                <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-lg min-h-16">
+                  {selectedCategories.map((category, index) => (
+                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                      {category}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-3 border border-gray-200 rounded-lg min-h-16 text-gray-500">
+                  No categories selected. Click "Select Categories" to add some.
+                </div>
+              )}
+            </div>
+            
+            <div className="md:col-span-2">
               <AccessibleCheckbox
                 id="offer-featured"
                 label="Feature this offer"
@@ -426,6 +495,64 @@ const AdminOffers = () => {
             </AccessibleButton>
           </div>
         </form>
+      </AccessibleModal>
+      
+      {/* Category Selection Modal */}
+      <AccessibleModal
+        isOpen={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        title="Select Categories"
+        size="large"
+      >
+        <div className="mb-4">
+          <p className="text-gray-600 mb-4">
+            Select categories that best describe this offer. Choose from multiple categories to make your offer more discoverable.
+          </p>
+          
+          {Object.entries(offerCategories).map(([categoryGroup, categories]) => (
+            <div key={categoryGroup} className="mb-6">
+              <h4 className="font-medium text-gray-800 mb-2 capitalize">
+                {categoryGroup.replace(/([A-Z])/g, ' $1').trim()}
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => toggleCategory(category)}
+                    className={`px-3 py-1.5 rounded-full text-sm ${
+                      selectedCategories.includes(category)
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex justify-between items-center border-t border-gray-200 pt-4">
+          <div className="text-sm text-gray-600">
+            {selectedCategories.length} categories selected
+          </div>
+          <div className="space-x-3">
+            <button
+              onClick={() => setShowCategoryModal(false)}
+              className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={saveCategories}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Apply Categories
+            </button>
+          </div>
+        </div>
       </AccessibleModal>
     </div>
   );
