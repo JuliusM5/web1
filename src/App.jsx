@@ -1,13 +1,13 @@
 import React from 'react';
 import './App.css';
 import EnhancedTripPlanner from './components/TravelPlanner/EnhancedTripPlanner';
-import OfflineIndicator from './components/Offline/OfflineIndicator';
+import EnhancedOfflineIndicator from './components/Offline/EnhancedOfflineIndicator';
 
 function App() {
   return (
     <div className="App">
       <EnhancedTripPlanner />
-      <OfflineIndicator />
+      <EnhancedOfflineIndicator />
     </div>
   );
 }
