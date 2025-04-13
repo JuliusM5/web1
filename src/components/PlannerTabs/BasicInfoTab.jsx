@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { calculateDuration } from '../../utils/helpers';
-import { reverseGeocode } from '../../services/apiService';
+import { reverseGeocode } from '../../services';
 
 function BasicInfoTab({ 
   destination, setDestination, startDate, setStartDate, 

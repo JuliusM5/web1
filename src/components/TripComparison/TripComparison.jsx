@@ -149,8 +149,8 @@ function TripComparison({ trips, closeTripComparison }) {
                               (comparison.budget.trip2 / comparison.duration.trip2) 
                                 ? 'text-red-600' : 'text-green-600'
                             }>
-                              ${((comparison.budget.trip1 / comparison.duration.trip1) - 
-                                 (comparison.budget.trip2 / comparison.duration.trip2)).toFixed(2)}/day
+                              ${Math.abs(((comparison.budget.trip1 / comparison.duration.trip1) - 
+                                 (comparison.budget.trip2 / comparison.duration.trip2))).toFixed(2)}/day
                             </span>
                           ) : (
                             <span className="text-gray-500">Same</span>

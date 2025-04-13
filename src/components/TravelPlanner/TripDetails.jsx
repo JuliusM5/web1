@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { calculateDuration, shareTrip, exportTripToPDF, emailTripDetails } from '../../utils/helpers';
 import ExpenseTracker from '../ExpenseTracker/ExpenseTracker';
 import BudgetChart from '../Budget/BudgetChart';
-import MapView from '../Map/MapView';
 import DynamicCalendar from '../Calendar/DynamicCalendar';
+import ItineraryView from '../Itinerary/ItineraryView';
 
 function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
   const [activeTab, setActiveTab] = useState('overview');
@@ -55,35 +55,35 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
               Overview
             </button>
             <button
-                className={`mr-2 py-2 px-4 font-medium ${
-                  activeTab === 'itinerary' 
-                    ? 'border-b-2 border-blue-500 text-blue-600' 
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-                onClick={() => setActiveTab('itinerary')}
-              >
-                Itinerary
-              </button>
-              <button
-                className={`mr-2 py-2 px-4 font-medium ${
-                  activeTab === 'tasks' 
-                    ? 'border-b-2 border-blue-500 text-blue-600' 
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-                onClick={() => setActiveTab('tasks')}
-              >
-                Tasks
-              </button>
-              <button
-                className={`mr-2 py-2 px-4 font-medium ${
-                  activeTab === 'expenses' 
-                    ? 'border-b-2 border-blue-500 text-blue-600' 
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-                onClick={() => setActiveTab('expenses')}
-              >
-                Expenses
-              </button>
+              className={`mr-2 py-2 px-4 font-medium ${
+                activeTab === 'itinerary' 
+                  ? 'border-b-2 border-blue-500 text-blue-600' 
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('itinerary')}
+            >
+              Itinerary
+            </button>
+            <button
+              className={`mr-2 py-2 px-4 font-medium ${
+                activeTab === 'tasks' 
+                  ? 'border-b-2 border-blue-500 text-blue-600' 
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('tasks')}
+            >
+              Tasks
+            </button>
+            <button
+              className={`mr-2 py-2 px-4 font-medium ${
+                activeTab === 'expenses' 
+                  ? 'border-b-2 border-blue-500 text-blue-600' 
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('expenses')}
+            >
+              Expenses
+            </button>
             <button
               className={`mr-2 py-2 px-4 font-medium ${
                 activeTab === 'share' 
@@ -121,13 +121,7 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                   
                   <div className="flex-1">
                     <h4 className="font-semibold mb-2">Budget Visualization</h4>
-                    <div className="rounded-lg bg-white p-4 h-48 flex items-center justify-center">
-                      {/* In a real app, this would be a chart/graph */}
-                      <div className="text-center text-gray-500">
-                        <p>Budget breakdown chart would appear here</p>
-                        <p className="text-sm mt-2">Showing allocation across categories</p>
-                      </div>
-                    </div>
+                    <BudgetChart budgetData={trip.budgetBreakdown || {}} />
                   </div>
                 </div>
               </div>
@@ -158,30 +152,43 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                 )}
               </div>
               
-              {/* Local Information Section */}
+              {/* Tasks Section (replacing Local Information) */}
               <div>
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">Local Information</h3>
-                {trip.info ? (
+                <h3 className="text-xl font-semibold mb-4 text-gray-800">Trip Tasks</h3>
+                {trip.tasks && trip.tasks.length > 0 ? (
                   <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="space-y-3">
-                      <div className="bg-white p-3 rounded-lg shadow-sm">
-                        <div className="font-medium">Emergency Contacts</div>
-                        <div className="text-sm">{trip.info.emergency}</div>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg shadow-sm">
-                        <div className="font-medium">Currency</div>
-                        <div className="text-sm">{trip.info.currency}</div>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg shadow-sm">
-                        <div className="font-medium">Language</div>
-                        <div className="text-sm">{trip.info.language}</div>
-                        <div className="text-sm mt-1">{trip.info.phrases}</div>
-                      </div>
+                    <div className="space-y-2">
+                      {trip.tasks.slice(0, 5).map(task => (
+                        <div key={task.id} className="bg-white p-3 rounded-lg shadow-sm flex items-center">
+                          <div className="mr-3">
+                            {task.completed ? 
+                              <span className="text-green-500">✓</span> : 
+                              <span className="text-yellow-500">○</span>}
+                          </div>
+                          <div className="flex-1">
+                            <div className={`font-medium ${task.completed ? 'line-through text-gray-500' : ''}`}>
+                              {task.text}
+                            </div>
+                            {task.date && <div className="text-xs text-gray-500">Due: {task.date}</div>}
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {trip.tasks.length > 5 && (
+                        <div className="text-center mt-2">
+                          <button 
+                            onClick={() => setActiveTab('tasks')}
+                            className="text-blue-500 text-sm"
+                          >
+                            View all {trip.tasks.length} tasks
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
                   <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <p className="text-gray-500">No local information available.</p>
+                    <p className="text-gray-500">No tasks added to this trip.</p>
                   </div>
                 )}
               </div>
@@ -291,92 +298,14 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
         
         {/* Itinerary Tab */}
         {activeTab === 'itinerary' && (
-          <div>
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Trip Itinerary</h3>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              {/* Calendar View */}
-              <div>
-                <h4 className="font-medium mb-3">Trip Calendar</h4>
-                <DynamicCalendar 
-                  startDate={trip.startDate} 
-                  endDate={trip.endDate} 
-                  events={trip.tasks?.filter(task => task.date) || []}
-                />
-              </div>
-              
-              {/* Map View */}
-              <div>
-                <h4 className="font-medium mb-3">Trip Map</h4>
-                <MapView 
-                  destination={trip.destination}
-                  transportLocations={trip.transports || []}
-                />
-              </div>
-            </div>
-            
-            {/* Daily Itinerary */}
-            <div>
-              <h4 className="font-medium mb-3">Daily Itinerary</h4>
-              <div className="space-y-4">
-                {/* Sample itinerary items - in a real app, these would be stored with the trip */}
-                <div className="border-l-4 border-blue-500 pl-4 py-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold">Day 1 - Arrival</h4>
-                      <p className="text-gray-600 text-sm">Monday, June 1st</p>
-                    </div>
-                    <button className="text-blue-500 text-sm">Add Activity</button>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    <div className="bg-blue-50 p-3 rounded-lg flex">
-                      <span className="font-medium w-20">9:00 AM</span>
-                      <span>Flight arrival at destination airport</span>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg flex">
-                      <span className="font-medium w-20">11:00 AM</span>
-                      <span>Hotel check-in and rest</span>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg flex">
-                      <span className="font-medium w-20">2:00 PM</span>
-                      <span>Explore neighborhood and grab lunch</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border-l-4 border-blue-500 pl-4 py-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold">Day 2 - Sightseeing</h4>
-                      <p className="text-gray-600 text-sm">Tuesday, June 2nd</p>
-                    </div>
-                    <button className="text-blue-500 text-sm">Add Activity</button>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    <div className="bg-blue-50 p-3 rounded-lg flex">
-                      <span className="font-medium w-20">8:00 AM</span>
-                      <span>Breakfast at hotel</span>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg flex">
-                      <span className="font-medium w-20">10:00 AM</span>
-                      <span>Visit main tourist attractions</span>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg flex">
-                      <span className="font-medium w-20">1:00 PM</span>
-                      <span>Lunch at local restaurant</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <button className="text-blue-500 font-medium mt-4">+ Add New Day</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ItineraryView 
+            trip={trip}
+            tripTasks={trip.tasks || []}
+          />
         )}
-         {/* Tasks Tab */}
-         {activeTab === 'tasks' && (
+        
+        {/* Tasks Tab */}
+        {activeTab === 'tasks' && (
           <div>
             <h3 className="text-xl font-semibold mb-4 text-gray-800">Trip Tasks</h3>
             
@@ -490,6 +419,7 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
             )}
           </div>
         )}
+        
         {/* Expenses Tab */}
         {activeTab === 'expenses' && (
           <ExpenseTracker 

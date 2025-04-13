@@ -317,10 +317,11 @@ function TripPlanner({
         <TasksTab 
           tripTasks={tripTasks}
           setTripTasks={setTripTasks}
+          startDate={startDate}
+          endDate={endDate}
         />
       )}
-
-      
+    
       {/* Save Trip Button */}
       <div className="mt-6 text-center">
         <button

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { geocodeLocation } from '.././services';
+import { geocodeLocation } from '../../services';
 
 function MapView({ destination, transportLocations = [] }) {
   const [mapLoaded, setMapLoaded] = useState(false);
