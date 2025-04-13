@@ -1,11 +1,13 @@
 import React from 'react';
 import './App.css';
-import TravelPlanner from './components/TravelPlanner';
+import EnhancedTripPlanner from './components/TravelPlanner/EnhancedTripPlanner';
+import OfflineIndicator from './components/Offline/OfflineIndicator';
 
 function App() {
   return (
     <div className="App">
-      <TravelPlanner />
+      <EnhancedTripPlanner />
+      <OfflineIndicator />
     </div>
   );
 }
