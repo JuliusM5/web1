@@ -101,44 +101,7 @@ function PhotosTab({
           )}
         </div>
         
-        {/* URL option as backup */}
-        <div className="space-y-3 bg-white border border-gray-200 p-4 rounded-lg">
-          <h4 className="font-medium text-gray-700">Add from URL</h4>
-          
-          <div>
-            <label className="block text-gray-700 mb-1 text-sm">Image URL</label>
-            <input
-              type="text"
-              value={photoUrl}
-              onChange={e => setPhotoUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              className="w-full p-2 border border-gray-300 rounded"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-gray-700 mb-1 text-sm">Caption</label>
-            <input
-              type="text"
-              value={photoCaption}
-              onChange={e => setPhotoCaption(e.target.value)}
-              placeholder="Description of the photo"
-              className="w-full p-2 border border-gray-300 rounded"
-            />
-          </div>
-          
-          <button
-            onClick={addPhoto}
-            disabled={!photoUrl}
-            className={`w-full py-2 rounded ${
-              !photoUrl
-                ? 'bg-gray-300 cursor-not-allowed' 
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
-          >
-            Add from URL
-          </button>
-        </div>
+        
         
         <div className="mt-4 bg-yellow-50 border border-yellow-200 p-3 rounded text-sm">
           <h4 className="font-semibold text-yellow-800">Photo Gallery Tips:</h4>

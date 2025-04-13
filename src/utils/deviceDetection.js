@@ -1,166 +1,254 @@
-// src/utils/deviceDetection.js
+/**
+ * Device Detection Utilities
+ * 
+ * Provides functions to detect device type, screen size, capabilities,
+ * and orientation for responsive design and feature detection.
+ */
 
 import { useState, useEffect } from 'react';
 
-// Breakpoints that match Tailwind CSS default breakpoints
-const breakpoints = {
-  sm: 640,  // Small devices (phones)
-  md: 768,  // Medium devices (tablets)
-  lg: 1024, // Large devices (laptops/desktops)
-  xl: 1280, // Extra large devices (large desktops)
-  '2xl': 1536 // 2X Extra large devices
+/**
+ * Device type constants
+ */
+export const DEVICE_TYPES = {
+  MOBILE: 'mobile',
+  TABLET: 'tablet',
+  DESKTOP: 'desktop'
 };
 
 /**
- * Custom hook to detect the current device type based on screen width
- * @returns {Object} Object containing device type and boolean flags for each device type
+ * Screen size breakpoints (in pixels)
  */
-export function useDeviceDetection() {
-  // Initialize with defaults based on a conservative estimate
-  const initialWidth = typeof window !== 'undefined' ? window.innerWidth : 0;
+export const BREAKPOINTS = {
+  SMALL: 640,   // Mobile
+  MEDIUM: 768,  // Small tablet
+  LARGE: 1024,  // Large tablet/small desktop
+  XL: 1280,     // Desktop
+  XXL: 1536     // Large desktop
+};
+
+/**
+ * Check if the app is running in a browser environment
+ * 
+ * @returns {boolean} True if in browser environment
+ */
+export const isBrowser = () => {
+  return typeof window !== 'undefined';
+};
+
+/**
+ * Detect device type based on user agent
+ * 
+ * @returns {string} Device type (mobile, tablet, or desktop)
+ */
+export const detectDeviceType = () => {
+  if (!isBrowser()) return DEVICE_TYPES.DESKTOP;
   
-  const [deviceInfo, setDeviceInfo] = useState({
-    width: initialWidth,
-    isMobile: initialWidth < breakpoints.md,
-    isTablet: initialWidth >= breakpoints.md && initialWidth < breakpoints.lg,
-    isDesktop: initialWidth >= breakpoints.lg,
-    isLargeDesktop: initialWidth >= breakpoints.xl,
+  const userAgent = navigator.userAgent.toLowerCase();
+  
+  // Check for tablets first (some tablets identify as both mobile and tablet)
+  const isTablet = /(tablet|ipad|playbook|silk)|(android(?!.*mobile))/i.test(userAgent);
+  if (isTablet) return DEVICE_TYPES.TABLET;
+  
+  // Check for mobile devices
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+  if (isMobile) return DEVICE_TYPES.MOBILE;
+  
+  // Default to desktop
+  return DEVICE_TYPES.DESKTOP;
+};
+
+/**
+ * Get current screen size category
+ * 
+ * @returns {string} Screen size category (sm, md, lg, xl, xxl)
+ */
+export const getScreenSizeCategory = () => {
+  if (!isBrowser()) return 'lg';
+  
+  const width = window.innerWidth;
+  
+  if (width < BREAKPOINTS.SMALL) return 'sm';
+  if (width < BREAKPOINTS.MEDIUM) return 'md';
+  if (width < BREAKPOINTS.LARGE) return 'lg';
+  if (width < BREAKPOINTS.XL) return 'xl';
+  return 'xxl';
+};
+
+/**
+ * Check if the device is using a touch interface
+ * 
+ * @returns {boolean} True if touch is supported
+ */
+export const isTouchDevice = () => {
+  if (!isBrowser()) return false;
+  
+  return (('ontouchstart' in window) ||
+    (navigator.maxTouchPoints > 0) ||
+    (navigator.msMaxTouchPoints > 0));
+};
+
+/**
+ * Get current device orientation
+ * 
+ * @returns {string} Device orientation (portrait or landscape)
+ */
+export const getDeviceOrientation = () => {
+  if (!isBrowser()) return 'landscape';
+  
+  return window.matchMedia("(orientation: portrait)").matches ? 'portrait' : 'landscape';
+};
+
+/**
+ * Check device network information
+ * 
+ * @returns {Object} Network information
+ */
+export const getNetworkInfo = () => {
+  if (!isBrowser()) {
+    return {
+      online: true,
+      effectiveType: '4g',
+      saveData: false
+    };
+  }
+  
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  
+  return {
+    online: navigator.onLine,
+    effectiveType: connection?.effectiveType || '4g',
+    saveData: connection?.saveData || false
+  };
+};
+
+/**
+ * Device capability detection
+ * 
+ * @returns {Object} Device capabilities
+ */
+export const detectCapabilities = () => {
+  if (!isBrowser()) {
+    return {
+      pwa: false,
+      notifications: false,
+      geolocation: false,
+      camera: false,
+      bluetooth: false,
+      webShare: false
+    };
+  }
+  
+  return {
+    // PWA installation capability
+    pwa: 'serviceWorker' in navigator && window.matchMedia('(display-mode: standalone)').matches,
+    // Notification support
+    notifications: 'Notification' in window,
+    // Geolocation support
+    geolocation: 'geolocation' in navigator,
+    // Camera access
+    camera: 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices,
+    // Bluetooth support
+    bluetooth: 'bluetooth' in navigator,
+    // Web share API
+    webShare: 'share' in navigator
+  };
+};
+
+/**
+ * React hook for device detection
+ * 
+ * @returns {Object} Device information that updates on window resize
+ */
+export const useDeviceDetection = () => {
+  // Default state for SSR
+  const defaultState = {
+    isMobile: false,
+    isTablet: false,
+    isDesktop: true,
+    screenSize: 'lg',
+    orientation: 'landscape',
     isTouch: false,
-    orientation: typeof window !== 'undefined' && window.innerHeight > window.innerWidth ? 'portrait' : 'landscape'
-  });
+    online: true,
+    capabilities: {
+      pwa: false,
+      notifications: false,
+      geolocation: false,
+      camera: false,
+      bluetooth: false,
+      webShare: false
+    }
+  };
+  
+  // Initialize state
+  const [deviceInfo, setDeviceInfo] = useState(defaultState);
   
   useEffect(() => {
-    // Function to update device info based on current window dimensions
+    // Function to update device information
     const updateDeviceInfo = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      const deviceType = detectDeviceType();
+      const screenSize = getScreenSizeCategory();
+      const orientation = getDeviceOrientation();
+      const isTouch = isTouchDevice();
+      const { online } = getNetworkInfo();
+      const capabilities = detectCapabilities();
       
       setDeviceInfo({
-        width,
-        isMobile: width < breakpoints.md,
-        isTablet: width >= breakpoints.md && width < breakpoints.lg,
-        isDesktop: width >= breakpoints.lg,
-        isLargeDesktop: width >= breakpoints.xl,
-        isTouch: checkTouchDevice(),
-        orientation: height > width ? 'portrait' : 'landscape'
+        isMobile: deviceType === DEVICE_TYPES.MOBILE,
+        isTablet: deviceType === DEVICE_TYPES.TABLET,
+        isDesktop: deviceType === DEVICE_TYPES.DESKTOP,
+        screenSize,
+        orientation,
+        isTouch,
+        online,
+        capabilities
       });
     };
     
-    // Function to check if the device supports touch events
-    const checkTouchDevice = () => {
-      return (
-        ('ontouchstart' in window) ||
-        (navigator.maxTouchPoints > 0) ||
-        (navigator.msMaxTouchPoints > 0)
-      );
-    };
-    
-    // Run the check on initial mount
+    // Initial update
     updateDeviceInfo();
     
-    // Set up event listeners for resize and orientation change
+    // Add event listeners
     window.addEventListener('resize', updateDeviceInfo);
     window.addEventListener('orientationchange', updateDeviceInfo);
+    window.addEventListener('online', updateDeviceInfo);
+    window.addEventListener('offline', updateDeviceInfo);
     
-    // Clean up event listeners on unmount
+    // Cleanup function
     return () => {
       window.removeEventListener('resize', updateDeviceInfo);
       window.removeEventListener('orientationchange', updateDeviceInfo);
+      window.removeEventListener('online', updateDeviceInfo);
+      window.removeEventListener('offline', updateDeviceInfo);
     };
   }, []);
   
   return deviceInfo;
-}
+};
 
 /**
- * Helper function to check if the current viewport matches a specific breakpoint
- * @param {string} breakpoint - Breakpoint to check ('sm', 'md', 'lg', 'xl', '2xl')
- * @returns {boolean} True if the current viewport width is greater than or equal to the breakpoint
+ * Check if the current device is a mobile device
+ * 
+ * @returns {boolean} True if mobile device
  */
-export function matchesBreakpoint(breakpoint) {
-  if (typeof window === 'undefined') return false;
-  
-  const minWidth = breakpoints[breakpoint];
-  if (!minWidth) return false;
-  
-  return window.innerWidth >= minWidth;
-}
+export const isMobileDevice = () => {
+  return detectDeviceType() === DEVICE_TYPES.MOBILE;
+};
 
 /**
- * Helper function to get a CSS value based on the current device type
- * @param {Object} values - Object with keys for different device types and corresponding values
- * @returns {any} The value for the current device type
+ * Check if the current device is a tablet
+ * 
+ * @returns {boolean} True if tablet device
  */
-export function getResponsiveValue(values) {
-  const deviceInfo = useDeviceDetection();
-  
-  if (deviceInfo.isMobile && values.mobile !== undefined) {
-    return values.mobile;
-  }
-  
-  if (deviceInfo.isTablet && values.tablet !== undefined) {
-    return values.tablet;
-  }
-  
-  if (deviceInfo.isDesktop && values.desktop !== undefined) {
-    return values.desktop;
-  }
-  
-  if (deviceInfo.isLargeDesktop && values.largeDesktop !== undefined) {
-    return values.largeDesktop;
-  }
-  
-  // Return the default value or null if not defined
-  return values.default || null;
-}
+export const isTabletDevice = () => {
+  return detectDeviceType() === DEVICE_TYPES.TABLET;
+};
 
 /**
- * Helper component to conditionally render content based on device type
- * Usage: <Responsive mobile={<MobileContent />} desktop={<DesktopContent />} />
+ * Check if the current device is a desktop
+ * 
+ * @returns {boolean} True if desktop device
  */
-export function Responsive({ mobile, tablet, desktop, largeDesktop }) {
-  const deviceInfo = useDeviceDetection();
-  
-  if (deviceInfo.isMobile && mobile) {
-    return mobile;
-  }
-  
-  if (deviceInfo.isTablet && tablet) {
-    return tablet;
-  }
-  
-  if (deviceInfo.isDesktop && !deviceInfo.isLargeDesktop && desktop) {
-    return desktop;
-  }
-  
-  if (deviceInfo.isLargeDesktop && largeDesktop) {
-    return largeDesktop;
-  }
-  
-  // Fallback rendering logic - pick the best available option
-  if (deviceInfo.isMobile) {
-    return mobile || tablet || desktop || largeDesktop || null;
-  }
-  
-  if (deviceInfo.isTablet) {
-    return tablet || desktop || mobile || largeDesktop || null;
-  }
-  
-  if (deviceInfo.isDesktop && !deviceInfo.isLargeDesktop) {
-    return desktop || tablet || largeDesktop || mobile || null;
-  }
-  
-  if (deviceInfo.isLargeDesktop) {
-    return largeDesktop || desktop || tablet || mobile || null;
-  }
-  
-  return null;
-}
-
-export default {
-  useDeviceDetection,
-  matchesBreakpoint,
-  getResponsiveValue,
-  Responsive,
-  breakpoints
+export const isDesktopDevice = () => {
+  return detectDeviceType() === DEVICE_TYPES.DESKTOP;
 };

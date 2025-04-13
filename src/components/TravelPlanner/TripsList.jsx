@@ -1,8 +1,7 @@
 import React from 'react';
 import { calculateDuration } from '../../utils/helpers';
-import MapView from '../Map/MapView';
 
-function TripsList({ trips, viewTrip, editTrip, deleteTrip, setView, compareTrips }) {
+function TripsList({ trips, viewTrip, editTrip, deleteTrip, compareTrips }) {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -16,26 +15,7 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, setView, compareTrip
           </button>
         )}
       </div>
-      
-        <div className="space-y-6">
-          {/* Map Preview of All Trips */}
-          {trips.length > 0 && (
-            <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="font-semibold">Your Trip Destinations</h3>
-              </div>
-              <div className="h-64">
-                <MapView 
-                  destination={trips[0].destination}
-                  transportLocations={trips.map(trip => ({
-                    from: trip.destination,
-                    to: trip.destination,
-                    type: 'Location'
-                  }))}
-                />
-              </div>
-            </div>
-          )}
+
         
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {trips.map(trip => (
@@ -47,14 +27,6 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, setView, compareTrip
                   <p className="mb-1"><strong>Dates:</strong> {trip.startDate} to {trip.endDate}</p>
                   <p><strong>Duration:</strong> {calculateDuration(trip.startDate, trip.endDate)} days</p>
                   {trip.budget && <p><strong>Budget:</strong> ${trip.budget}</p>}
-                  
-                  {trip.info && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p><strong>Local Info:</strong></p>
-                      <p className="text-sm">Currency: {trip.info.currency}</p>
-                      <p className="text-sm">Emergency: {trip.info.emergency}</p>
-                    </div>
-                  )}
                   
                   {trip.transports && trip.transports.length > 0 && (
                     <div className="mt-2 pt-2 border-t border-gray-200">
@@ -99,9 +71,9 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, setView, compareTrip
             ))}
           </div>
         </div>
-      
-    </div>
-  );
+      )
+    
+  
 }
 
 export default TripsList;

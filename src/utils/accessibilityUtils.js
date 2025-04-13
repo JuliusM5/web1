@@ -1,225 +1,280 @@
 /**
- * Generate a unique ID for use with accessibility attributes
- * @param {string} prefix - ID prefix
- * @returns {string} - Unique ID
+ * Accessibility Utilities
+ * 
+ * Provides utilities for improving accessibility in the application,
+ * including keyboard navigation, screen reader support, and more.
+ */
+
+// Constants
+const FOCUS_SELECTORS = 'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Generate a unique ID with an optional prefix
+ * 
+ * @param {string} prefix Prefix for the ID
+ * @returns {string} Unique ID
  */
 export const generateUniqueId = (prefix = 'id') => {
-    return `${prefix}-${Math.random().toString(36).substring(2, 9)}`;
-  };
+  return `${prefix}-${Math.random().toString(36).substring(2, 9)}`;
+};
+
+/**
+ * Create a focus trap for modals and other UI elements
+ * 
+ * @param {HTMLElement} container Element to trap focus within
+ * @returns {Function} Function to remove the focus trap
+ */
+export const createFocusTrap = (container) => {
+  if (!container) return () => {};
   
-  /**
-   * Handle keyboard navigation for interactive elements like menus and dropdowns
-   * @param {KeyboardEvent} event - The keyboard event
-   * @param {Object} options - Options for keyboard navigation
-   * @param {number} options.currentIndex - Current focused index
-   * @param {number} options.maxIndex - Maximum index (length - 1)
-   * @param {Function} options.onSelect - Function to call when an item is selected
-   * @param {Function} options.onClose - Function to call when menu should close
-   * @param {Function} options.setFocusedIndex - Function to update focused index
-   * @returns {void}
-   */
-  export const handleKeyboardNavigation = (event, {
-    currentIndex,
-    maxIndex,
-    onSelect,
-    onClose,
-    setFocusedIndex
-  }) => {
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        setFocusedIndex(currentIndex < maxIndex ? currentIndex + 1 : 0);
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        setFocusedIndex(currentIndex > 0 ? currentIndex - 1 : maxIndex);
-        break;
-      case 'Home':
-        event.preventDefault();
-        setFocusedIndex(0);
-        break;
-      case 'End':
-        event.preventDefault();
-        setFocusedIndex(maxIndex);
-        break;
-      case 'Enter':
-      case ' ':
-        event.preventDefault();
-        onSelect(currentIndex);
-        break;
-      case 'Escape':
-        event.preventDefault();
-        onClose();
-        break;
-      default:
-        // Optional: Add typeahead functionality here
-        break;
-    }
-  };
+  // Find all focusable elements in the container
+  const focusableElements = Array.from(container.querySelectorAll(FOCUS_SELECTORS))
+    .filter(el => !el.disabled && !el.getAttribute('aria-hidden'));
   
-  /**
-   * Check if a contrast ratio between two colors meets WCAG standards
-   * @param {string} foreground - Foreground color (hex)
-   * @param {string} background - Background color (hex)
-   * @param {string} level - 'AA' or 'AAA'
-   * @param {boolean} isLargeText - Whether the text is large
-   * @returns {boolean} - Whether the contrast ratio meets the standard
-   */
-  export const hasAdequateContrast = (foreground, background, level = 'AA', isLargeText = false) => {
-    // Convert hex to RGB
-    const hexToRgb = (hex) => {
-      const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-      const fullHex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
-      
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
-      return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      } : null;
-    };
-    
-    // Calculate luminance
-    const luminance = (r, g, b) => {
-      const a = [r, g, b].map(v => {
-        v /= 255;
-        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-      });
-      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
-    };
-    
-    const rgb1 = hexToRgb(foreground);
-    const rgb2 = hexToRgb(background);
-    
-    if (!rgb1 || !rgb2) return false;
-    
-    const l1 = luminance(rgb1.r, rgb1.g, rgb1.b);
-    const l2 = luminance(rgb2.r, rgb2.g, rgb2.b);
-    
-    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
-    
-    // WCAG 2.1 standards
-    if (level === 'AAA') {
-      return isLargeText ? ratio >= 4.5 : ratio >= 7;
-    }
-    
-    // AA standard
-    return isLargeText ? ratio >= 3 : ratio >= 4.5;
-  };
+  // If no focusable elements, return empty function
+  if (focusableElements.length === 0) return () => {};
   
-  /**
-   * Focus trap for modals and dialogs - keeps focus inside a container
-   * @param {HTMLElement} container - The container element to trap focus within
-   * @returns {Function} - Function to remove the focus trap
-   */
-  export const createFocusTrap = (container) => {
-    if (!container) return () => {};
-    
-    // Find all focusable elements
-    const focusableElements = container.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    
-    if (focusableElements.length === 0) return () => {};
-    
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-    
-    // Auto-focus the first element
+  // Focus the first element
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  
+  // Set focus to the first element
+  setTimeout(() => {
     firstElement.focus();
-    
-    // Handle keydown events
-    const handleKeyDown = (event) => {
-      if (event.key !== 'Tab') return;
-      
-      // Shift + Tab: wrap from first to last element
-      if (event.shiftKey && document.activeElement === firstElement) {
-        event.preventDefault();
-        lastElement.focus();
-      }
-      // Tab: wrap from last to first element
-      else if (!event.shiftKey && document.activeElement === lastElement) {
-        event.preventDefault();
-        firstElement.focus();
-      }
-    };
-    
-    // Add event listener
-    container.addEventListener('keydown', handleKeyDown);
-    
-    // Return function to remove trap
-    return () => {
-      container.removeEventListener('keydown', handleKeyDown);
-    };
-  };
+  }, 50);
   
-  /**
-   * Screen reader only utility class name
-   * Makes content visually hidden but available to screen readers
-   * @returns {string} - CSS class name
-   */
-  export const srOnly = 'sr-only';
-  
-  /**
-   * Announcement for screen readers (using aria-live)
-   * @param {string} message - Message to announce
-   * @param {string} priority - 'polite' or 'assertive'
-   */
-  export const announceToScreenReader = (message, priority = 'polite') => {
-    // Check if announcement container exists
-    let container = document.getElementById('sr-announcements');
+  // Handle keydown events to trap focus
+  const handleKeyDown = (event) => {
+    // If not Tab key, ignore
+    if (event.key !== 'Tab') return;
     
-    // Create container if it doesn't exist
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'sr-announcements';
-      container.setAttribute('aria-live', priority);
-      container.setAttribute('role', 'status');
-      container.setAttribute('aria-atomic', 'true');
-      container.style.position = 'absolute';
-      container.style.width = '1px';
-      container.style.height = '1px';
-      container.style.margin = '-1px';
-      container.style.padding = '0';
-      container.style.overflow = 'hidden';
-      container.style.clip = 'rect(0, 0, 0, 0)';
-      container.style.whiteSpace = 'nowrap';
-      container.style.border = '0';
-      document.body.appendChild(container);
+    // If Shift+Tab and focus is on first element, move to last element
+    if (event.shiftKey && document.activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
     }
     
-    // Set the priority (could change between announcements)
-    container.setAttribute('aria-live', priority);
-    
-    // Announce the message
-    // First clear it, then set it after a timeout for better screen reader support
-    container.textContent = '';
+    // If Tab and focus is on last element, move to first element
+    else if (!event.shiftKey && document.activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  };
+  
+  // Add event listener
+  container.addEventListener('keydown', handleKeyDown);
+  
+  // Return function to remove focus trap
+  return () => {
+    container.removeEventListener('keydown', handleKeyDown);
+  };
+};
+
+/**
+ * Get props for a skip link component
+ * 
+ * @param {Object} options Options for the skip link
+ * @param {string} options.target ID of the target element to skip to
+ * @param {string} options.label Label for the skip link
+ * @returns {Object} Props for the skip link component
+ */
+export const getSkipLinkProps = ({ target, label = 'Skip to main content' }) => {
+  if (!target) {
+    console.warn('No target specified for skip link');
+    return {};
+  }
+  
+  return {
+    href: `#${target}`,
+    className: `
+      absolute top-0 left-0 -translate-y-full focus:translate-y-0 z-50
+      bg-white text-blue-600 px-4 py-2 border-b border-r border-gray-200
+      focus:outline-none focus:ring-2 focus:ring-blue-500 transition-transform
+    `,
+    children: label,
+    onKeyDown: (e) => {
+      // If Enter or Space is pressed, focus the target element
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const targetElement = document.getElementById(target);
+        if (targetElement) {
+          targetElement.setAttribute('tabindex', '-1');
+          targetElement.focus();
+          // Remove tabindex after focus
+          setTimeout(() => {
+            targetElement.removeAttribute('tabindex');
+          }, 100);
+        }
+      }
+    }
+  };
+};
+
+/**
+ * Announce a message to screen readers using an ARIA live region
+ * 
+ * @param {string} message Message to announce
+ * @param {string} priority Priority of the announcement ('polite' or 'assertive')
+ */
+export const announceToScreenReader = (message, priority = 'polite') => {
+  // Validate priority
+  if (priority !== 'polite' && priority !== 'assertive') {
+    console.warn(`Invalid priority: ${priority}. Using 'polite' instead.`);
+    priority = 'polite';
+  }
+  
+  // Find or create the announcer element
+  let announcer = document.getElementById(`sr-announcer-${priority}`);
+  
+  if (!announcer) {
+    announcer = document.createElement('div');
+    announcer.id = `sr-announcer-${priority}`;
+    announcer.setAttribute('aria-live', priority);
+    announcer.setAttribute('aria-atomic', 'true');
+    announcer.className = 'sr-only';
+    document.body.appendChild(announcer);
+  }
+  
+  // Update the announcer with the message
+  // We use a timeout to ensure the message is announced even if it hasn't changed
+  setTimeout(() => {
+    announcer.textContent = '';
+    // Another timeout to ensure the empty string is registered
     setTimeout(() => {
-      container.textContent = message;
+      announcer.textContent = message;
     }, 50);
-  };
+  }, 50);
+};
+
+/**
+ * Check if high contrast mode is enabled
+ * 
+ * @returns {boolean} True if high contrast mode is enabled
+ */
+export const isHighContrastMode = () => {
+  // Check for Windows high contrast mode
+  if (window.matchMedia('(-ms-high-contrast: active)').matches) {
+    return true;
+  }
   
-  /**
-   * SkipLink component props
-   * @typedef {Object} SkipLinkProps
-   * @property {string} target - Target element ID to skip to
-   * @property {string} [label] - Skip link label text
-   */
+  // Check for forced colors mode (newer browsers)
+  if (window.matchMedia('(forced-colors: active)').matches) {
+    return true;
+  }
   
-  /**
-   * Get props for a skip-to-content link
-   * @param {SkipLinkProps} props - Skip link props
-   * @returns {Object} - Props for the skip link
-   */
-  export const getSkipLinkProps = ({ target, label = 'Skip to main content' }) => {
-    if (!target) {
-      console.error('Skip link target is required');
-      return {};
-    }
-    
-    return {
-      href: `#${target}`,
-      className: 'skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-white text-blue-700 p-3 z-50',
-      children: label,
-    };
-  };
+  return false;
+};
+
+/**
+ * Check if reduced motion preference is enabled
+ * 
+ * @returns {boolean} True if reduced motion is preferred
+ */
+export const prefersReducedMotion = () => {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
+
+/**
+ * Get ARIA attributes for an element based on its state
+ * 
+ * @param {Object} options Options for generating ARIA attributes
+ * @returns {Object} ARIA attributes
+ */
+export const getAriaAttributes = (options = {}) => {
+  const {
+    isRequired,
+    hasError,
+    errorMessage,
+    isDisabled,
+    isExpanded,
+    hasPopup,
+    isPressed,
+    isSelected,
+    controls,
+    describedBy,
+    labelledBy,
+    current
+  } = options;
+  
+  const attributes = {};
+  
+  if (isRequired) attributes['aria-required'] = 'true';
+  if (hasError) attributes['aria-invalid'] = 'true';
+  if (errorMessage) attributes['aria-errormessage'] = errorMessage;
+  if (isDisabled) attributes['aria-disabled'] = 'true';
+  if (isExpanded !== undefined) attributes['aria-expanded'] = isExpanded ? 'true' : 'false';
+  if (hasPopup) attributes['aria-haspopup'] = 'true';
+  if (isPressed !== undefined) attributes['aria-pressed'] = isPressed ? 'true' : 'false';
+  if (isSelected !== undefined) attributes['aria-selected'] = isSelected ? 'true' : 'false';
+  if (controls) attributes['aria-controls'] = controls;
+  if (describedBy) attributes['aria-describedby'] = describedBy;
+  if (labelledBy) attributes['aria-labelledby'] = labelledBy;
+  if (current) attributes['aria-current'] = current;
+  
+  return attributes;
+};
+
+/**
+ * Get the heading level based on context
+ * 
+ * @param {number} baseLevel Base heading level
+ * @param {number} contextLevel Context heading level
+ * @returns {number} Appropriate heading level (1-6)
+ */
+export const getHeadingLevel = (baseLevel = 1, contextLevel = 0) => {
+  const level = baseLevel + contextLevel;
+  return Math.max(1, Math.min(6, level));
+};
+
+/**
+ * Ensure a string is safe for use as an HTML ID
+ * 
+ * @param {string} str String to sanitize
+ * @returns {string} Sanitized string safe for use as an ID
+ */
+export const sanitizeId = (str) => {
+  if (!str) return '';
+  
+  return str
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')       // Replace spaces with hyphens
+    .replace(/[^\w\-]+/g, '')   // Remove non-word characters
+    .replace(/\-\-+/g, '-')     // Replace multiple hyphens with single hyphen
+    .replace(/^-+/, '')         // Trim hyphens from start
+    .replace(/-+$/, '');        // Trim hyphens from end
+};
+
+/**
+ * Check if an element is currently visible in the viewport
+ * 
+ * @param {HTMLElement} element Element to check
+ * @param {Object} options Options for the check
+ * @returns {boolean} True if the element is visible
+ */
+export const isElementInViewport = (element, options = {}) => {
+  if (!element) return false;
+  
+  const {
+    fully = false,   // Whether the element needs to be fully visible
+    offset = 0       // Offset from the viewport edges
+  } = options;
+  
+  const rect = element.getBoundingClientRect();
+  
+  if (fully) {
+    return (
+      rect.top >= offset &&
+      rect.left >= offset &&
+      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) - offset &&
+      rect.right <= (window.innerWidth || document.documentElement.clientWidth) - offset
+    );
+  }
+  
+  return (
+    rect.bottom >= offset &&
+    rect.right >= offset &&
+    rect.top <= (window.innerHeight || document.documentElement.clientHeight) - offset &&
+    rect.left <= (window.innerWidth || document.documentElement.clientWidth) - offset
+  );
+};

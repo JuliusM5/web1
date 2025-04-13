@@ -1,13 +1,12 @@
 import React from 'react';
 import BasicInfoTab from '../PlannerTabs/BasicInfoTab';
 import BudgetTab from '../PlannerTabs/BudgetTab';
-import LocalInfoTab from '../PlannerTabs/LocalInfoTab';
 import TransportTab from '../PlannerTabs/TransportTab';
 import PhotosTab from '../PlannerTabs/PhotosTab';
 import NotesTab from '../PlannerTabs/NotesTab';
 import TasksTab from '../PlannerTabs/TasksTab';
 import ExternalTab from '../PlannerTabs/ExternalTab';
-import { calculateDuration, calculateTotalBudget } from '../../utils/helpers';
+
 
 function TripPlanner({ 
   tab, setTab, editMode, setEditMode, currentTripId, setCurrentTripId,
@@ -97,8 +96,6 @@ function TripPlanner({
         destination,
         startDate,
         endDate,
-        budget: calculateTotalBudget(budgetCategories) > 0 ? calculateTotalBudget(budgetCategories) : budget,
-        budgetBreakdown: calculateTotalBudget(budgetCategories) > 0 ? {...budgetCategories} : null,
         notes: [...tripNotes],
         tasks: [...tripTasks],
         transports: [...transports],
@@ -185,12 +182,6 @@ function TripPlanner({
           Budget
         </button>
         <button 
-          onClick={() => setTab('local')}
-          className={`px-3 py-1 rounded ${tab === 'local' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-        >
-          Local Info
-        </button>
-        <button 
           onClick={() => setTab('transport')}
           className={`px-3 py-1 rounded ${tab === 'transport' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
@@ -244,14 +235,6 @@ function TripPlanner({
           handleBudgetChange={handleBudgetChange}
           startDate={startDate}
           endDate={endDate}
-        />
-      )}
-      
-      {tab === 'local' && (
-        <LocalInfoTab 
-          getDestinationInfo={getDestinationInfo}
-          setTab={setTab}
-          destination={destination}
         />
       )}
       

@@ -76,17 +76,7 @@ function BasicInfoTab({
                 </div>
               )}
             </div>
-            <button
-              onClick={detectLocation}
-              disabled={locationLoading}
-              className={`px-3 py-2 rounded ${
-                locationLoading
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
-              }`}
-            >
-              <span>📍</span> My Location
-            </button>
+            
           </div>
           <p className="text-xs text-gray-500 mt-1">Enter any city or destination to get real-time information</p>
           

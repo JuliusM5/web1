@@ -1,308 +1,300 @@
-// API service for fetching destination data using free and open APIs
+/**
+ * API Service
+ * Provides generic HTTP request functionality with error handling, retries, and caching
+ */
 
-// Base URLs for various free APIs
-const OPEN_METEO_BASE_URL = 'https://api.open-meteo.com/v1';
-const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
-const RESTCOUNTRIES_BASE_URL = 'https://restcountries.com/v3.1';
-const EXCHANGERATE_BASE_URL = 'https://open.er-api.com/v6/latest';
-
-// Geocoding: Convert location name to coordinates using OpenStreetMap's Nominatim API
-export const geocodeLocation = async (locationName) => {
-  try {
-    const response = await fetch(
-      `${NOMINATIM_BASE_URL}/search?q=${encodeURIComponent(locationName)}&format=json&limit=1`,
-      {
-        headers: {
-          'Accept-Language': 'en-US,en',
-          'User-Agent': 'TravelEase/1.0' // It's good practice to identify your app to the API
-        }
-      }
-    );
-    
-    if (!response.ok) {
-      throw new Error('Geocoding failed');
-    }
-    
-    const data = await response.json();
-    
-    if (data.length === 0) {
-      throw new Error('Location not found');
-    }
-    
-    // Extract the country code safely with fallbacks
-    let countryCode = 'UNKNOWN';
-    if (data[0].address && data[0].address.country_code) {
-      countryCode = data[0].address.country_code.toUpperCase();
-    } else if (data[0].country_code) {
-      countryCode = data[0].country_code.toUpperCase();
-    }
-    
-    return {
-      lat: parseFloat(data[0].lat),
-      lon: parseFloat(data[0].lon),
-      name: data[0].display_name.split(',')[0],
-      country: countryCode
-    };
-  } catch (error) {
-    console.error('Geocoding error:', error);
-    throw error;
-  }
+// Default options for fetch requests
+const defaultOptions = {
+  // Default headers for all requests
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  // Cache responses for GET requests
+  cache: true,
+  // Cache lifetime in milliseconds (15 minutes)
+  cacheLifetime: 15 * 60 * 1000,
+  // Number of retries for failed requests
+  retries: 1,
+  // Delay between retries in milliseconds
+  retryDelay: 1000,
+  // Timeout for requests in milliseconds (10 seconds)
+  timeout: 10000
 };
 
-// Reverse Geocoding: Convert coordinates to location name
-export const reverseGeocode = async (lat, lon) => {
-  try {
-    const response = await fetch(
-      `${NOMINATIM_BASE_URL}/reverse?lat=${lat}&lon=${lon}&format=json`,
-      {
-        headers: {
-          'Accept-Language': 'en-US,en',
-          'User-Agent': 'TravelEase/1.0'
-        }
-      }
-    );
-    
-    if (!response.ok) {
-      throw new Error('Reverse geocoding failed');
-    }
-    
-    const data = await response.json();
-    
-    if (!data || !data.address) {
-      throw new Error('Location not found');
-    }
-    
-    return {
-      name: data.address.city || data.address.town || data.address.village || data.address.county || 'Unknown Location',
-      country: data.address.country || 'Unknown Country'
-    };
-  } catch (error) {
-    console.error('Reverse geocoding error:', error);
-    throw error;
-  }
-};
-
-// Get weather data for a location using Open-Meteo API (free, no API key required)
-export const getWeatherForecast = async (lat, lon) => {
-  try {
-    const response = await fetch(
-      `${OPEN_METEO_BASE_URL}/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours&current_weather=true&timezone=auto`
-    );
-    
-    if (!response.ok) {
-      throw new Error('Weather data fetch failed');
-    }
-    
-    const data = await response.json();
-    
-    // Process the data to match our expected format
-    return processOpenMeteoData(data, lat, lon);
-  } catch (error) {
-    console.error('Weather fetch error:', error);
-    throw error;
-  }
-};
-
-// Process Open-Meteo data to match our app's expected format
-function processOpenMeteoData(data, lat, lon) {
-  // WMO Weather interpretation codes to description mapping
-  const weatherCodes = {
-    0: { main: 'Clear', description: 'clear sky', icon: '01d' },
-    1: { main: 'Clear', description: 'mainly clear', icon: '01d' },
-    2: { main: 'Clouds', description: 'partly cloudy', icon: '02d' },
-    3: { main: 'Clouds', description: 'overcast', icon: '03d' },
-    45: { main: 'Fog', description: 'fog', icon: '50d' },
-    48: { main: 'Fog', description: 'depositing rime fog', icon: '50d' },
-    51: { main: 'Drizzle', description: 'light drizzle', icon: '09d' },
-    53: { main: 'Drizzle', description: 'moderate drizzle', icon: '09d' },
-    55: { main: 'Drizzle', description: 'dense drizzle', icon: '09d' },
-    56: { main: 'Drizzle', description: 'freezing drizzle', icon: '09d' },
-    57: { main: 'Drizzle', description: 'dense freezing drizzle', icon: '09d' },
-    61: { main: 'Rain', description: 'slight rain', icon: '10d' },
-    63: { main: 'Rain', description: 'moderate rain', icon: '10d' },
-    65: { main: 'Rain', description: 'heavy rain', icon: '10d' },
-    66: { main: 'Rain', description: 'freezing rain', icon: '13d' },
-    67: { main: 'Rain', description: 'heavy freezing rain', icon: '13d' },
-    71: { main: 'Snow', description: 'slight snow fall', icon: '13d' },
-    73: { main: 'Snow', description: 'moderate snow fall', icon: '13d' },
-    75: { main: 'Snow', description: 'heavy snow fall', icon: '13d' },
-    77: { main: 'Snow', description: 'snow grains', icon: '13d' },
-    80: { main: 'Rain', description: 'slight rain showers', icon: '09d' },
-    81: { main: 'Rain', description: 'moderate rain showers', icon: '09d' },
-    82: { main: 'Rain', description: 'violent rain showers', icon: '09d' },
-    85: { main: 'Snow', description: 'slight snow showers', icon: '13d' },
-    86: { main: 'Snow', description: 'heavy snow showers', icon: '13d' },
-    95: { main: 'Thunderstorm', description: 'thunderstorm', icon: '11d' },
-    96: { main: 'Thunderstorm', description: 'thunderstorm with hail', icon: '11d' },
-    99: { main: 'Thunderstorm', description: 'thunderstorm with heavy hail', icon: '11d' }
-  };
+/**
+ * Make an HTTP request with error handling, retries, and caching
+ * 
+ * @param {string} url Request URL
+ * @param {Object} options Request options
+ * @returns {Promise<any>} Promise that resolves to response data
+ */
+export const request = async (url, options = {}) => {
+  // Merge default options with provided options
+  const mergedOptions = { ...defaultOptions, ...options };
+  const { cache, cacheLifetime, retries, retryDelay, timeout, ...fetchOptions } = mergedOptions;
   
-  // Get current weather
-  const currentWeatherCode = data.current_weather.weathercode;
-  const currentWeather = weatherCodes[currentWeatherCode] || weatherCodes[0]; // Default to clear if code not found
+  // Check if request should be cached (only for GET requests)
+  const shouldCache = cache && (!fetchOptions.method || fetchOptions.method === 'GET');
   
-  // Create a forecast format that matches what our components expect
-  const forecast = {
-    city: {
-      name: `Location at ${lat.toFixed(2)}, ${lon.toFixed(2)}`,
-      coord: { lat, lon }
-    },
-    current_weather: {
-      ...data.current_weather,
-      weather: [currentWeather]
-    },
-    daily: {
-      time: data.daily.time,
-      weathercode: data.daily.weathercode,
-      temperature_max: data.daily.temperature_2m_max,
-      temperature_min: data.daily.temperature_2m_min,
-      precipitation_sum: data.daily.precipitation_sum,
-      precipitation_hours: data.daily.precipitation_hours
-    },
-    // Create a list format similar to OpenWeatherMap for compatibility
-    list: data.daily.time.map((time, index) => {
-      const weatherCode = data.daily.weathercode[index];
-      const weather = weatherCodes[weatherCode] || weatherCodes[0];
+  // Check cache for existing response
+  if (shouldCache) {
+    const cachedResponse = getCachedResponse(url, fetchOptions);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+  }
+  
+  // Add timeout to request
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  fetchOptions.signal = controller.signal;
+  
+  // Try making the request with retries
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (attempt > 0) {
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
       
-      return {
-        dt: new Date(time).getTime() / 1000,
-        dt_txt: time,
-        main: {
-          temp: (data.daily.temperature_2m_max[index] + data.daily.temperature_2m_min[index]) / 2, // Average temp
-          temp_min: data.daily.temperature_2m_min[index],
-          temp_max: data.daily.temperature_2m_max[index],
-          humidity: 70 // Open-Meteo free API doesn't provide humidity for daily forecasts
-        },
-        weather: [weather]
-      };
-    })
-  };
+      // Make the request
+      const response = await fetch(url, fetchOptions);
+      
+      // Clear timeout
+      clearTimeout(timeoutId);
+      
+      // Handle non-2xx responses
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error ${response.status}: ${errorText}`);
+      }
+      
+      // Parse response based on content type
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
+      
+      // Cache the response if needed
+      if (shouldCache) {
+        cacheResponse(url, fetchOptions, data, cacheLifetime);
+      }
+      
+      // Record the request for offline sync if needed
+      if (!navigator.onLine && (fetchOptions.method === 'POST' || fetchOptions.method === 'PUT' || fetchOptions.method === 'DELETE')) {
+        recordOfflineRequest(url, fetchOptions);
+      }
+      
+      return data;
+    } catch (error) {
+      lastError = error;
+      
+      // Don't retry if request was aborted or if it's the last attempt
+      if (error.name === 'AbortError' || attempt === retries) {
+        clearTimeout(timeoutId);
+        
+        // If offline, record the request for later sync
+        if (!navigator.onLine && (fetchOptions.method === 'POST' || fetchOptions.method === 'PUT' || fetchOptions.method === 'DELETE')) {
+          recordOfflineRequest(url, fetchOptions);
+          throw new Error(`Network request failed (offline). The request will be synchronized when you're back online.`);
+        }
+        
+        throw error;
+      }
+      
+      // Continue to next retry attempt
+    }
+  }
   
-  return forecast;
-}
-
-// Get country information using RestCountries API
-export const getCountryInfo = async (countryCode) => {
-  try {
-    const response = await fetch(`${RESTCOUNTRIES_BASE_URL}/alpha/${countryCode}`);
-    
-    if (!response.ok) {
-      throw new Error('Country info fetch failed');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Country info fetch error:', error);
-    throw error;
-  }
+  // This should not happen, but just in case
+  throw lastError;
 };
 
-// Get currency exchange rates using Open Exchange Rates API
-export const getCurrencyRates = async (baseCurrency = 'USD') => {
-  try {
-    const response = await fetch(`${EXCHANGERATE_BASE_URL}/${baseCurrency}`);
-    
-    if (!response.ok) {
-      throw new Error('Exchange rate fetch failed');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Exchange rate fetch error:', error);
-    throw error;
-  }
+/**
+ * Make a GET request
+ * 
+ * @param {string} url Request URL
+ * @param {Object} options Request options
+ * @returns {Promise<any>} Promise that resolves to response data
+ */
+export const get = (url, options = {}) => {
+  return request(url, {
+    ...options,
+    method: 'GET'
+  });
 };
 
-// Get travel advisory information 
-// This uses basic country advisories as we don't have a specific API
-export const getTravelAdvisory = async (countryCode) => {
-  try {
-    // Simulate travel advisory with some basic countries
-    // In a real app, you'd use a proper travel advisory API
-    const advisories = {
-      'US': { score: 2, message: 'Exercise increased caution' },
-      'FR': { score: 2, message: 'Exercise increased caution' },
-      'JP': { score: 1, message: 'Exercise normal precautions' },
-      'GB': { score: 2, message: 'Exercise increased caution' },
-      'AU': { score: 1, message: 'Exercise normal precautions' },
-      'EG': { score: 3, message: 'Reconsider travel' },
-      'BR': { score: 2, message: 'Exercise increased caution' },
-      'RU': { score: 4, message: 'Do not travel' }
-    };
-    
-    const advisory = advisories[countryCode] || { score: 2, message: 'Exercise increased caution' };
-    
-    return {
-      data: {
-        [countryCode]: advisory
-      }
-    };
-  } catch (error) {
-    console.error('Travel advisory fetch error:', error);
-    throw error;
-  }
+/**
+ * Make a POST request
+ * 
+ * @param {string} url Request URL
+ * @param {Object} data Request body data
+ * @param {Object} options Request options
+ * @returns {Promise<any>} Promise that resolves to response data
+ */
+export const post = (url, data, options = {}) => {
+  return request(url, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
 };
 
-// Get complete destination information (combines all APIs)
-export const getCompleteDestinationInfo = async (locationName) => {
-  try {
-    // First, geocode the location to get coordinates and country code
-    const geoData = await geocodeLocation(locationName);
-    
-    // Fetch country information
-    let countryInfo = [];
+/**
+ * Make a PUT request
+ * 
+ * @param {string} url Request URL
+ * @param {Object} data Request body data
+ * @param {Object} options Request options
+ * @returns {Promise<any>} Promise that resolves to response data
+ */
+export const put = (url, data, options = {}) => {
+  return request(url, {
+    ...options,
+    method: 'PUT',
+    body: JSON.stringify(data)
+  });
+};
+
+/**
+ * Make a DELETE request
+ * 
+ * @param {string} url Request URL
+ * @param {Object} options Request options
+ * @returns {Promise<any>} Promise that resolves to response data
+ */
+export const del = (url, options = {}) => {
+  return request(url, {
+    ...options,
+    method: 'DELETE'
+  });
+};
+
+// Cache functions
+
+/**
+ * Generate a cache key for a request
+ * 
+ * @param {string} url Request URL
+ * @param {Object} options Request options
+ * @returns {string} Cache key
+ */
+const generateCacheKey = (url, options) => {
+  const paramsString = JSON.stringify(options);
+  return `${url}:${paramsString}`;
+};
+
+/**
+ * Get a cached response if available and not expired
+ * 
+ * @param {string} url Request URL
+ * @param {Object} options Request options
+ * @returns {Object|null} Cached response or null if not available
+ */
+const getCachedResponse = (url, options) => {
+  const cacheKey = generateCacheKey(url, options);
+  const cachedItem = localStorage.getItem(`api_cache:${cacheKey}`);
+  
+  if (cachedItem) {
     try {
-      countryInfo = await getCountryInfo(geoData.country);
-    } catch (err) {
-      console.warn('Could not fetch country info:', err);
-      countryInfo = [];
-    }
-    
-    // Fetch weather data
-    const weatherData = await getWeatherForecast(geoData.lat, geoData.lon);
-    
-    // Fetch currency exchange rates
-    let currencyRates = { rates: { USD: 1, EUR: 0.93, GBP: 0.81 } };
-    let currencyCode = 'USD';
-    try {
-      if (countryInfo[0]?.currencies) {
-        currencyCode = Object.keys(countryInfo[0].currencies)[0];
-        currencyRates = await getCurrencyRates(currencyCode);
+      const { data, expiry } = JSON.parse(cachedItem);
+      
+      // Check if cache is still valid
+      if (expiry > Date.now()) {
+        return data;
+      } else {
+        // Remove expired cache
+        localStorage.removeItem(`api_cache:${cacheKey}`);
       }
-    } catch (err) {
-      console.warn('Could not fetch currency rates:', err);
+    } catch (error) {
+      console.error('Error parsing cached response:', error);
+      localStorage.removeItem(`api_cache:${cacheKey}`);
     }
-    
-    // Fetch travel advisory
-    const travelAdvisory = await getTravelAdvisory(geoData.country);
-    
-    // Compile all the data
-    return {
-      name: geoData.name,
-      country: countryInfo[0]?.name?.common || geoData.country,
-      coordinates: {
-        lat: geoData.lat,
-        lon: geoData.lon
-      },
-      weather: weatherData,
-      language: countryInfo[0]?.languages ? Object.values(countryInfo[0].languages)[0] : 'Unknown',
-      currency: {
-        code: currencyCode,
-        name: countryInfo[0]?.currencies?.[currencyCode]?.name || 'Unknown',
-        symbol: countryInfo[0]?.currencies?.[currencyCode]?.symbol || '$',
-        rates: currencyRates.rates
-      },
-      emergency: countryInfo[0]?.emergency || { police: '911', ambulance: '911' },
-      travelAdvisory: travelAdvisory.data?.[geoData.country],
-      flag: countryInfo[0]?.flags?.png || '',
-      capital: countryInfo[0]?.capital?.[0] || '',
-      population: countryInfo[0]?.population || 0,
-      timezone: countryInfo[0]?.timezones?.[0] || 'UTC',
-      drivingSide: countryInfo[0]?.car?.side || 'right',
-      mapLink: `https://www.google.com/maps/place/${encodeURIComponent(locationName)}`
-    };
-  } catch (error) {
-    console.error('Complete destination info fetch error:', error);
-    throw error;
   }
+  
+  return null;
+};
+
+/**
+ * Cache a response for future use
+ * 
+ * @param {string} url Request URL
+ * @param {Object} options Request options
+ * @param {Object} data Response data
+ * @param {number} lifetime Cache lifetime in milliseconds
+ */
+const cacheResponse = (url, options, data, lifetime) => {
+  const cacheKey = generateCacheKey(url, options);
+  const expiry = Date.now() + lifetime;
+  
+  try {
+    localStorage.setItem(`api_cache:${cacheKey}`, JSON.stringify({ data, expiry }));
+  } catch (error) {
+    console.error('Error caching response:', error);
+    // If storage is full, clear old cache items
+    if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+      clearOldCacheItems();
+    }
+  }
+};
+
+/**
+ * Clear old cache items when storage is full
+ */
+const clearOldCacheItems = () => {
+  // Get all cache keys
+  const cacheKeys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith('api_cache:')) {
+      cacheKeys.push(key);
+    }
+  }
+  
+  // Sort keys by age (oldest first)
+  const sortedKeys = cacheKeys.map(key => {
+    try {
+      const item = JSON.parse(localStorage.getItem(key));
+      return { key, expiry: item.expiry };
+    } catch (error) {
+      return { key, expiry: 0 }; // If can't parse, treat as oldest
+    }
+  }).sort((a, b) => a.expiry - b.expiry);
+  
+  // Remove oldest 20% of cache
+  const removeCount = Math.max(1, Math.ceil(sortedKeys.length * 0.2));
+  sortedKeys.slice(0, removeCount).forEach(({ key }) => {
+    localStorage.removeItem(key);
+  });
+};
+
+/**
+ * Record an offline request for later synchronization
+ * 
+ * @param {string} url Request URL
+ * @param {Object} options Request options
+ */
+const recordOfflineRequest = (url, options) => {
+  // Get existing unsynced changes
+  const unsynced = JSON.parse(localStorage.getItem('unsyncedChanges') || '[]');
+  
+  // Add this request
+  unsynced.push({
+    timestamp: Date.now(),
+    url,
+    options,
+    id: Date.now() + Math.floor(Math.random() * 1000)
+  });
+  
+  // Save updated unsynced changes
+  localStorage.setItem('unsyncedChanges', JSON.stringify(unsynced));
+  
+  // Update unsynced count for UI
+  window.dispatchEvent(new CustomEvent('unsyncedChangesUpdated', {
+    detail: { count: unsynced.length }
+  }));
 };
