@@ -16,7 +16,7 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, setView, compareTrip
           </button>
         )}
       </div>
-      ) : (
+      
         <div className="space-y-6">
           {/* Map Preview of All Trips */}
           {trips.length > 0 && (
@@ -99,7 +99,7 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, setView, compareTrip
             ))}
           </div>
         </div>
-      )
+      
     </div>
   );
 }
