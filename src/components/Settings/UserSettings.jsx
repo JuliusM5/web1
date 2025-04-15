@@ -1,70 +1,69 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useSettings } from '../../context/SettingsContext';
+import { exportUserData, importUserData, clearAllAppData } from '../../utils/settingsUtils';
 
-function UserSettings({ onClose, onSaveSettings }) {
-  // Default settings
-  const defaultSettings = {
-    appearance: {
-      theme: 'light',
-      fontSize: 'medium',
-      colorScheme: 'blue',
-    },
-    preferences: {
-      defaultCurrency: 'USD',
-      dateFormat: 'MM/DD/YYYY',
-      distanceUnit: 'miles',
-      temperatureUnit: 'fahrenheit',
-      language: 'en-US',
-    },
-    notifications: {
-      tripReminders: true,
-      taskReminders: true,
-      budgetAlerts: true,
-      emailNotifications: false,
-    },
-    privacy: {
-      shareLocationData: true,
-      collectAnalytics: true,
-      autoSaveEnabled: true,
-    }
-  };
-  
-  // Load saved settings or use defaults
-  const [settings, setSettings] = useState(() => {
-    const savedSettings = localStorage.getItem('userSettings');
-    return savedSettings ? JSON.parse(savedSettings) : defaultSettings;
-  });
-  
-  // Track active tab
+function UserSettings({ onClose }) {
+  const { settings, updateSettings, resetSettings } = useSettings();
   const [activeTab, setActiveTab] = useState('appearance');
-  
-  // Save settings to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('userSettings', JSON.stringify(settings));
-  }, [settings]);
+  const [importFile, setImportFile] = useState(null);
+  const [importError, setImportError] = useState('');
   
   // Handle input changes
   const handleChange = (section, setting, value) => {
-    setSettings({
+    const newSettings = {
       ...settings,
       [section]: {
         ...settings[section],
         [setting]: value
       }
-    });
+    };
+    updateSettings(newSettings);
   };
   
   // Save settings and close
   const saveAndClose = () => {
-    if (onSaveSettings) {
-      onSaveSettings(settings);
-    }
     onClose();
   };
   
   // Reset to defaults
-  const resetToDefaults = () => {
+  const handleResetToDefaults = () => {
     if (window.confirm('Are you sure you want to reset all settings to default values?')) {
-      setSettings(defaultSettings);
+      resetSettings();
+    }
+  };
+  
+  // Handle file import
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImportFile(file);
+      setImportError('');
+    }
+  };
+  
+  // Import data
+  const handleImportData = async () => {
+    if (!importFile) return;
+    
+    try {
+      await importUserData(importFile);
+      alert('Data imported successfully. The application will now reload.');
+      window.location.reload();
+    } catch (error) {
+      setImportError(error.message);
+    }
+  };
+  
+  // Export data
+  const handleExportData = () => {
+    exportUserData();
+  };
+  
+  // Clear all data
+  const handleClearData = () => {
+    if (clearAllAppData()) {
+      alert('All data has been cleared. The application will now reload.');
+      window.location.reload();
     }
   };
   
@@ -162,11 +161,19 @@ function UserSettings({ onClose, onSaveSettings }) {
               >
                 Privacy
               </button>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-lg ${
+                  activeTab === 'data' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'
+                }`}
+                onClick={() => setActiveTab('data')}
+              >
+                Data Management
+              </button>
             </nav>
             
             <div className="mt-8">
               <button
-                onClick={resetToDefaults}
+                onClick={handleResetToDefaults}
                 className="w-full px-3 py-2 text-left text-red-600 hover:bg-red-50 rounded-lg"
               >
                 Reset to Defaults
@@ -567,29 +574,70 @@ function UserSettings({ onClose, onSaveSettings }) {
                     </label>
                   </div>
                 </div>
+              </div>
+            )}
+            
+            {/* Data Management Tab */}
+            {activeTab === 'data' && (
+              <div>
+                <h3 className="text-lg font-medium mb-4">Data Management</h3>
                 
-                <div className="mt-6 space-y-4">
+                <div className="space-y-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-blue-700 mb-2">Your Data</h4>
-                    <p className="text-sm">
-                      All your trip data is stored locally in your browser. To ensure you don't lose your data, consider exporting your trips regularly.
+                    <h4 className="font-medium text-blue-700 mb-2">Export Your Data</h4>
+                    <p className="text-sm mb-3">
+                      Download all your trip data and settings as a backup file. You can import this file later to restore your data.
                     </p>
-                    <div className="mt-3 flex space-x-2">
-                      <button className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                        Export All Data
-                      </button>
-                      <button className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">
+                    <button
+                      onClick={handleExportData}
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Export All Data
+                    </button>
+                  </div>
+                  
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-green-700 mb-2">Import Data</h4>
+                    <p className="text-sm mb-3">
+                      Restore your data from a previously exported backup file.
+                    </p>
+                    
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept=".json"
+                        onChange={handleFileChange}
+                        className="block w-full text-sm text-gray-500
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-md file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-green-50 file:text-green-700
+                          hover:file:bg-green-100"
+                      />
+                      
+                      {importError && (
+                        <p className="text-sm text-red-600">{importError}</p>
+                      )}
+                      
+                      <button
+                        onClick={handleImportData}
+                        disabled={!importFile}
+                        className={`px-4 py-2 rounded ${!importFile ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                      >
                         Import Data
                       </button>
                     </div>
                   </div>
                   
                   <div className="bg-red-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-red-700 mb-2">Clear Data</h4>
-                    <p className="text-sm">
-                      You can clear all your data from this browser. This action cannot be undone.
+                    <h4 className="font-medium text-red-700 mb-2">Clear All Data</h4>
+                    <p className="text-sm mb-3">
+                      This will permanently delete all your trips, templates, and settings. This action cannot be undone.
                     </p>
-                    <button className="mt-3 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                    <button
+                      onClick={handleClearData}
+                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
                       Clear All Data
                     </button>
                   </div>
@@ -604,7 +652,7 @@ function UserSettings({ onClose, onSaveSettings }) {
             onClick={saveAndClose}
             className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Save Settings
+            Close
           </button>
         </div>
       </div>

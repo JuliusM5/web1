@@ -9,10 +9,13 @@ import destinations from '../../data/destinations';
 import UserSettings from '../Settings/UserSettings';
 import TemplateManager from '../TripTemplates/TemplateManager';
 import TemplateSelector from '../TripTemplates/TemplateSelector';
-import { getUserSettings, applyThemeSettings } from '../../utils/settingsUtils';
+import { useSettings } from '../../context/SettingsContext';
 import InteractiveCalendar from '../Calendar/InteractiveCalendar';
 
 function EnhancedTripPlanner() {
+  // Get settings from context
+  const { settings } = useSettings();
+  
   // View state
   const [view, setView] = useState('dashboard');
   const [tab, setTab] = useState('basic');
@@ -22,9 +25,6 @@ function EnhancedTripPlanner() {
   const [showSettings, setShowSettings] = useState(false);
   const [showTemplateManager, setShowTemplateManager] = useState(false);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
-  
-  // User settings
-  const [userSettings, setUserSettings] = useState(getUserSettings());
   
   // Collection state
   const [trips, setTrips] = useState([]);
@@ -72,11 +72,6 @@ function EnhancedTripPlanner() {
   
   // Selected trip for viewing/editing
   const [selectedTrip, setSelectedTrip] = useState(null);
-
-  // Apply theme settings when component mounts
-  useEffect(() => {
-    applyThemeSettings(userSettings);
-  }, [userSettings]);
 
   // Load trips from localStorage on component mount
   useEffect(() => {
@@ -173,12 +168,6 @@ function EnhancedTripPlanner() {
     }
   }
   
-  // Handle saving settings
-  function handleSaveSettings(newSettings) {
-    setUserSettings(newSettings);
-    applyThemeSettings(newSettings);
-  }
-  
   // Handle using a template
   function handleUseTemplate(template) {
     // Set trip duration
@@ -271,7 +260,6 @@ function EnhancedTripPlanner() {
         {showSettings && (
           <UserSettings 
             onClose={() => setShowSettings(false)}
-            onSaveSettings={handleSaveSettings}
           />
         )}
         
@@ -300,7 +288,7 @@ function EnhancedTripPlanner() {
             viewTrip={viewTrip}
             setView={setView}
             onNewTrip={handleNewTrip}
-            userSettings={userSettings}
+            userSettings={settings}
             calendarComponent={
               <InteractiveCalendar 
                 startDate={startDate}
@@ -371,7 +359,7 @@ function EnhancedTripPlanner() {
             trips={trips}
             setTrips={setTrips}
             setView={setView}
-            userSettings={userSettings}
+            userSettings={settings}
           />
         )}
         
@@ -384,7 +372,7 @@ function EnhancedTripPlanner() {
             setView={setView}
             compareTrips={() => setShowComparison(true)}
             onNewTrip={handleNewTrip}
-            userSettings={userSettings}
+            userSettings={settings}
           />
         )}
         
@@ -395,7 +383,7 @@ function EnhancedTripPlanner() {
             closeTrip={closeTrip}
             shareEmail={shareEmail}
             setShareEmail={setShareEmail}
-            userSettings={userSettings}
+            userSettings={settings}
           />
         )}
       </main>
