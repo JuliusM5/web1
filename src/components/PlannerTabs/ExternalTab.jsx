@@ -4,7 +4,7 @@ import { importBooking } from '../../utils/helpers';
 function ExternalTab({ 
   serviceType, setServiceType, serviceUrl, setServiceUrl, 
   serviceNote, setServiceNote, externalServices, setExternalServices,
-  addExternalService, getDestinationInfo, destination
+  addExternalService, destination
 }) {
   return (
     <div>
@@ -25,9 +25,7 @@ function ExternalTab({
                 <option value="">Select type</option>
                 <option value="Map">Map/Direction</option>
                 <option value="Booking">Booking Confirmation</option>
-                <option value="Weather">Weather Service</option>
                 <option value="Translation">Translation Tool</option>
-                <option value="Advisory">Travel Advisory</option>
                 <option value="Other">Other Service</option>
               </select>
             </div>
@@ -93,7 +91,6 @@ function ExternalTab({
               <li>Save booking confirmations for easy access during your trip</li>
               <li>Link to custom Google Maps with your saved locations</li>
               <li>Add translation tools specific to your destination</li>
-              <li>Save weather forecasts to help with packing</li>
             </ul>
           </div>
         </div>
@@ -119,9 +116,7 @@ function ExternalTab({
                   <div className="font-medium flex items-center">
                     {service.type === 'Map' && <span className="mr-2">🗺️</span>}
                     {service.type === 'Booking' && <span className="mr-2">🏨</span>}
-                    {service.type === 'Weather' && <span className="mr-2">🌤️</span>}
                     {service.type === 'Translation' && <span className="mr-2">🔤</span>}
-                    {service.type === 'Advisory' && <span className="mr-2">⚠️</span>}
                     {service.type === 'Other' && <span className="mr-2">🔗</span>}
                     {service.type}
                   </div>
@@ -144,26 +139,6 @@ function ExternalTab({
                   )}
                 </div>
               ))}
-            </div>
-          )}
-          
-          {/* Travel Advisory Section */}
-          {getDestinationInfo() && (
-            <div className="mt-6 bg-orange-50 border border-orange-200 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2 text-orange-800 flex items-center">
-                <span className="mr-2">⚠️</span> Travel Advisory
-              </h4>
-              <p className="text-orange-800 mb-3">
-                Always check the latest travel advisories before your trip.
-              </p>
-              <a
-                href={getDestinationInfo().advisoryLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-orange-600 text-white py-2 px-4 rounded inline-block hover:bg-orange-700"
-              >
-                View Advisory for {destination}
-              </a>
             </div>
           )}
         </div>

@@ -76,9 +76,18 @@ function BasicInfoTab({
                 </div>
               )}
             </div>
-            
+            <button
+              onClick={detectLocation}
+              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+              title="Detect my location"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </button>
           </div>
-          <p className="text-xs text-gray-500 mt-1">Enter any city or destination to get real-time information</p>
+          <p className="text-xs text-gray-500 mt-1">Enter any city or destination to get started</p>
           
           {locationError && (
             <p className="text-xs text-red-500 mt-1">{locationError}</p>
@@ -123,16 +132,6 @@ function BasicInfoTab({
           {budget && (
             <p><strong>Budget:</strong> ${budget} (${(budget / calculateDuration(startDate, endDate)).toFixed(2)}/day)</p>
           )}
-          
-          <p className="mt-2 text-blue-600">
-            Destination information available! 
-            <button 
-              onClick={() => setTab('local')}
-              className="ml-2 underline text-blue-500"
-            >
-              View details
-            </button>
-          </p>
         </div>
       )}
     </div>

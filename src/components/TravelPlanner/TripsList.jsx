@@ -15,8 +15,6 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, compareTrips }) {
           </button>
         )}
       </div>
-
-        
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {trips.map(trip => (
               <div key={trip.id} className="bg-white rounded-lg shadow overflow-hidden hover-card">

@@ -5,7 +5,6 @@ import TripPlanner from './TripPlanner';
 import TripsList from './TripsList';
 import TripDetails from './TripDetails';
 import TripComparison from '../TripComparison/TripComparison';
-import destinations from '../../data/destinations';
 
 function TravelPlanner() {
   // View state
@@ -74,11 +73,6 @@ function TravelPlanner() {
   useEffect(() => {
     localStorage.setItem('travelPlannerTrips', JSON.stringify(trips));
   }, [trips]);
-  
-  // Helper function to get destination info
-  function getDestinationInfo() {
-    return destinations[destination] || null;
-  }
   
   // View trip details
   function viewTrip(trip) {
@@ -195,7 +189,6 @@ function TravelPlanner() {
             setServiceUrl={setServiceUrl}
             serviceNote={serviceNote}
             setServiceNote={setServiceNote}
-            getDestinationInfo={getDestinationInfo}
             trips={trips}
             setTrips={setTrips}
             setView={setView}

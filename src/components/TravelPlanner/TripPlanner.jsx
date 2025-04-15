@@ -18,7 +18,7 @@ function TripPlanner({
   setTransportType, transportFrom, setTransportFrom, transportTo, setTransportTo,
   transportPrice, setTransportPrice, photoUrl, setPhotoUrl, photoCaption, 
   setPhotoCaption, serviceType, setServiceType, serviceUrl, setServiceUrl, 
-  serviceNote, setServiceNote, getDestinationInfo, trips, setTrips, setView,
+  serviceNote, setServiceNote, trips, setTrips, setView,
   tripTasks, setTripTasks
 }) {
   // Add a new note
@@ -96,12 +96,13 @@ function TripPlanner({
         destination,
         startDate,
         endDate,
+        budget,
+        budgetBreakdown: {...budgetCategories},
         notes: [...tripNotes],
         tasks: [...tripTasks],
         transports: [...transports],
         photos: [...photos],
         externalServices: [...externalServices],
-        info: getDestinationInfo(),
         created: editMode ? null : new Date().toISOString(),
         lastUpdated: new Date().toISOString()
       };
@@ -224,7 +225,6 @@ function TripPlanner({
           setEndDate={setEndDate}
           budget={budget}
           setBudget={setBudget}
-          getDestinationInfo={getDestinationInfo}
           setTab={setTab}
         />
       )}
@@ -291,7 +291,6 @@ function TripPlanner({
           externalServices={externalServices}
           setExternalServices={setExternalServices}
           addExternalService={addExternalService}
-          getDestinationInfo={getDestinationInfo}
           destination={destination}
         />
       )}
