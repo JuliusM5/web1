@@ -189,45 +189,7 @@ function UserSettings({ onClose }) {
                 <h3 className="text-lg font-medium mb-4">Appearance Settings</h3>
                 
                 <div className="space-y-6">
-                  {/* Theme Setting */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
-                    <div className="flex space-x-4">
-                      <button
-                        className={`px-4 py-2 rounded-lg ${
-                          settings.appearance.theme === 'light'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
-                            : 'bg-gray-100 hover:bg-gray-200'
-                        }`}
-                        onClick={() => handleChange('appearance', 'theme', 'light')}
-                      >
-                        Light
-                      </button>
-                      <button
-                        className={`px-4 py-2 rounded-lg ${
-                          settings.appearance.theme === 'dark'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
-                            : 'bg-gray-100 hover:bg-gray-200'
-                        }`}
-                        onClick={() => handleChange('appearance', 'theme', 'dark')}
-                      >
-                        Dark
-                      </button>
-                      <button
-                        className={`px-4 py-2 rounded-lg ${
-                          settings.appearance.theme === 'system'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
-                            : 'bg-gray-100 hover:bg-gray-200'
-                        }`}
-                        onClick={() => handleChange('appearance', 'theme', 'system')}
-                      >
-                        System
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Choose light or dark mode, or let your system preferences decide.
-                    </p>
-                  </div>
+                  
                   
                   {/* Font Size Setting */}
                   <div>

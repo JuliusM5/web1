@@ -1,4 +1,4 @@
-import { generateTripPDF, generatePrintableHTML } from './pdfGenerator';
+import { generateTripPdf as generateTripPDF } from './enhancedPdfGenerator';
 
 // Calculate trip duration in days
 export function calculateDuration(startDate, endDate) {
@@ -36,20 +36,14 @@ export function shareTrip(trip, method) {
 }
 
 export function exportTripToPDF(trip) {
-  // Generate the PDF content structure
-  const pdfContent = generateTripPDF(trip);
-  
-  // In a real app, this would create and download a PDF
-  // For now, we'll simulate it by opening the printable HTML in a new window
-  const printableHTML = generatePrintableHTML(trip);
-  
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(printableHTML);
-  printWindow.document.close();
-  
-  alert(`Trip to ${trip.destination} is ready for printing or saving as PDF.`);
-  
-  return pdfContent;
+  // We're now using the enhanced PDF generator
+  // This is a simple pass-through to the enhanced version
+  import('./enhancedPdfGenerator').then(module => {
+    module.exportTripToPDF(trip);
+  }).catch(error => {
+    console.error('Error exporting trip to PDF:', error);
+    alert(`Failed to export trip to ${trip.destination} as PDF. Please try again.`);
+  });
 }
 
 export function emailTripDetails(trip, email) {

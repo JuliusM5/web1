@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../UI/EnhancedHeader';
+import Header from '../UI/Header';
 import Dashboard from '../Dashboard/Dashboard';
 import TripPlanner from './TripPlanner';
 import TripsList from './TripsList';

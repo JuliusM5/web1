@@ -1,7 +1,7 @@
 // Default application settings
 export const DEFAULT_SETTINGS = {
     appearance: {
-      theme: 'light',
+      
       fontSize: 'medium',
       colorScheme: 'blue',
     },
@@ -49,21 +49,9 @@ export const DEFAULT_SETTINGS = {
   
   // Apply theme settings to the document
   export const applyThemeSettings = (settings) => {
-    const { theme, fontSize, colorScheme } = settings.appearance;
+    const { fontSize, colorScheme } = settings.appearance;
     
-    // Apply theme (light/dark mode)
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else if (theme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else if (theme === 'system') {
-      // Check system preference
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
+   
     
     // Apply font size
     document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
