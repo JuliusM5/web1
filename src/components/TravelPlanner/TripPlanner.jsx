@@ -6,6 +6,7 @@ import PhotosTab from '../PlannerTabs/PhotosTab';
 import NotesTab from '../PlannerTabs/NotesTab';
 import TasksTab from '../PlannerTabs/TasksTab';
 import ExternalTab from '../PlannerTabs/ExternalTab';
+import PackingTab from '../PlannerTabs/PackingTab'; 
 
 
 function TripPlanner({ 
@@ -169,7 +170,7 @@ function TripPlanner({
       </h2>
       
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6 overflow-x-auto pb-2">
         <button 
           onClick={() => setTab('basic')}
           className={`px-3 py-1 rounded ${tab === 'basic' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
@@ -199,6 +200,12 @@ function TripPlanner({
           className={`px-3 py-1 rounded ${tab === 'tasks' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
           Tasks
+        </button>
+        <button 
+          onClick={() => setTab('packing')}
+          className={`px-3 py-1 rounded ${tab === 'packing' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        >
+          Packing
         </button>
         <button 
           onClick={() => setTab('notes')}
@@ -299,6 +306,17 @@ function TripPlanner({
         <TasksTab 
           tripTasks={tripTasks}
           setTripTasks={setTripTasks}
+          startDate={startDate}
+          endDate={endDate}
+        />
+      )}
+      
+      {/* New Packing Tab */}
+      {tab === 'packing' && (
+        <PackingTab
+          tripTasks={tripTasks}
+          setTripTasks={setTripTasks}
+          destination={destination}
           startDate={startDate}
           endDate={endDate}
         />
