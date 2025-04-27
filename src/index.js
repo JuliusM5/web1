@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './styles/themes.css'; // Add our new themes CSS file
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 

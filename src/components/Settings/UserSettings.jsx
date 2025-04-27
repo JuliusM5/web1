@@ -113,7 +113,7 @@ function UserSettings({ onClose }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-        <div className="p-4 bg-blue-600 text-white rounded-t-lg flex justify-between items-center">
+        <div className="p-4 bg-primary text-white rounded-t-lg flex justify-between items-center">
           <h2 className="text-xl font-semibold">User Settings</h2>
           <button
             onClick={onClose}
@@ -131,7 +131,7 @@ function UserSettings({ onClose }) {
             <nav className="space-y-1">
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
-                  activeTab === 'appearance' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'
+                  activeTab === 'appearance' ? 'bg-primary-light text-primary' : 'hover:bg-gray-200'
                 }`}
                 onClick={() => setActiveTab('appearance')}
               >
@@ -139,7 +139,7 @@ function UserSettings({ onClose }) {
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
-                  activeTab === 'preferences' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'
+                  activeTab === 'preferences' ? 'bg-primary-light text-primary' : 'hover:bg-gray-200'
                 }`}
                 onClick={() => setActiveTab('preferences')}
               >
@@ -147,7 +147,7 @@ function UserSettings({ onClose }) {
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
-                  activeTab === 'notifications' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'
+                  activeTab === 'notifications' ? 'bg-primary-light text-primary' : 'hover:bg-gray-200'
                 }`}
                 onClick={() => setActiveTab('notifications')}
               >
@@ -155,7 +155,7 @@ function UserSettings({ onClose }) {
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
-                  activeTab === 'privacy' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'
+                  activeTab === 'privacy' ? 'bg-primary-light text-primary' : 'hover:bg-gray-200'
                 }`}
                 onClick={() => setActiveTab('privacy')}
               >
@@ -163,7 +163,7 @@ function UserSettings({ onClose }) {
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
-                  activeTab === 'data' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'
+                  activeTab === 'data' ? 'bg-primary-light text-primary' : 'hover:bg-gray-200'
                 }`}
                 onClick={() => setActiveTab('data')}
               >
@@ -198,7 +198,7 @@ function UserSettings({ onClose }) {
                       <button
                         className={`px-4 py-2 rounded-lg ${
                           settings.appearance.fontSize === 'small'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
+                            ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                         onClick={() => handleChange('appearance', 'fontSize', 'small')}
@@ -208,7 +208,7 @@ function UserSettings({ onClose }) {
                       <button
                         className={`px-4 py-2 rounded-lg ${
                           settings.appearance.fontSize === 'medium'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
+                            ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                         onClick={() => handleChange('appearance', 'fontSize', 'medium')}
@@ -218,7 +218,7 @@ function UserSettings({ onClose }) {
                       <button
                         className={`px-4 py-2 rounded-lg ${
                           settings.appearance.fontSize === 'large'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
+                            ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                         onClick={() => handleChange('appearance', 'fontSize', 'large')}
@@ -237,7 +237,7 @@ function UserSettings({ onClose }) {
                           key={scheme.id}
                           className={`p-3 rounded-lg flex items-center space-x-2 ${
                             settings.appearance.colorScheme === scheme.id
-                              ? 'ring-2 ring-blue-500 bg-blue-50'
+                              ? 'ring-2 ring-primary bg-primary-light'
                               : 'bg-gray-50 hover:bg-gray-100'
                           }`}
                           onClick={() => handleChange('appearance', 'colorScheme', scheme.id)}
@@ -313,7 +313,7 @@ function UserSettings({ onClose }) {
                       <button
                         className={`px-4 py-2 rounded-lg ${
                           settings.preferences.distanceUnit === 'miles'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
+                            ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                         onClick={() => handleChange('preferences', 'distanceUnit', 'miles')}
@@ -323,7 +323,7 @@ function UserSettings({ onClose }) {
                       <button
                         className={`px-4 py-2 rounded-lg ${
                           settings.preferences.distanceUnit === 'kilometers'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
+                            ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                         onClick={() => handleChange('preferences', 'distanceUnit', 'kilometers')}
@@ -340,7 +340,7 @@ function UserSettings({ onClose }) {
                       <button
                         className={`px-4 py-2 rounded-lg ${
                           settings.preferences.temperatureUnit === 'fahrenheit'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
+                            ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                         onClick={() => handleChange('preferences', 'temperatureUnit', 'fahrenheit')}
@@ -350,7 +350,7 @@ function UserSettings({ onClose }) {
                       <button
                         className={`px-4 py-2 rounded-lg ${
                           settings.preferences.temperatureUnit === 'celsius'
-                            ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
+                            ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                         onClick={() => handleChange('preferences', 'temperatureUnit', 'celsius')}
@@ -401,7 +401,7 @@ function UserSettings({ onClose }) {
                           checked={settings.notifications.tripReminders}
                           onChange={(e) => handleChange('notifications', 'tripReminders', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.tripReminders ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.tripReminders ? 'bg-primary' : 'bg-gray-300'}`}></div>
                         <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.notifications.tripReminders ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
@@ -420,7 +420,7 @@ function UserSettings({ onClose }) {
                           checked={settings.notifications.taskReminders}
                           onChange={(e) => handleChange('notifications', 'taskReminders', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.taskReminders ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.taskReminders ? 'bg-primary' : 'bg-gray-300'}`}></div>
                         <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.notifications.taskReminders ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
@@ -439,7 +439,7 @@ function UserSettings({ onClose }) {
                           checked={settings.notifications.budgetAlerts}
                           onChange={(e) => handleChange('notifications', 'budgetAlerts', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.budgetAlerts ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.budgetAlerts ? 'bg-primary' : 'bg-gray-300'}`}></div>
                         <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.notifications.budgetAlerts ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
@@ -458,7 +458,7 @@ function UserSettings({ onClose }) {
                           checked={settings.notifications.emailNotifications}
                           onChange={(e) => handleChange('notifications', 'emailNotifications', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.emailNotifications ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.emailNotifications ? 'bg-primary' : 'bg-gray-300'}`}></div>
                         <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.notifications.emailNotifications ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
@@ -492,7 +492,7 @@ function UserSettings({ onClose }) {
                           checked={settings.privacy.shareLocationData}
                           onChange={(e) => handleChange('privacy', 'shareLocationData', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.privacy.shareLocationData ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${settings.privacy.shareLocationData ? 'bg-primary' : 'bg-gray-300'}`}></div>
                         <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.privacy.shareLocationData ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
@@ -511,7 +511,7 @@ function UserSettings({ onClose }) {
                           checked={settings.privacy.collectAnalytics}
                           onChange={(e) => handleChange('privacy', 'collectAnalytics', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.privacy.collectAnalytics ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${settings.privacy.collectAnalytics ? 'bg-primary' : 'bg-gray-300'}`}></div>
                         <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.privacy.collectAnalytics ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
@@ -530,7 +530,7 @@ function UserSettings({ onClose }) {
                           checked={settings.privacy.autoSaveEnabled}
                           onChange={(e) => handleChange('privacy', 'autoSaveEnabled', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.privacy.autoSaveEnabled ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${settings.privacy.autoSaveEnabled ? 'bg-primary' : 'bg-gray-300'}`}></div>
                         <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.privacy.autoSaveEnabled ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
@@ -552,7 +552,7 @@ function UserSettings({ onClose }) {
                     </p>
                     <button
                       onClick={handleExportData}
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
                     >
                       Export All Data
                     </button>
@@ -612,7 +612,7 @@ function UserSettings({ onClose }) {
         <div className="p-4 border-t border-gray-200 flex justify-end">
           <button
             onClick={saveAndClose}
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-6 py-2 bg-primary text-white rounded hover:bg-primary-dark"
           >
             Close
           </button>

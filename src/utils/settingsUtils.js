@@ -1,242 +1,279 @@
 // Default application settings
 export const DEFAULT_SETTINGS = {
-    appearance: {
-      
-      fontSize: 'medium',
-      colorScheme: 'blue',
-    },
-    preferences: {
-      defaultCurrency: 'USD',
-      dateFormat: 'MM/DD/YYYY',
-      distanceUnit: 'miles',
-      temperatureUnit: 'fahrenheit',
-      language: 'en-US',
-    },
-    notifications: {
-      tripReminders: true,
-      taskReminders: true,
-      budgetAlerts: true,
-      emailNotifications: false,
-    },
-    privacy: {
-      shareLocationData: true,
-      collectAnalytics: true,
-      autoSaveEnabled: true,
-    }
+  appearance: {
+    fontSize: 'medium',
+    colorScheme: 'blue',
+  },
+  preferences: {
+    defaultCurrency: 'USD',
+    dateFormat: 'MM/DD/YYYY',
+    distanceUnit: 'miles',
+    temperatureUnit: 'fahrenheit',
+    language: 'en-US',
+  },
+  notifications: {
+    tripReminders: true,
+    taskReminders: true,
+    budgetAlerts: true,
+    emailNotifications: false,
+  },
+  privacy: {
+    shareLocationData: true,
+    collectAnalytics: true,
+    autoSaveEnabled: true,
+  }
+};
+
+// Get current user settings (or defaults if none exist)
+export const getUserSettings = () => {
+  try {
+    const savedSettings = localStorage.getItem('userSettings');
+    return savedSettings ? JSON.parse(savedSettings) : DEFAULT_SETTINGS;
+  } catch (error) {
+    console.error("Error loading user settings:", error);
+    return DEFAULT_SETTINGS;
+  }
+};
+
+// Save user settings
+export const saveUserSettings = (settings) => {
+  try {
+    localStorage.setItem('userSettings', JSON.stringify(settings));
+    return true;
+  } catch (error) {
+    console.error("Error saving user settings:", error);
+    return false;
+  }
+};
+
+// Apply theme settings to the document
+export const applyThemeSettings = (settings) => {
+  const { fontSize, colorScheme } = settings.appearance;
+  
+  // Apply font size
+  document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
+  if (fontSize === 'small') {
+    document.documentElement.classList.add('text-sm');
+  } else if (fontSize === 'medium') {
+    document.documentElement.classList.add('text-base');
+  } else if (fontSize === 'large') {
+    document.documentElement.classList.add('text-lg');
+  }
+  
+  // Apply color scheme
+  // Remove any existing color scheme classes
+  const colorSchemeClasses = [
+    'theme-blue', 'theme-purple', 'theme-green', 
+    'theme-red', 'theme-amber', 'theme-indigo'
+  ];
+  document.documentElement.classList.remove(...colorSchemeClasses);
+  document.documentElement.classList.add(`theme-${colorScheme}`);
+  
+  // Set a custom property to track current theme
+  document.documentElement.style.setProperty('--current-theme', colorScheme);
+  
+  // Update favicon color (optional enhancement)
+  updateFaviconColor(colorScheme);
+  
+  return true;
+};
+
+// Function to update favicon color based on theme
+const updateFaviconColor = (colorScheme) => {
+  const themeColors = {
+    'blue': '#3b82f6',
+    'purple': '#8b5cf6',
+    'green': '#10b981',
+    'red': '#ef4444',
+    'amber': '#f59e0b',
+    'indigo': '#6366f1'
   };
   
-  // Get current user settings (or defaults if none exist)
-  export const getUserSettings = () => {
-    try {
-      const savedSettings = localStorage.getItem('userSettings');
-      return savedSettings ? JSON.parse(savedSettings) : DEFAULT_SETTINGS;
-    } catch (error) {
-      console.error("Error loading user settings:", error);
-      return DEFAULT_SETTINGS;
+  const color = themeColors[colorScheme] || themeColors.blue;
+  
+  // Look for existing favicon
+  const existingFavicon = document.querySelector('link[rel="icon"]');
+  
+  if (existingFavicon) {
+    // If it's a simple .ico file, we can't modify it
+    if (existingFavicon.href.endsWith('.ico')) {
+      console.log('Cannot update .ico favicon color');
+      return;
     }
+    
+    // For SVG favicons, we could potentially update the color
+    // This would require a more complex implementation
+    
+    // For simplicity, we'll just log that we would update the favicon
+    console.log(`Favicon would be updated to ${colorScheme} theme with color ${color}`);
+  }
+};
+
+// Format date according to user preferences
+export const formatDate = (dateString, settings) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  const format = settings?.preferences?.dateFormat || 'MM/DD/YYYY';
+  
+  switch (format) {
+    case 'DD/MM/YYYY':
+      return `${padZero(date.getDate())}/${padZero(date.getMonth() + 1)}/${date.getFullYear()}`;
+    case 'YYYY-MM-DD':
+      return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
+    case 'MMMM D, YYYY':
+      return `${getMonthName(date.getMonth())} ${date.getDate()}, ${date.getFullYear()}`;
+    case 'D MMMM YYYY':
+      return `${date.getDate()} ${getMonthName(date.getMonth())} ${date.getFullYear()}`;
+    case 'MM/DD/YYYY':
+    default:
+      return `${padZero(date.getMonth() + 1)}/${padZero(date.getDate())}/${date.getFullYear()}`;
+  }
+};
+
+// Format currency according to user preferences
+export const formatCurrency = (amount, settings) => {
+  const currencyCode = settings?.preferences?.defaultCurrency || 'USD';
+  
+  // Simple mapping of currency codes to symbols
+  const currencySymbols = {
+    'USD': '$',
+    'EUR': '€',
+    'GBP': '£',
+    'JPY': '¥',
+    'CAD': 'CA$',
+    'AUD': 'AU$',
+    'CNY': '¥',
+    'INR': '₹',
   };
   
-  // Save user settings
-  export const saveUserSettings = (settings) => {
+  const symbol = currencySymbols[currencyCode] || currencyCode;
+  
+  // Format the amount with 2 decimal places (except for JPY)
+  let formattedAmount;
+  if (currencyCode === 'JPY' || currencyCode === 'CNY') {
+    formattedAmount = Math.round(amount).toLocaleString();
+  } else {
+    formattedAmount = Number(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+  }
+  
+  return `${symbol}${formattedAmount}`;
+};
+
+// Convert temperature according to user preferences
+export const formatTemperature = (celsius, settings) => {
+  const unit = settings?.preferences?.temperatureUnit || 'fahrenheit';
+  
+  if (unit === 'celsius') {
+    return `${Math.round(celsius)}°C`;
+  } else {
+    // Convert to Fahrenheit
+    const fahrenheit = (celsius * 9/5) + 32;
+    return `${Math.round(fahrenheit)}°F`;
+  }
+};
+
+// Convert distance according to user preferences
+export const formatDistance = (kilometers, settings) => {
+  const unit = settings?.preferences?.distanceUnit || 'miles';
+  
+  if (unit === 'kilometers') {
+    return `${kilometers.toFixed(1)} km`;
+  } else {
+    // Convert to miles
+    const miles = kilometers * 0.621371;
+    return `${miles.toFixed(1)} mi`;
+  }
+};
+
+// Helper functions
+const padZero = (num) => {
+  return num.toString().padStart(2, '0');
+};
+
+const getMonthName = (monthIndex) => {
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return months[monthIndex];
+};
+
+// Reset all app data (for privacy clear option)
+export const clearAllAppData = () => {
+  if (window.confirm("Are you sure you want to clear ALL data? This will delete all your trips, templates, and settings. This action cannot be undone.")) {
     try {
-      localStorage.setItem('userSettings', JSON.stringify(settings));
+      localStorage.clear();
       return true;
     } catch (error) {
-      console.error("Error saving user settings:", error);
+      console.error("Error clearing app data:", error);
       return false;
     }
-  };
-  
-  // Apply theme settings to the document
-  export const applyThemeSettings = (settings) => {
-    const { fontSize, colorScheme } = settings.appearance;
-    
-   
-    
-    // Apply font size
-    document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
-    if (fontSize === 'small') {
-      document.documentElement.classList.add('text-sm');
-    } else if (fontSize === 'medium') {
-      document.documentElement.classList.add('text-base');
-    } else if (fontSize === 'large') {
-      document.documentElement.classList.add('text-lg');
-    }
-    
-    // Apply color scheme
-    // Remove any existing color scheme classes
-    const colorSchemeClasses = ['theme-blue', 'theme-purple', 'theme-green', 'theme-red', 'theme-amber', 'theme-indigo'];
-    document.documentElement.classList.remove(...colorSchemeClasses);
-    document.documentElement.classList.add(`theme-${colorScheme}`);
-    
-    return true;
-  };
-  
-  // Format date according to user preferences
-  export const formatDate = (dateString, settings) => {
-    if (!dateString) return '';
-    
-    const date = new Date(dateString);
-    const format = settings?.preferences?.dateFormat || 'MM/DD/YYYY';
-    
-    switch (format) {
-      case 'DD/MM/YYYY':
-        return `${padZero(date.getDate())}/${padZero(date.getMonth() + 1)}/${date.getFullYear()}`;
-      case 'YYYY-MM-DD':
-        return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
-      case 'MMMM D, YYYY':
-        return `${getMonthName(date.getMonth())} ${date.getDate()}, ${date.getFullYear()}`;
-      case 'D MMMM YYYY':
-        return `${date.getDate()} ${getMonthName(date.getMonth())} ${date.getFullYear()}`;
-      case 'MM/DD/YYYY':
-      default:
-        return `${padZero(date.getMonth() + 1)}/${padZero(date.getDate())}/${date.getFullYear()}`;
-    }
-  };
-  
-  // Format currency according to user preferences
-  export const formatCurrency = (amount, settings) => {
-    const currencyCode = settings?.preferences?.defaultCurrency || 'USD';
-    
-    // Simple mapping of currency codes to symbols
-    const currencySymbols = {
-      'USD': '$',
-      'EUR': '€',
-      'GBP': '£',
-      'JPY': '¥',
-      'CAD': 'CA$',
-      'AUD': 'AU$',
-      'CNY': '¥',
-      'INR': '₹',
+  }
+  return false;
+};
+
+// Export all user data as JSON
+export const exportUserData = () => {
+  try {
+    const data = {
+      trips: JSON.parse(localStorage.getItem('travelPlannerTrips') || '[]'),
+      templates: JSON.parse(localStorage.getItem('tripTemplates') || '[]'),
+      settings: JSON.parse(localStorage.getItem('userSettings') || '{}')
     };
     
-    const symbol = currencySymbols[currencyCode] || currencyCode;
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
     
-    // Format the amount with 2 decimal places (except for JPY)
-    let formattedAmount;
-    if (currencyCode === 'JPY' || currencyCode === 'CNY') {
-      formattedAmount = Math.round(amount).toLocaleString();
-    } else {
-      formattedAmount = Number(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-    }
+    const exportFileName = `travelease_backup_${new Date().toISOString().split('T')[0]}.json`;
     
-    return `${symbol}${formattedAmount}`;
-  };
-  
-  // Convert temperature according to user preferences
-  export const formatTemperature = (celsius, settings) => {
-    const unit = settings?.preferences?.temperatureUnit || 'fahrenheit';
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileName);
+    linkElement.click();
     
-    if (unit === 'celsius') {
-      return `${Math.round(celsius)}°C`;
-    } else {
-      // Convert to Fahrenheit
-      const fahrenheit = (celsius * 9/5) + 32;
-      return `${Math.round(fahrenheit)}°F`;
-    }
-  };
-  
-  // Convert distance according to user preferences
-  export const formatDistance = (kilometers, settings) => {
-    const unit = settings?.preferences?.distanceUnit || 'miles';
-    
-    if (unit === 'kilometers') {
-      return `${kilometers.toFixed(1)} km`;
-    } else {
-      // Convert to miles
-      const miles = kilometers * 0.621371;
-      return `${miles.toFixed(1)} mi`;
-    }
-  };
-  
-  // Helper functions
-  const padZero = (num) => {
-    return num.toString().padStart(2, '0');
-  };
-  
-  const getMonthName = (monthIndex) => {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return months[monthIndex];
-  };
-  
-  // Reset all app data (for privacy clear option)
-  export const clearAllAppData = () => {
-    if (window.confirm("Are you sure you want to clear ALL data? This will delete all your trips, templates, and settings. This action cannot be undone.")) {
-      try {
-        localStorage.clear();
-        return true;
-      } catch (error) {
-        console.error("Error clearing app data:", error);
-        return false;
-      }
-    }
+    return true;
+  } catch (error) {
+    console.error("Error exporting user data:", error);
     return false;
-  };
-  
-  // Export all user data as JSON
-  export const exportUserData = () => {
-    try {
-      const data = {
-        trips: JSON.parse(localStorage.getItem('travelPlannerTrips') || '[]'),
-        templates: JSON.parse(localStorage.getItem('tripTemplates') || '[]'),
-        settings: JSON.parse(localStorage.getItem('userSettings') || '{}')
+  }
+};
+
+// Import user data from JSON file
+export const importUserData = async (file) => {
+  try {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result);
+          
+          // Validate the imported data has expected structure
+          if (!data.trips || !data.templates || !data.settings) {
+            reject(new Error("Invalid data format. The file does not contain valid TravelEase data."));
+            return;
+          }
+          
+          // Import the data
+          localStorage.setItem('travelPlannerTrips', JSON.stringify(data.trips));
+          localStorage.setItem('tripTemplates', JSON.stringify(data.templates));
+          localStorage.setItem('userSettings', JSON.stringify(data.settings));
+          
+          resolve(true);
+        } catch (error) {
+          reject(new Error("Failed to parse the imported file: " + error.message));
+        }
       };
       
-      const dataStr = JSON.stringify(data, null, 2);
-      const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+      reader.onerror = () => {
+        reject(new Error("Failed to read the file"));
+      };
       
-      const exportFileName = `travelease_backup_${new Date().toISOString().split('T')[0]}.json`;
-      
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileName);
-      linkElement.click();
-      
-      return true;
-    } catch (error) {
-      console.error("Error exporting user data:", error);
-      return false;
-    }
-  };
-  
-  // Import user data from JSON file
-  export const importUserData = async (file) => {
-    try {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        
-        reader.onload = (event) => {
-          try {
-            const data = JSON.parse(event.target.result);
-            
-            // Validate the imported data has expected structure
-            if (!data.trips || !data.templates || !data.settings) {
-              reject(new Error("Invalid data format. The file does not contain valid TravelEase data."));
-              return;
-            }
-            
-            // Import the data
-            localStorage.setItem('travelPlannerTrips', JSON.stringify(data.trips));
-            localStorage.setItem('tripTemplates', JSON.stringify(data.templates));
-            localStorage.setItem('userSettings', JSON.stringify(data.settings));
-            
-            resolve(true);
-          } catch (error) {
-            reject(new Error("Failed to parse the imported file: " + error.message));
-          }
-        };
-        
-        reader.onerror = () => {
-          reject(new Error("Failed to read the file"));
-        };
-        
-        reader.readAsText(file);
-      });
-    } catch (error) {
-      console.error("Error importing user data:", error);
-      return false;
-    }
-  };
+      reader.readAsText(file);
+    });
+  } catch (error) {
+    console.error("Error importing user data:", error);
+    return false;
+  }
+};

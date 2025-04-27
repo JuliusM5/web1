@@ -1,0 +1,135 @@
+/* Theme color variables */
+:root {
+    /* Default theme (blue) */
+    --primary-color: #3b82f6;
+    --primary-light: #93c5fd;
+    --primary-dark: #2563eb;
+    --accent-color: #f59e0b;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --info-color: #6366f1;
+    --text-on-primary: #ffffff;
+  }
+  
+  /* Theme-specific variables */
+  .theme-blue {
+    --primary-color: #3b82f6;
+    --primary-light: #93c5fd;
+    --primary-dark: #2563eb;
+    --accent-color: #f59e0b;
+  }
+  
+  .theme-purple {
+    --primary-color: #8b5cf6;
+    --primary-light: #c4b5fd;
+    --primary-dark: #6d28d9;
+    --accent-color: #10b981;
+  }
+  
+  .theme-green {
+    --primary-color: #10b981;
+    --primary-light: #6ee7b7;
+    --primary-dark: #059669;
+    --accent-color: #6366f1;
+  }
+  
+  .theme-red {
+    --primary-color: #ef4444;
+    --primary-light: #fca5a5;
+    --primary-dark: #dc2626;
+    --accent-color: #10b981;
+  }
+  
+  .theme-amber {
+    --primary-color: #f59e0b;
+    --primary-light: #fcd34d;
+    --primary-dark: #d97706;
+    --accent-color: #3b82f6;
+  }
+  
+  .theme-indigo {
+    --primary-color: #6366f1;
+    --primary-light: #a5b4fc;
+    --primary-dark: #4f46e5;
+    --accent-color: #f59e0b;
+  }
+  
+  /* Apply theme colors to UI elements */
+  .bg-primary {
+    background-color: var(--primary-color) !important;
+  }
+  
+  .bg-primary-light {
+    background-color: var(--primary-light) !important;
+  }
+  
+  .bg-primary-dark {
+    background-color: var(--primary-dark) !important;
+  }
+  
+  .text-primary {
+    color: var(--primary-color) !important;
+  }
+  
+  .border-primary {
+    border-color: var(--primary-color) !important;
+  }
+  
+  /* Button with theme color */
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  /* Header with theme color */
+  header.bg-blue-600 {
+    background-color: var(--primary-color);
+  }
+  
+  /* Update existing blue elements with theme variables */
+  .bg-blue-500, .bg-blue-600, .bg-blue-700 {
+    background-color: var(--primary-color);
+  }
+  
+  .bg-blue-50, .bg-blue-100, .bg-blue-200 {
+    background-color: var(--primary-light);
+  }
+  
+  .text-blue-500, .text-blue-600, .text-blue-700 {
+    color: var(--primary-color);
+  }
+  
+  .text-blue-800 {
+    color: var(--primary-dark);
+  }
+  
+  .border-blue-500, .border-blue-600, .border-blue-700 {
+    border-color: var(--primary-color);
+  }
+  
+  .border-blue-200, .border-blue-300 {
+    border-color: var(--primary-light);
+  }
+  
+  /* Ring focus style */
+  .ring-blue-500, .focus\:ring-blue-500:focus {
+    --tw-ring-color: var(--primary-color);
+  }
+  
+  /* Hover style overrides */
+  .hover\:bg-blue-600:hover, .hover\:bg-blue-700:hover {
+    background-color: var(--primary-dark) !important;
+  }
+  
+  .hover\:text-blue-600:hover, .hover\:text-blue-700:hover {
+    color: var(--primary-color) !important;
+  }
+  
+  .hover\:border-blue-500:hover, .hover\:border-blue-600:hover {
+    border-color: var(--primary-color) !important;
+  }
