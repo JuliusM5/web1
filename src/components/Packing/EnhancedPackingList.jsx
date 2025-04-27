@@ -75,8 +75,8 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
   
   // Add recommended items to packing list
   const addRecommendedItems = (items) => {
-    const newTasks = items.map(item => ({
-      id: Date.now() + Math.floor(Math.random() * 1000),
+    const newTasks = items.map((item, index) => ({
+      id: Date.now() + index, // Use the index to ensure uniqueness
       text: item.name,
       category: 'packing',
       subcategory: item.category,

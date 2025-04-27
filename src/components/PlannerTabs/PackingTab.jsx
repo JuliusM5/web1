@@ -102,4 +102,5 @@ function PackingTab({
   );
 }
 
+// Add default export
 export default PackingTab;

@@ -150,7 +150,7 @@ const isLocalhost = Boolean(
   // Function to trigger background sync
   export function triggerSync() {
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
-      navigator.serviceWorker.ready
+      return navigator.serviceWorker.ready
         .then((registration) => {
           // Register a sync and pass the "sync-trips" tag
           return registration.sync.register('sync-trips')
@@ -160,14 +160,20 @@ const isLocalhost = Boolean(
             })
             .catch(err => {
               console.error('Background sync registration failed:', err);
+              manualSync(); // Fallback to manual sync on error
               return false;
             });
+        })
+        .catch(err => {
+          console.error('Service worker not ready:', err);
+          manualSync(); // Fallback to manual sync on error
+          return false;
         });
     } else {
       console.log('Background sync not supported');
       // Manual sync fallback for browsers that don't support background sync
       manualSync();
-      return false;
+      return Promise.resolve(false);
     }
   }
   
