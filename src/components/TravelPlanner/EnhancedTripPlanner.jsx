@@ -11,8 +11,15 @@ import TemplateManager from '../TripTemplates/TemplateManager';
 import TemplateSelector from '../TripTemplates/TemplateSelector';
 import { useSettings } from '../../context/SettingsContext';
 import InteractiveCalendar from '../Calendar/InteractiveCalendar';
+import MobileOptimizedDashboard from '../Dashboard/MobileOptimizedDashboard';
+import MobileOptimizedTripDetails from './MobileOptimizedTripDetails';
+import { useDeviceDetection } from '../../utils/deviceDetection';
 
-function EnhancedTripPlanner() {
+function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings }) {
+  // Get device info for responsive design
+  const deviceInfo = useDeviceDetection();
+  const isMobile = deviceInfo.isMobile;
+  
   // Get settings from context
   const { settings } = useSettings();
   
@@ -22,7 +29,6 @@ function EnhancedTripPlanner() {
   const [editMode, setEditMode] = useState(false);
   const [currentTripId, setCurrentTripId] = useState(null);
   const [showComparison, setShowComparison] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [showTemplateManager, setShowTemplateManager] = useState(false);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   
@@ -245,7 +251,7 @@ function EnhancedTripPlanner() {
         view={view} 
         setView={setView} 
         onNewTrip={handleNewTrip}
-        onOpenSettings={() => setShowSettings(true)}
+        onOpenSettings={onOpenSettings}
         onOpenTemplates={() => setShowTemplateManager(true)}
       />
       
@@ -254,12 +260,6 @@ function EnhancedTripPlanner() {
           <EnhancedTripComparison 
             trips={trips}
             closeTripComparison={() => setShowComparison(false)}
-          />
-        )}
-        
-        {showSettings && (
-          <UserSettings 
-            onClose={() => setShowSettings(false)}
           />
         )}
         
@@ -282,28 +282,37 @@ function EnhancedTripPlanner() {
           />
         )}
         
-        {!showComparison && !showSettings && !showTemplateManager && !showTemplateSelector && view === 'dashboard' && (
-          <Dashboard 
-            trips={trips}
-            viewTrip={viewTrip}
-            setView={setView}
-            onNewTrip={handleNewTrip}
-            userSettings={settings}
-            calendarComponent={
-              <InteractiveCalendar 
-                startDate={startDate}
-                endDate={endDate}
-                events={tripTasks}
-                onDateClick={() => {}}
-                onAddEvent={handleAddCalendarEvent}
-                onUpdateEvent={handleUpdateCalendarEvent}
-                onDeleteEvent={handleDeleteCalendarEvent}
-              />
-            }
-          />
+        {!showComparison && !showTemplateManager && !showTemplateSelector && view === 'dashboard' && (
+          isMobile ? (
+            <MobileOptimizedDashboard
+              trips={trips}
+              viewTrip={viewTrip}
+              onNewTrip={handleNewTrip}
+              userSettings={settings}
+            />
+          ) : (
+            <Dashboard 
+              trips={trips}
+              viewTrip={viewTrip}
+              setView={setView}
+              onNewTrip={handleNewTrip}
+              userSettings={settings}
+              calendarComponent={
+                <InteractiveCalendar 
+                  startDate={startDate}
+                  endDate={endDate}
+                  events={tripTasks}
+                  onDateClick={() => {}}
+                  onAddEvent={handleAddCalendarEvent}
+                  onUpdateEvent={handleUpdateCalendarEvent}
+                  onDeleteEvent={handleDeleteCalendarEvent}
+                />
+              }
+            />
+          )
         )}
         
-        {!showComparison && !showSettings && !showTemplateManager && !showTemplateSelector && view === 'planner' && (
+        {!showComparison && !showTemplateManager && !showTemplateSelector && view === 'planner' && (
           <TripPlanner 
             tab={tab}
             setTab={setTab}
@@ -363,7 +372,7 @@ function EnhancedTripPlanner() {
           />
         )}
         
-        {!showComparison && !showSettings && !showTemplateManager && !showTemplateSelector && view === 'trips' && (
+        {!showComparison && !showTemplateManager && !showTemplateSelector && view === 'trips' && (
           <TripsList 
             trips={trips}
             viewTrip={viewTrip}
@@ -376,42 +385,55 @@ function EnhancedTripPlanner() {
           />
         )}
         
-        {!showComparison && !showSettings && !showTemplateManager && !showTemplateSelector && view === 'tripDetails' && selectedTrip && (
-          <TripDetails 
-            trip={selectedTrip}
-            editTrip={editTrip}
-            closeTrip={closeTrip}
-            shareEmail={shareEmail}
-            setShareEmail={setShareEmail}
-            userSettings={settings}
-          />
+        {!showComparison && !showTemplateManager && !showTemplateSelector && view === 'tripDetails' && selectedTrip && (
+          isMobile ? (
+            <MobileOptimizedTripDetails
+              trip={selectedTrip}
+              editTrip={editTrip}
+              closeTrip={closeTrip}
+              shareEmail={shareEmail}
+              setShareEmail={setShareEmail}
+              userSettings={settings}
+            />
+          ) : (
+            <TripDetails 
+              trip={selectedTrip}
+              editTrip={editTrip}
+              closeTrip={closeTrip}
+              shareEmail={shareEmail}
+              setShareEmail={setShareEmail}
+              userSettings={settings}
+            />
+          )
         )}
       </main>
       
       {/* Footer with settings shortcut */}
-      <footer className="bg-gray-800 text-white p-4 mt-12">
-        <div className="container mx-auto flex justify-between items-center">
-          <div>
-            <h3 className="text-lg font-bold">TravelEase</h3>
-            <p className="text-sm text-gray-400">Plan your trips with ease</p>
+      {!isMobile && (
+        <footer className="bg-gray-800 text-white p-4 mt-12">
+          <div className="container mx-auto flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-bold">TravelEase</h3>
+              <p className="text-sm text-gray-400">Plan your trips with ease</p>
+            </div>
+            
+            <div className="flex space-x-4">
+              <button
+                onClick={onOpenSettings}
+                className="text-gray-300 hover:text-white"
+              >
+                Settings
+              </button>
+              <button
+                onClick={() => setShowTemplateManager(true)}
+                className="text-gray-300 hover:text-white"
+              >
+                Templates
+              </button>
+            </div>
           </div>
-          
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setShowSettings(true)}
-              className="text-gray-300 hover:text-white"
-            >
-              Settings
-            </button>
-            <button
-              onClick={() => setShowTemplateManager(true)}
-              className="text-gray-300 hover:text-white"
-            >
-              Templates
-            </button>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }

@@ -1,11 +1,10 @@
-// src/components/UI/MobileNavigation.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function MobileNavigation({ view, setView, onNewTrip, onOpenSettings, onOpenTemplates }) {
   const [showLabel, setShowLabel] = useState(true);
   
   // Hide labels when scrolling down
-  React.useEffect(() => {
+  useEffect(() => {
     let lastScrollY = window.scrollY;
     
     const handleScroll = () => {
@@ -26,7 +25,7 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings, onOpenTemp
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
       <div className="grid grid-cols-5 h-16">
         <button
-          onClick={() => setView('dashboard')}
+          onClick={() => setView && setView('dashboard')}
           className={`flex flex-col items-center justify-center ${
             view === 'dashboard' ? 'text-blue-600' : 'text-gray-600'
           }`}
@@ -38,7 +37,7 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings, onOpenTemp
         </button>
         
         <button
-          onClick={() => setView('trips')}
+          onClick={() => setView && setView('trips')}
           className={`flex flex-col items-center justify-center ${
             view === 'trips' ? 'text-blue-600' : 'text-gray-600'
           }`}
