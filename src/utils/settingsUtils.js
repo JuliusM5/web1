@@ -1,28 +1,5 @@
-// Default application settings
-export const DEFAULT_SETTINGS = {
-  appearance: {
-    fontSize: 'medium',
-    colorScheme: 'blue',
-  },
-  preferences: {
-    defaultCurrency: 'USD',
-    dateFormat: 'MM/DD/YYYY',
-    distanceUnit: 'miles',
-    temperatureUnit: 'fahrenheit',
-    language: 'en-US',
-  },
-  notifications: {
-    tripReminders: true,
-    taskReminders: true,
-    budgetAlerts: true,
-    emailNotifications: false,
-  },
-  privacy: {
-    shareLocationData: true,
-    collectAnalytics: true,
-    autoSaveEnabled: true,
-  }
-};
+// Import the DEFAULT_SETTINGS from SettingsContext
+import { DEFAULT_SETTINGS } from '../context/SettingsContext';
 
 // Get current user settings (or defaults if none exist)
 export const getUserSettings = () => {
@@ -37,7 +14,8 @@ export const getUserSettings = () => {
       appearance: { ...DEFAULT_SETTINGS.appearance, ...parsedSettings.appearance },
       preferences: { ...DEFAULT_SETTINGS.preferences, ...parsedSettings.preferences },
       notifications: { ...DEFAULT_SETTINGS.notifications, ...parsedSettings.notifications },
-      privacy: { ...DEFAULT_SETTINGS.privacy, ...parsedSettings.privacy }
+      privacy: { ...DEFAULT_SETTINGS.privacy, ...parsedSettings.privacy },
+      accessibility: { ...DEFAULT_SETTINGS.accessibility, ...parsedSettings.accessibility }
     };
   } catch (error) {
     console.error("Error loading user settings:", error);
@@ -63,7 +41,7 @@ export const applyThemeSettings = (settings) => {
     return false;
   }
   
-  const { fontSize, colorScheme } = settings.appearance;
+  const { fontSize, colorScheme, darkMode } = settings.appearance;
   
   // Apply font size
   document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
@@ -87,11 +65,66 @@ export const applyThemeSettings = (settings) => {
   const themeClass = `theme-${colorScheme}`;
   document.documentElement.classList.add(themeClass);
   
+  // Apply dark mode
+  if (darkMode) {
+    document.documentElement.classList.add('dark-mode');
+    document.body.classList.add('dark-mode');
+  } else {
+    document.documentElement.classList.remove('dark-mode');
+    document.body.classList.remove('dark-mode');
+  }
+  
   // Set a custom property to track current theme
   document.documentElement.style.setProperty('--current-theme', colorScheme);
+  document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
   
-  console.log(`Applied theme: ${colorScheme}, font size: ${fontSize}`);
+  console.log(`Applied theme: ${colorScheme}, font size: ${fontSize}, dark mode: ${darkMode}`);
   
+  return true;
+};
+
+// Apply accessibility settings
+export const applyAccessibilitySettings = (settings) => {
+  if (!settings || !settings.accessibility) return false;
+
+  const { highContrast, reducedMotion, largerClickTargets, textScaling, screenReaderOptimized } = settings.accessibility;
+
+  // Apply high contrast mode
+  if (highContrast) {
+    document.documentElement.classList.add('high-contrast');
+  } else {
+    document.documentElement.classList.remove('high-contrast');
+  }
+
+  // Apply reduced motion
+  if (reducedMotion) {
+    document.documentElement.classList.add('reduced-motion');
+  } else {
+    document.documentElement.classList.remove('reduced-motion');
+  }
+
+  // Apply larger click targets
+  if (largerClickTargets) {
+    document.documentElement.classList.add('larger-targets');
+  } else {
+    document.documentElement.classList.remove('larger-targets');
+  }
+
+  // Apply text scaling
+  if (textScaling && textScaling !== 100) {
+    document.documentElement.style.setProperty('--text-scale-ratio', `${textScaling / 100}`);
+    document.documentElement.classList.add('custom-text-scaling');
+  } else {
+    document.documentElement.classList.remove('custom-text-scaling');
+  }
+
+  // Apply screen reader optimizations
+  if (screenReaderOptimized) {
+    document.documentElement.setAttribute('data-screen-reader-optimized', 'true');
+  } else {
+    document.documentElement.removeAttribute('data-screen-reader-optimized');
+  }
+
   return true;
 };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { exportUserData, importUserData, clearAllAppData } from '../../utils/settingsUtils';
+import { createSettingsPreview, hideSettingsPreview } from '../../utils/settingsPreviewUtils';
 
 function UserSettings({ onClose }) {
   const { settings, updateSettings, resetSettings } = useSettings();
@@ -17,6 +18,36 @@ function UserSettings({ onClose }) {
     setLocalSettings({...settings});
     setSettingsChanged(false);
   }, [settings]);
+  
+  // Initialize preview when appearance tab is active
+  useEffect(() => {
+    if (activeTab === 'appearance' && settingsChanged) {
+      const previewId = 'appearance-preview';
+      createSettingsPreview(previewId, localSettings, 'appearance');
+      
+      return () => hideSettingsPreview(previewId);
+    }
+  }, [activeTab, localSettings.appearance, settingsChanged]);
+
+  // Initialize currency preview when preferences tab is active
+  useEffect(() => {
+    if (activeTab === 'preferences' && settingsChanged) {
+      const previewId = 'currency-preview';
+      createSettingsPreview(previewId, localSettings, 'currency');
+      
+      return () => hideSettingsPreview(previewId);
+    }
+  }, [activeTab, localSettings.preferences.defaultCurrency, settingsChanged]);
+
+  // Initialize date preview when preferences tab is active
+  useEffect(() => {
+    if (activeTab === 'preferences' && settingsChanged) {
+      const previewId = 'date-preview';
+      createSettingsPreview(previewId, localSettings, 'date');
+      
+      return () => hideSettingsPreview(previewId);
+    }
+  }, [activeTab, localSettings.preferences.dateFormat, settingsChanged]);
   
   // Handle input changes
   const handleChange = (section, setting, value) => {
@@ -83,6 +114,11 @@ function UserSettings({ onClose }) {
     }
   };
   
+  // Toggle dark mode
+  const toggleDarkMode = (enabled) => {
+    handleChange('appearance', 'darkMode', enabled);
+  };
+  
   // Available color schemes
   const colorSchemes = [
     { id: 'blue', name: 'Blue', color: '#3b82f6' },
@@ -124,6 +160,13 @@ function UserSettings({ onClose }) {
     { code: 'it-IT', name: 'Italian' },
     { code: 'ja-JP', name: 'Japanese' },
     { code: 'zh-CN', name: 'Chinese (Simplified)' },
+  ];
+  
+  // Accessibility options
+  const accessibilityOptions = [
+    { id: 'highContrast', label: 'High Contrast Mode', description: 'Increases contrast for better readability' },
+    { id: 'reducedMotion', label: 'Reduce Motion', description: 'Minimizes animations and transitions' },
+    { id: 'largerClickTargets', label: 'Larger Click Targets', description: 'Makes buttons and interactive elements larger' },
   ];
   
   return (
@@ -179,6 +222,14 @@ function UserSettings({ onClose }) {
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
+                  activeTab === 'accessibility' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'
+                }`}
+                onClick={() => setActiveTab('accessibility')}
+              >
+                Accessibility
+              </button>
+              <button
+                className={`w-full text-left px-3 py-2 rounded-lg ${
                   activeTab === 'data' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-200'
                 }`}
                 onClick={() => setActiveTab('data')}
@@ -205,6 +256,24 @@ function UserSettings({ onClose }) {
                 <h3 className="text-lg font-medium mb-4">Appearance Settings</h3>
                 
                 <div className="space-y-6">
+                  {/* Dark Mode Setting */}
+                  <div>
+                    <label className="flex items-center cursor-pointer">
+                      <div className="relative mr-3">
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={localSettings.appearance.darkMode || false}
+                          onChange={(e) => toggleDarkMode(e.target.checked)}
+                        />
+                        <div className={`block w-14 h-8 rounded-full ${localSettings.appearance.darkMode ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.appearance.darkMode ? 'transform translate-x-6' : ''}`}></div>
+                      </div>
+                      <span className="font-medium">Dark Mode</span>
+                    </label>
+                    <p className="text-sm text-gray-500 mt-1 ml-16">Switch between light and dark theme</p>
+                  </div>
+                
                   {/* Font Size Setting */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
@@ -315,7 +384,7 @@ function UserSettings({ onClose }) {
                             className="mr-2"
                           />
                           <span>{format.display}</span>
-                          <span className="ml-2 text-gray-500">e.g., {format.example}</span>
+                          <span className="ml-2 text-sm text-gray-500">e.g., {format.example}</span>
                         </label>
                       ))}
                     </div>
@@ -478,6 +547,38 @@ function UserSettings({ onClose }) {
                       </div>
                     </label>
                   </div>
+
+                  {/* Email configuration section (shown when email notifications are enabled) */}
+                  {localSettings.notifications.emailNotifications && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <h4 className="font-medium mb-3">Email Configuration</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                          <input
+                            type="email"
+                            value={localSettings.notifications.emailAddress || ''}
+                            onChange={(e) => handleChange('notifications', 'emailAddress', e.target.value)}
+                            placeholder="Enter your email address"
+                            className="w-full p-2 border border-gray-300 rounded"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Notification Frequency</label>
+                          <select
+                            value={localSettings.notifications.emailFrequency || 'daily'}
+                            onChange={(e) => handleChange('notifications', 'emailFrequency', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded"
+                          >
+                            <option value="instant">Instant</option>
+                            <option value="daily">Daily Summary</option>
+                            <option value="weekly">Weekly Summary</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="bg-yellow-50 p-4 rounded-lg mt-6">
@@ -550,6 +651,111 @@ function UserSettings({ onClose }) {
                       </div>
                     </label>
                   </div>
+
+                  {/* Data Retention Settings */}
+                  <div className="mt-6">
+                    <h4 className="font-medium mb-3">Data Retention</h4>
+                    
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Keep trip history for</label>
+                      <select
+                        value={localSettings.privacy.dataRetention || 'forever'}
+                        onChange={(e) => handleChange('privacy', 'dataRetention', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded"
+                      >
+                        <option value="1month">1 month</option>
+                        <option value="3months">3 months</option>
+                        <option value="6months">6 months</option>
+                        <option value="1year">1 year</option>
+                        <option value="forever">Forever</option>
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Past trips older than this will be automatically deleted.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Accessibility Tab */}
+            {activeTab === 'accessibility' && (
+              <div>
+                <h3 className="text-lg font-medium mb-4">Accessibility Settings</h3>
+                
+                <div className="space-y-4">
+                  {accessibilityOptions.map(option => (
+                    <div key={option.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <h4 className="font-medium">{option.label}</h4>
+                        <p className="text-sm text-gray-500">{option.description}</p>
+                      </div>
+                      <label className="flex items-center cursor-pointer">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={localSettings.accessibility?.[option.id] || false}
+                            onChange={(e) => handleChange('accessibility', option.id, e.target.checked)}
+                          />
+                          <div className={`block w-14 h-8 rounded-full ${localSettings.accessibility?.[option.id] ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                          <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.accessibility?.[option.id] ? 'transform translate-x-6' : ''}`}></div>
+                        </div>
+                      </label>
+                    </div>
+                  ))}
+                  
+                  {/* Text Size Adjustment (separate from font size setting) */}
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <h4 className="font-medium mb-2">Text Scaling</h4>
+                    <p className="text-sm text-gray-500 mb-3">Adjust text size independently from the interface size</p>
+                    
+                    <input
+                      type="range"
+                      min="100"
+                      max="200"
+                      step="10"
+                      value={localSettings.accessibility?.textScaling || 100}
+                      onChange={(e) => handleChange('accessibility', 'textScaling', parseInt(e.target.value))}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>100%</span>
+                      <span>150%</span>
+                      <span>200%</span>
+                    </div>
+                    <div className="mt-3 text-center">
+                      <span className="font-medium">
+                        Current: {localSettings.accessibility?.textScaling || 100}%
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Screen Reader Optimization */}
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Screen Reader Optimization</h4>
+                      <p className="text-sm text-gray-500">Enhanced descriptions for screen readers</p>
+                    </div>
+                    <label className="flex items-center cursor-pointer">
+                      <div className="relative">
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={localSettings.accessibility?.screenReaderOptimized || false}
+                          onChange={(e) => handleChange('accessibility', 'screenReaderOptimized', e.target.checked)}
+                        />
+                        <div className={`block w-14 h-8 rounded-full ${localSettings.accessibility?.screenReaderOptimized ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.accessibility?.screenReaderOptimized ? 'transform translate-x-6' : ''}`}></div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 p-4 rounded-lg mt-6">
+                  <p className="text-sm text-blue-700">
+                    <strong>Note:</strong> These settings help make the application more accessible for all users.
+                  </p>
                 </div>
               </div>
             )}

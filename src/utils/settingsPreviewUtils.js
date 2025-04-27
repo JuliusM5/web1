@@ -10,7 +10,7 @@ const previewElements = {};
  * 
  * @param {string} id Unique identifier for the preview
  * @param {Object} settings Settings to preview
- * @param {string} type Type of preview (appearance, currency, etc.)
+ * @param {string} type Type of preview (appearance, currency, date, accessibility, darkMode)
  * @returns {HTMLElement} The preview element
  */
 export const createSettingsPreview = (id, settings, type) => {
@@ -44,6 +44,10 @@ export const createSettingsPreview = (id, settings, type) => {
     updateCurrencyPreview(previewElement, settings.preferences);
   } else if (type === 'date') {
     updateDatePreview(previewElement, settings.preferences);
+  } else if (type === 'accessibility') {
+    updateAccessibilityPreview(previewElement, settings.accessibility);
+  } else if (type === 'darkMode') {
+    updateDarkModePreview(previewElement, settings.appearance);
   }
   
   // Show the preview
@@ -90,9 +94,20 @@ const updateAppearancePreview = (element, appearance) => {
     'large': '18px'
   };
   
-  // Update preview
-  element.style.backgroundColor = colorMap[appearance.colorScheme] || '#3b82f6';
-  element.style.color = 'white';
+  // Get dark mode status
+  const isDarkMode = appearance.darkMode || false;
+  
+  // Update preview styles based on dark mode
+  if (isDarkMode) {
+    element.style.backgroundColor = '#1e1e1e';
+    element.style.color = 'white';
+    element.style.borderLeft = `4px solid ${colorMap[appearance.colorScheme] || '#3b82f6'}`;
+  } else {
+    element.style.backgroundColor = 'white';
+    element.style.color = '#333';
+    element.style.borderLeft = `4px solid ${colorMap[appearance.colorScheme] || '#3b82f6'}`;
+  }
+  
   element.style.fontSize = fontSizeMap[appearance.fontSize] || '16px';
   
   // Update content
@@ -100,6 +115,41 @@ const updateAppearancePreview = (element, appearance) => {
     <div style="font-weight: bold; margin-bottom: 5px;">Theme Preview</div>
     <div>Color: ${appearance.colorScheme.charAt(0).toUpperCase() + appearance.colorScheme.slice(1)}</div>
     <div>Font size: ${appearance.fontSize.charAt(0).toUpperCase() + appearance.fontSize.slice(1)}</div>
+    <div>Dark mode: ${isDarkMode ? 'On' : 'Off'}</div>
+    <div style="margin-top: 8px; text-align: center; font-size: 12px;">Changes will apply when saved</div>
+  `;
+};
+
+/**
+ * Update dark mode preview
+ * 
+ * @param {HTMLElement} element Preview element
+ * @param {Object} appearance Appearance settings
+ */
+const updateDarkModePreview = (element, appearance) => {
+  const isDarkMode = appearance.darkMode || false;
+  
+  // Style the preview element
+  if (isDarkMode) {
+    element.style.backgroundColor = '#1e1e1e';
+    element.style.color = '#e0e0e0';
+    element.style.border = '1px solid #444';
+  } else {
+    element.style.backgroundColor = 'white';
+    element.style.color = '#333';
+    element.style.border = '1px solid #d1d5db';
+  }
+  
+  // Sample content to demonstrate dark mode
+  element.innerHTML = `
+    <div style="font-weight: bold; margin-bottom: 5px;">Dark Mode Preview</div>
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+      <div style="width: 60px; height: 30px; background-color: ${isDarkMode ? '#333' : '#f3f4f6'}; border: 1px solid ${isDarkMode ? '#555' : '#d1d5db'}; display: flex; align-items: center; justify-content: center; font-size: 12px;">Button</div>
+      <div style="width: 60px; height: 30px; background-color: ${isDarkMode ? '#3b82f6' : '#3b82f6'}; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px;">Primary</div>
+    </div>
+    <div style="padding: 8px; background-color: ${isDarkMode ? '#333' : '#f9fafb'}; border-radius: 4px; margin-bottom: 10px; font-size: 12px;">
+      This is how cards will appear in ${isDarkMode ? 'dark' : 'light'} mode.
+    </div>
     <div style="margin-top: 8px; text-align: center; font-size: 12px;">Changes will apply when saved</div>
   `;
 };
@@ -196,6 +246,61 @@ const updateDatePreview = (element, preferences) => {
     <div style="font-size: 18px; margin-bottom: 5px;">${formattedDate}</div>
     <div style="font-size: 12px;">Format: ${format}</div>
     <div style="margin-top: 8px; text-align: center; font-size: 12px;">Changes will apply when saved</div>
+  `;
+};
+
+/**
+ * Update accessibility preview
+ * 
+ * @param {HTMLElement} element Preview element
+ * @param {Object} accessibility Accessibility settings
+ */
+const updateAccessibilityPreview = (element, accessibility) => {
+  const highContrast = accessibility.highContrast || false;
+  const largerClickTargets = accessibility.largerClickTargets || false;
+  const textScaling = accessibility.textScaling || 100;
+  
+  // Style the preview element
+  if (highContrast) {
+    element.style.backgroundColor = 'black';
+    element.style.color = 'white';
+    element.style.border = '2px solid white';
+  } else {
+    element.style.backgroundColor = '#f3f4f6';
+    element.style.color = '#1f2937';
+    element.style.border = '1px solid #d1d5db';
+  }
+  
+  // Apply text scaling
+  const scaleFactor = textScaling / 100;
+  
+  // Update content
+  element.innerHTML = `
+    <div style="font-weight: bold; margin-bottom: 5px; font-size: ${16 * scaleFactor}px;">Accessibility Preview</div>
+    <div style="margin-bottom: 10px; font-size: ${14 * scaleFactor}px;">
+      <div>High Contrast: ${highContrast ? 'On' : 'Off'}</div>
+      <div>Larger Targets: ${largerClickTargets ? 'On' : 'Off'}</div>
+      <div>Text Scale: ${textScaling}%</div>
+    </div>
+    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+      <button style="
+        padding: ${largerClickTargets ? '12px' : '6px'} ${largerClickTargets ? '16px' : '8px'};
+        background-color: ${highContrast ? 'black' : '#e5e7eb'};
+        color: ${highContrast ? 'yellow' : '#374151'};
+        border: ${highContrast ? '2px solid white' : '1px solid #d1d5db'};
+        font-size: ${12 * scaleFactor}px;
+      ">Button</button>
+      <button style="
+        padding: ${largerClickTargets ? '12px' : '6px'} ${largerClickTargets ? '16px' : '8px'};
+        background-color: ${highContrast ? 'yellow' : '#3b82f6'};
+        color: ${highContrast ? 'black' : 'white'};
+        border: none;
+        font-size: ${12 * scaleFactor}px;
+      ">Primary</button>
+    </div>
+    <div style="margin-top: 8px; text-align: center; font-size: ${12 * scaleFactor}px;">
+      Changes will apply when saved
+    </div>
   `;
 };
 

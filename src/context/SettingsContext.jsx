@@ -1,5 +1,42 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { getUserSettings, saveUserSettings, applyThemeSettings, DEFAULT_SETTINGS } from '../utils/settingsUtils';
+import { getUserSettings, saveUserSettings, applyThemeSettings } from '../utils/settingsUtils';
+
+// Updated default settings with new options
+export const DEFAULT_SETTINGS = {
+  appearance: {
+    fontSize: 'medium',
+    colorScheme: 'blue',
+    darkMode: false
+  },
+  preferences: {
+    defaultCurrency: 'USD',
+    dateFormat: 'MM/DD/YYYY',
+    distanceUnit: 'miles',
+    temperatureUnit: 'fahrenheit',
+    language: 'en-US',
+  },
+  notifications: {
+    tripReminders: true,
+    taskReminders: true,
+    budgetAlerts: true,
+    emailNotifications: false,
+    emailAddress: '',
+    emailFrequency: 'daily'
+  },
+  privacy: {
+    shareLocationData: true,
+    collectAnalytics: true,
+    autoSaveEnabled: true,
+    dataRetention: 'forever'
+  },
+  accessibility: {
+    highContrast: false,
+    reducedMotion: false,
+    largerClickTargets: false,
+    screenReaderOptimized: false,
+    textScaling: 100
+  }
+};
 
 // Create Settings Context
 const SettingsContext = createContext();
@@ -22,13 +59,54 @@ export const SettingsProvider = ({ children }) => {
   useEffect(() => {
     const loadSettings = async () => {
       const userSettings = getUserSettings();
-      setSettings(userSettings);
-      applyThemeSettings(userSettings);
+      const mergedSettings = mergeWithDefaultSettings(userSettings);
+      setSettings(mergedSettings);
+      applyThemeSettings(mergedSettings);
+      applyAccessibilitySettings(mergedSettings);
       setLoading(false);
     };
 
     loadSettings();
   }, []);
+
+  // Merge user settings with defaults to ensure all properties exist
+  const mergeWithDefaultSettings = (userSettings) => {
+    // Helper function to deep merge objects
+    const deepMerge = (target, source) => {
+      const output = { ...target };
+      
+      for (const key in source) {
+        if (source.hasOwnProperty(key)) {
+          if (
+            typeof source[key] === 'object' && 
+            source[key] !== null && 
+            !Array.isArray(source[key])
+          ) {
+            // If both target and source have the key and both are objects, merge them
+            if (
+              target.hasOwnProperty(key) && 
+              typeof target[key] === 'object' && 
+              target[key] !== null && 
+              !Array.isArray(target[key])
+            ) {
+              output[key] = deepMerge(target[key], source[key]);
+            } else {
+              // If target doesn't have the key or is not an object, use source's value
+              output[key] = source[key];
+            }
+          } else {
+            // For primitives and arrays, simply use source's value
+            output[key] = source[key];
+          }
+        }
+      }
+      
+      return output;
+    };
+    
+    // Start with default settings and merge with user settings
+    return deepMerge(DEFAULT_SETTINGS, userSettings);
+  };
 
   // Update settings
   const updateSettings = (newSettings) => {
@@ -41,6 +119,9 @@ export const SettingsProvider = ({ children }) => {
     // Apply theme changes
     applyThemeSettings(newSettings);
     
+    // Apply accessibility settings
+    applyAccessibilitySettings(newSettings);
+    
     return true;
   };
 
@@ -49,7 +130,51 @@ export const SettingsProvider = ({ children }) => {
     setSettings(DEFAULT_SETTINGS);
     saveUserSettings(DEFAULT_SETTINGS);
     applyThemeSettings(DEFAULT_SETTINGS);
+    applyAccessibilitySettings(DEFAULT_SETTINGS);
     return true;
+  };
+
+  // Apply accessibility settings
+  const applyAccessibilitySettings = (settings) => {
+    if (!settings || !settings.accessibility) return;
+
+    const { highContrast, reducedMotion, largerClickTargets, textScaling, screenReaderOptimized } = settings.accessibility;
+
+    // Apply high contrast mode
+    if (highContrast) {
+      document.documentElement.classList.add('high-contrast');
+    } else {
+      document.documentElement.classList.remove('high-contrast');
+    }
+
+    // Apply reduced motion
+    if (reducedMotion) {
+      document.documentElement.classList.add('reduced-motion');
+    } else {
+      document.documentElement.classList.remove('reduced-motion');
+    }
+
+    // Apply larger click targets
+    if (largerClickTargets) {
+      document.documentElement.classList.add('larger-targets');
+    } else {
+      document.documentElement.classList.remove('larger-targets');
+    }
+
+    // Apply text scaling
+    if (textScaling && textScaling !== 100) {
+      document.documentElement.style.setProperty('--text-scale-ratio', `${textScaling / 100}`);
+      document.documentElement.classList.add('custom-text-scaling');
+    } else {
+      document.documentElement.classList.remove('custom-text-scaling');
+    }
+
+    // Apply screen reader optimizations
+    if (screenReaderOptimized) {
+      document.documentElement.setAttribute('data-screen-reader-optimized', 'true');
+    } else {
+      document.documentElement.removeAttribute('data-screen-reader-optimized');
+    }
   };
 
   // Context value

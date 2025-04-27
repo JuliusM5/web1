@@ -1,0 +1,291 @@
+/* Dark Mode Styles */
+:root {
+    --dark-bg-primary: #121212;
+    --dark-bg-secondary: #1e1e1e;
+    --dark-bg-tertiary: #2d2d2d;
+    --dark-text-primary: #e0e0e0;
+    --dark-text-secondary: #a0a0a0;
+    --dark-border-color: #444;
+    --dark-card-bg: #262626;
+    --dark-hover-bg: #333;
+    --dark-primary-color: #5b96f7; /* Brighter blue for dark mode */
+    --dark-success-color: #2ecc71;
+    --dark-danger-color: #e74c3c;
+    --dark-warning-color: #f39c12;
+    --dark-info-color: #3498db;
+  }
+  
+  /* Apply dark mode styles */
+  .dark-mode {
+    background-color: var(--dark-bg-primary);
+    color: var(--dark-text-primary);
+  }
+  
+  /* Basic elements in dark mode */
+  .dark-mode h1, .dark-mode h2, .dark-mode h3, 
+  .dark-mode h4, .dark-mode h5, .dark-mode h6 {
+    color: var(--dark-text-primary);
+  }
+  
+  .dark-mode p, .dark-mode span, .dark-mode label, 
+  .dark-mode div, .dark-mode a {
+    color: var(--dark-text-primary);
+  }
+  
+  /* Override backgrounds for various containers */
+  .dark-mode .bg-white {
+    background-color: var(--dark-bg-secondary) !important;
+  }
+  
+  .dark-mode .bg-gray-50, .dark-mode .bg-gray-100, .dark-mode .bg-gray-200 {
+    background-color: var(--dark-bg-tertiary) !important;
+  }
+  
+  /* Form elements */
+  .dark-mode input, .dark-mode select, .dark-mode textarea {
+    background-color: var(--dark-bg-tertiary);
+    border-color: var(--dark-border-color);
+    color: var(--dark-text-primary);
+  }
+  
+  .dark-mode input::placeholder, .dark-mode textarea::placeholder {
+    color: var(--dark-text-secondary);
+  }
+  
+  /* Cards and containers */
+  .dark-mode .card, 
+  .dark-mode .bg-white.rounded-lg,
+  .dark-mode .dashboard-card {
+    background-color: var(--dark-bg-secondary);
+    border-color: var(--dark-border-color);
+  }
+  
+  /* Button overrides */
+  .dark-mode .btn-primary {
+    background-color: var(--dark-primary-color);
+  }
+  
+  .dark-mode .bg-blue-500, 
+  .dark-mode .bg-blue-600 {
+    background-color: var(--dark-primary-color) !important;
+  }
+  
+  .dark-mode .text-blue-500,
+  .dark-mode .text-blue-600,
+  .dark-mode .text-blue-700 {
+    color: var(--dark-primary-color) !important;
+  }
+  
+  .dark-mode .border-blue-500,
+  .dark-mode .border-blue-600 {
+    border-color: var(--dark-primary-color) !important;
+  }
+  
+  /* Color adjustments for info panels */
+  .dark-mode .bg-blue-50 {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+  }
+  
+  .dark-mode .bg-green-50 {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+  }
+  
+  .dark-mode .bg-yellow-50 {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+  }
+  
+  .dark-mode .bg-red-50 {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+  }
+  
+  .dark-mode .text-gray-500,
+  .dark-mode .text-gray-600,
+  .dark-mode .text-gray-700 {
+    color: var(--dark-text-secondary) !important;
+  }
+  
+  .dark-mode .border-gray-200,
+  .dark-mode .border-gray-300 {
+    border-color: var(--dark-border-color) !important;
+  }
+  
+  /* Header and navigation */
+  .dark-mode header {
+    background-color: var(--dark-bg-tertiary) !important;
+  }
+  
+  .dark-mode .bottom-action-bar,
+  .dark-mode nav.fixed {
+    background-color: var(--dark-bg-tertiary) !important;
+    border-color: var(--dark-border-color) !important;
+  }
+  
+  /* Modal adjustments */
+  .dark-mode .modal-content {
+    background-color: var(--dark-bg-secondary);
+    border-color: var(--dark-border-color);
+  }
+  
+  /* Table adjustments */
+  .dark-mode table,
+  .dark-mode th,
+  .dark-mode td {
+    border-color: var(--dark-border-color);
+  }
+  
+  .dark-mode tbody tr:nth-child(even) {
+    background-color: rgba(45, 45, 45, 0.6);
+  }
+  
+  .dark-mode tbody tr:hover {
+    background-color: rgba(60, 60, 60, 0.6);
+  }
+  
+  /* Accessibility - High Contrast Mode */
+  .high-contrast {
+    --contrast-text: #ffffff;
+    --contrast-bg: #000000;
+    --contrast-primary: #ffff00; /* Yellow for high visibility */
+    --contrast-secondary: #00ffff; /* Cyan for high visibility */
+    --contrast-border: #ffffff;
+  }
+  
+  .high-contrast.dark-mode,
+  .high-contrast.dark-mode body {
+    background-color: var(--contrast-bg) !important;
+    color: var(--contrast-text) !important;
+  }
+  
+  .high-contrast.dark-mode a,
+  .high-contrast.dark-mode button {
+    color: var(--contrast-primary);
+  }
+  
+  .high-contrast.dark-mode input,
+  .high-contrast.dark-mode select,
+  .high-contrast.dark-mode textarea {
+    background-color: var(--contrast-bg);
+    color: var(--contrast-text);
+    border: 2px solid var(--contrast-border);
+  }
+  
+  .high-contrast.dark-mode .border,
+  .high-contrast.dark-mode .border-t,
+  .high-contrast.dark-mode .border-b,
+  .high-contrast.dark-mode .border-l,
+  .high-contrast.dark-mode .border-r {
+    border-color: var(--contrast-border) !important;
+  }
+  
+  /* Reduced Motion */
+  .reduced-motion * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Larger Click Targets */
+  .larger-targets button,
+  .larger-targets a,
+  .larger-targets input[type="checkbox"],
+  .larger-targets input[type="radio"],
+  .larger-targets select,
+  .larger-targets .clickable {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem !important;
+  }
+  
+  .larger-targets label {
+    font-size: 1.1em;
+  }
+  
+  .larger-targets input[type="text"],
+  .larger-targets input[type="email"],
+  .larger-targets input[type="password"],
+  .larger-targets input[type="number"],
+  .larger-targets input[type="date"],
+  .larger-targets input[type="time"],
+  .larger-targets select,
+  .larger-targets textarea {
+    padding: 0.75rem !important;
+    font-size: 1.1em;
+  }
+  
+  /* Custom Text Scaling */
+  .custom-text-scaling {
+    --base-font-size: 16px;
+  }
+  
+  .custom-text-scaling p,
+  .custom-text-scaling span,
+  .custom-text-scaling div,
+  .custom-text-scaling label,
+  .custom-text-scaling input,
+  .custom-text-scaling textarea,
+  .custom-text-scaling select,
+  .custom-text-scaling button {
+    font-size: calc(var(--base-font-size) * var(--text-scale-ratio)) !important;
+  }
+  
+  .custom-text-scaling h1 {
+    font-size: calc(2em * var(--text-scale-ratio)) !important;
+  }
+  
+  .custom-text-scaling h2 {
+    font-size: calc(1.75em * var(--text-scale-ratio)) !important;
+  }
+  
+  .custom-text-scaling h3 {
+    font-size: calc(1.5em * var(--text-scale-ratio)) !important;
+  }
+  
+  .custom-text-scaling h4 {
+    font-size: calc(1.25em * var(--text-scale-ratio)) !important;
+  }
+  
+  .custom-text-scaling h5,
+  .custom-text-scaling h6 {
+    font-size: calc(1.1em * var(--text-scale-ratio)) !important;
+  }
+  
+  /* Screen Reader Optimizations */
+  [data-screen-reader-optimized="true"] .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  
+  [data-screen-reader-optimized="true"] [aria-hidden="true"] {
+    display: none;
+  }
+  
+  [data-screen-reader-optimized="true"] img:not([alt]),
+  [data-screen-reader-optimized="true"] svg:not([aria-labelledby]):not([aria-label]) {
+    position: relative;
+  }
+  
+  [data-screen-reader-optimized="true"] img:not([alt])::after,
+  [data-screen-reader-optimized="true"] svg:not([aria-labelledby]):not([aria-label])::after {
+    content: "Missing alt text";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffdd00;
+    color: #000000;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+  }

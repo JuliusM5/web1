@@ -57,9 +57,16 @@ export const useAppSettings = () => {
   const getFontSize = () => settings.appearance.fontSize;
   
   /**
+   * Check if dark mode is enabled
+   * 
+   * @returns {boolean} Whether dark mode is enabled
+   */
+  const isDarkMode = () => settings.appearance?.darkMode || false;
+  
+  /**
    * Check if a notification type is enabled
    * 
-   * @param {string} type Notification type
+   * @param {string} type Notification type (tripReminders, taskReminders, budgetAlerts, emailNotifications)
    * @returns {boolean} Whether the notification type is enabled
    */
   const isNotificationEnabled = (type) => {
@@ -68,11 +75,71 @@ export const useAppSettings = () => {
   };
   
   /**
+   * Get the email address for notifications
+   * 
+   * @returns {string} Email address for notifications
+   */
+  const getNotificationEmail = () => settings.notifications?.emailAddress || '';
+  
+  /**
+   * Get the notification frequency
+   * 
+   * @returns {string} Notification frequency (instant, daily, weekly)
+   */
+  const getNotificationFrequency = () => settings.notifications?.emailFrequency || 'daily';
+  
+  /**
    * Get current language
    * 
    * @returns {string} Current language code
    */
   const getLanguage = () => settings.preferences.language;
+  
+  /**
+   * Check if an accessibility feature is enabled
+   * 
+   * @param {string} feature Accessibility feature (highContrast, reducedMotion, largerClickTargets, screenReaderOptimized)
+   * @returns {boolean} Whether the feature is enabled
+   */
+  const isAccessibilityFeatureEnabled = (feature) => {
+    if (!settings.accessibility) return false;
+    return !!settings.accessibility[feature];
+  };
+  
+  /**
+   * Get text scaling percentage
+   * 
+   * @returns {number} Text scaling percentage (100-200)
+   */
+  const getTextScaling = () => settings.accessibility?.textScaling || 100;
+  
+  /**
+   * Check if location sharing is enabled
+   * 
+   * @returns {boolean} Whether location sharing is enabled
+   */
+  const isLocationSharingEnabled = () => settings.privacy?.shareLocationData || false;
+  
+  /**
+   * Check if analytics collection is enabled
+   * 
+   * @returns {boolean} Whether analytics collection is enabled
+   */
+  const isAnalyticsEnabled = () => settings.privacy?.collectAnalytics || false;
+  
+  /**
+   * Check if auto-save is enabled
+   * 
+   * @returns {boolean} Whether auto-save is enabled
+   */
+  const isAutoSaveEnabled = () => settings.privacy?.autoSaveEnabled || false;
+  
+  /**
+   * Get data retention period
+   * 
+   * @returns {string} Data retention period (1month, 3months, 6months, 1year, forever)
+   */
+  const getDataRetention = () => settings.privacy?.dataRetention || 'forever';
   
   return {
     settings,
@@ -84,8 +151,17 @@ export const useAppSettings = () => {
     distance,
     getColorScheme,
     getFontSize,
+    isDarkMode,
     isNotificationEnabled,
-    getLanguage
+    getNotificationEmail,
+    getNotificationFrequency,
+    getLanguage,
+    isAccessibilityFeatureEnabled,
+    getTextScaling,
+    isLocationSharingEnabled,
+    isAnalyticsEnabled,
+    isAutoSaveEnabled,
+    getDataRetention
   };
 };
 
