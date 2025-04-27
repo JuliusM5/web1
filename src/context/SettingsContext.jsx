@@ -15,7 +15,7 @@ export const useSettings = () => {
 
 // Settings Provider Component
 export const SettingsProvider = ({ children }) => {
-  const [settings, setSettings] = useState(getUserSettings());
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
 
   // Apply settings on initial load
@@ -32,9 +32,15 @@ export const SettingsProvider = ({ children }) => {
 
   // Update settings
   const updateSettings = (newSettings) => {
+    // Apply the new settings immediately
     setSettings(newSettings);
+    
+    // Save to localStorage
     saveUserSettings(newSettings);
+    
+    // Apply theme changes
     applyThemeSettings(newSettings);
+    
     return true;
   };
 

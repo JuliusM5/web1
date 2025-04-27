@@ -28,7 +28,17 @@ export const DEFAULT_SETTINGS = {
 export const getUserSettings = () => {
   try {
     const savedSettings = localStorage.getItem('userSettings');
-    return savedSettings ? JSON.parse(savedSettings) : DEFAULT_SETTINGS;
+    if (!savedSettings) return DEFAULT_SETTINGS;
+    
+    const parsedSettings = JSON.parse(savedSettings);
+    
+    // Ensure all expected properties exist (handles partial settings from older versions)
+    return {
+      appearance: { ...DEFAULT_SETTINGS.appearance, ...parsedSettings.appearance },
+      preferences: { ...DEFAULT_SETTINGS.preferences, ...parsedSettings.preferences },
+      notifications: { ...DEFAULT_SETTINGS.notifications, ...parsedSettings.notifications },
+      privacy: { ...DEFAULT_SETTINGS.privacy, ...parsedSettings.privacy }
+    };
   } catch (error) {
     console.error("Error loading user settings:", error);
     return DEFAULT_SETTINGS;
@@ -48,6 +58,11 @@ export const saveUserSettings = (settings) => {
 
 // Apply theme settings to the document
 export const applyThemeSettings = (settings) => {
+  if (!settings || !settings.appearance) {
+    console.error("Invalid settings object provided to applyThemeSettings");
+    return false;
+  }
+  
   const { fontSize, colorScheme } = settings.appearance;
   
   // Apply font size
@@ -67,46 +82,17 @@ export const applyThemeSettings = (settings) => {
     'theme-red', 'theme-amber', 'theme-indigo'
   ];
   document.documentElement.classList.remove(...colorSchemeClasses);
-  document.documentElement.classList.add(`theme-${colorScheme}`);
+  
+  // Add the new color scheme class
+  const themeClass = `theme-${colorScheme}`;
+  document.documentElement.classList.add(themeClass);
   
   // Set a custom property to track current theme
   document.documentElement.style.setProperty('--current-theme', colorScheme);
   
-  // Update favicon color (optional enhancement)
-  updateFaviconColor(colorScheme);
+  console.log(`Applied theme: ${colorScheme}, font size: ${fontSize}`);
   
   return true;
-};
-
-// Function to update favicon color based on theme
-const updateFaviconColor = (colorScheme) => {
-  const themeColors = {
-    'blue': '#3b82f6',
-    'purple': '#8b5cf6',
-    'green': '#10b981',
-    'red': '#ef4444',
-    'amber': '#f59e0b',
-    'indigo': '#6366f1'
-  };
-  
-  const color = themeColors[colorScheme] || themeColors.blue;
-  
-  // Look for existing favicon
-  const existingFavicon = document.querySelector('link[rel="icon"]');
-  
-  if (existingFavicon) {
-    // If it's a simple .ico file, we can't modify it
-    if (existingFavicon.href.endsWith('.ico')) {
-      console.log('Cannot update .ico favicon color');
-      return;
-    }
-    
-    // For SVG favicons, we could potentially update the color
-    // This would require a more complex implementation
-    
-    // For simplicity, we'll just log that we would update the favicon
-    console.log(`Favicon would be updated to ${colorScheme} theme with color ${color}`);
-  }
 };
 
 // Format date according to user preferences
@@ -133,6 +119,8 @@ export const formatDate = (dateString, settings) => {
 
 // Format currency according to user preferences
 export const formatCurrency = (amount, settings) => {
+  if (amount === undefined || amount === null) return '';
+  
   const currencyCode = settings?.preferences?.defaultCurrency || 'USD';
   
   // Simple mapping of currency codes to symbols

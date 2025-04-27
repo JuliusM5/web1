@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { exportUserData, importUserData, clearAllAppData } from '../../utils/settingsUtils';
 
@@ -7,21 +7,35 @@ function UserSettings({ onClose }) {
   const [activeTab, setActiveTab] = useState('appearance');
   const [importFile, setImportFile] = useState(null);
   const [importError, setImportError] = useState('');
+  const [settingsChanged, setSettingsChanged] = useState(false);
+  
+  // Local copy of settings for making changes
+  const [localSettings, setLocalSettings] = useState({...settings});
+  
+  // Reset local settings when component reopens
+  useEffect(() => {
+    setLocalSettings({...settings});
+    setSettingsChanged(false);
+  }, [settings]);
   
   // Handle input changes
   const handleChange = (section, setting, value) => {
     const newSettings = {
-      ...settings,
+      ...localSettings,
       [section]: {
-        ...settings[section],
+        ...localSettings[section],
         [setting]: value
       }
     };
-    updateSettings(newSettings);
+    setLocalSettings(newSettings);
+    setSettingsChanged(true);
   };
   
   // Save settings and close
   const saveAndClose = () => {
+    if (settingsChanged) {
+      updateSettings(localSettings);
+    }
     onClose();
   };
   
@@ -29,6 +43,8 @@ function UserSettings({ onClose }) {
   const handleResetToDefaults = () => {
     if (window.confirm('Are you sure you want to reset all settings to default values?')) {
       resetSettings();
+      setLocalSettings({...settings});
+      setSettingsChanged(false);
     }
   };
   
@@ -189,15 +205,13 @@ function UserSettings({ onClose }) {
                 <h3 className="text-lg font-medium mb-4">Appearance Settings</h3>
                 
                 <div className="space-y-6">
-                  
-                  
                   {/* Font Size Setting */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
                     <div className="flex space-x-4">
                       <button
                         className={`px-4 py-2 rounded-lg ${
-                          settings.appearance.fontSize === 'small'
+                          localSettings.appearance.fontSize === 'small'
                             ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
@@ -207,7 +221,7 @@ function UserSettings({ onClose }) {
                       </button>
                       <button
                         className={`px-4 py-2 rounded-lg ${
-                          settings.appearance.fontSize === 'medium'
+                          localSettings.appearance.fontSize === 'medium'
                             ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
@@ -217,7 +231,7 @@ function UserSettings({ onClose }) {
                       </button>
                       <button
                         className={`px-4 py-2 rounded-lg ${
-                          settings.appearance.fontSize === 'large'
+                          localSettings.appearance.fontSize === 'large'
                             ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
@@ -236,7 +250,7 @@ function UserSettings({ onClose }) {
                         <button
                           key={scheme.id}
                           className={`p-3 rounded-lg flex items-center space-x-2 ${
-                            settings.appearance.colorScheme === scheme.id
+                            localSettings.appearance.colorScheme === scheme.id
                               ? 'ring-2 ring-primary bg-primary-light'
                               : 'bg-gray-50 hover:bg-gray-100'
                           }`}
@@ -255,7 +269,7 @@ function UserSettings({ onClose }) {
                 
                 <div className="bg-blue-50 p-4 rounded-lg mt-6">
                   <p className="text-sm text-blue-700">
-                    <strong>Note:</strong> Some appearance settings may require refreshing the application to fully apply.
+                    <strong>Note:</strong> Click "Save and Close" at the bottom of the screen to apply your appearance settings.
                   </p>
                 </div>
               </div>
@@ -271,7 +285,7 @@ function UserSettings({ onClose }) {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Default Currency</label>
                     <select
-                      value={settings.preferences.defaultCurrency}
+                      value={localSettings.preferences.defaultCurrency}
                       onChange={(e) => handleChange('preferences', 'defaultCurrency', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-lg"
                     >
@@ -295,7 +309,7 @@ function UserSettings({ onClose }) {
                           <input
                             type="radio"
                             value={format.id}
-                            checked={settings.preferences.dateFormat === format.id}
+                            checked={localSettings.preferences.dateFormat === format.id}
                             onChange={() => handleChange('preferences', 'dateFormat', format.id)}
                             className="mr-2"
                           />
@@ -312,7 +326,7 @@ function UserSettings({ onClose }) {
                     <div className="flex space-x-4">
                       <button
                         className={`px-4 py-2 rounded-lg ${
-                          settings.preferences.distanceUnit === 'miles'
+                          localSettings.preferences.distanceUnit === 'miles'
                             ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
@@ -322,7 +336,7 @@ function UserSettings({ onClose }) {
                       </button>
                       <button
                         className={`px-4 py-2 rounded-lg ${
-                          settings.preferences.distanceUnit === 'kilometers'
+                          localSettings.preferences.distanceUnit === 'kilometers'
                             ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
@@ -339,7 +353,7 @@ function UserSettings({ onClose }) {
                     <div className="flex space-x-4">
                       <button
                         className={`px-4 py-2 rounded-lg ${
-                          settings.preferences.temperatureUnit === 'fahrenheit'
+                          localSettings.preferences.temperatureUnit === 'fahrenheit'
                             ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
@@ -349,7 +363,7 @@ function UserSettings({ onClose }) {
                       </button>
                       <button
                         className={`px-4 py-2 rounded-lg ${
-                          settings.preferences.temperatureUnit === 'celsius'
+                          localSettings.preferences.temperatureUnit === 'celsius'
                             ? 'bg-primary-light text-primary ring-2 ring-primary'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
@@ -364,7 +378,7 @@ function UserSettings({ onClose }) {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
                     <select
-                      value={settings.preferences.language}
+                      value={localSettings.preferences.language}
                       onChange={(e) => handleChange('preferences', 'language', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-lg"
                     >
@@ -398,11 +412,11 @@ function UserSettings({ onClose }) {
                         <input
                           type="checkbox"
                           className="sr-only"
-                          checked={settings.notifications.tripReminders}
+                          checked={localSettings.notifications.tripReminders}
                           onChange={(e) => handleChange('notifications', 'tripReminders', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.tripReminders ? 'bg-primary' : 'bg-gray-300'}`}></div>
-                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.notifications.tripReminders ? 'transform translate-x-6' : ''}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${localSettings.notifications.tripReminders ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.notifications.tripReminders ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
                   </div>
@@ -417,11 +431,11 @@ function UserSettings({ onClose }) {
                         <input
                           type="checkbox"
                           className="sr-only"
-                          checked={settings.notifications.taskReminders}
+                          checked={localSettings.notifications.taskReminders}
                           onChange={(e) => handleChange('notifications', 'taskReminders', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.taskReminders ? 'bg-primary' : 'bg-gray-300'}`}></div>
-                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.notifications.taskReminders ? 'transform translate-x-6' : ''}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${localSettings.notifications.taskReminders ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.notifications.taskReminders ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
                   </div>
@@ -436,11 +450,11 @@ function UserSettings({ onClose }) {
                         <input
                           type="checkbox"
                           className="sr-only"
-                          checked={settings.notifications.budgetAlerts}
+                          checked={localSettings.notifications.budgetAlerts}
                           onChange={(e) => handleChange('notifications', 'budgetAlerts', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.budgetAlerts ? 'bg-primary' : 'bg-gray-300'}`}></div>
-                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.notifications.budgetAlerts ? 'transform translate-x-6' : ''}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${localSettings.notifications.budgetAlerts ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.notifications.budgetAlerts ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
                   </div>
@@ -455,11 +469,11 @@ function UserSettings({ onClose }) {
                         <input
                           type="checkbox"
                           className="sr-only"
-                          checked={settings.notifications.emailNotifications}
+                          checked={localSettings.notifications.emailNotifications}
                           onChange={(e) => handleChange('notifications', 'emailNotifications', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.notifications.emailNotifications ? 'bg-primary' : 'bg-gray-300'}`}></div>
-                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.notifications.emailNotifications ? 'transform translate-x-6' : ''}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${localSettings.notifications.emailNotifications ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.notifications.emailNotifications ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
                   </div>
@@ -489,11 +503,11 @@ function UserSettings({ onClose }) {
                         <input
                           type="checkbox"
                           className="sr-only"
-                          checked={settings.privacy.shareLocationData}
+                          checked={localSettings.privacy.shareLocationData}
                           onChange={(e) => handleChange('privacy', 'shareLocationData', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.privacy.shareLocationData ? 'bg-primary' : 'bg-gray-300'}`}></div>
-                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.privacy.shareLocationData ? 'transform translate-x-6' : ''}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${localSettings.privacy.shareLocationData ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.privacy.shareLocationData ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
                   </div>
@@ -508,11 +522,11 @@ function UserSettings({ onClose }) {
                         <input
                           type="checkbox"
                           className="sr-only"
-                          checked={settings.privacy.collectAnalytics}
+                          checked={localSettings.privacy.collectAnalytics}
                           onChange={(e) => handleChange('privacy', 'collectAnalytics', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.privacy.collectAnalytics ? 'bg-primary' : 'bg-gray-300'}`}></div>
-                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.privacy.collectAnalytics ? 'transform translate-x-6' : ''}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${localSettings.privacy.collectAnalytics ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.privacy.collectAnalytics ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
                   </div>
@@ -527,11 +541,11 @@ function UserSettings({ onClose }) {
                         <input
                           type="checkbox"
                           className="sr-only"
-                          checked={settings.privacy.autoSaveEnabled}
+                          checked={localSettings.privacy.autoSaveEnabled}
                           onChange={(e) => handleChange('privacy', 'autoSaveEnabled', e.target.checked)}
                         />
-                        <div className={`block w-14 h-8 rounded-full ${settings.privacy.autoSaveEnabled ? 'bg-primary' : 'bg-gray-300'}`}></div>
-                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${settings.privacy.autoSaveEnabled ? 'transform translate-x-6' : ''}`}></div>
+                        <div className={`block w-14 h-8 rounded-full ${localSettings.privacy.autoSaveEnabled ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.privacy.autoSaveEnabled ? 'transform translate-x-6' : ''}`}></div>
                       </div>
                     </label>
                   </div>
@@ -614,7 +628,7 @@ function UserSettings({ onClose }) {
             onClick={saveAndClose}
             className="px-6 py-2 bg-primary text-white rounded hover:bg-primary-dark"
           >
-            Close
+            {settingsChanged ? 'Save and Close' : 'Close'}
           </button>
         </div>
       </div>

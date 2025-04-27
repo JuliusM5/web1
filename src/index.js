@@ -1,7 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import './styles/themes.css'; // Add our new themes CSS file
+
+// Import styles in the correct order for proper cascading
+import './index.css';                    // Base Tailwind styles
+import './styles/themes.css';            // Theme variables and overrides 
+import './styles/mobileResponsive.css';  // Responsive utilities
+
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
@@ -14,7 +18,3 @@ root.render(
 
 // Register the service worker for offline support
 serviceWorkerRegistration.register();
-
-// If you want to start measuring performance in your app, uncomment
-// the following line.
-// reportWebVitals();
