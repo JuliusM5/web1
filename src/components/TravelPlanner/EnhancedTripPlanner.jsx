@@ -288,7 +288,6 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings }) 
               trips={trips}
               viewTrip={viewTrip}
               onNewTrip={handleNewTrip}
-              userSettings={settings}
             />
           ) : (
             <Dashboard 
@@ -393,7 +392,6 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings }) 
               closeTrip={closeTrip}
               shareEmail={shareEmail}
               setShareEmail={setShareEmail}
-              userSettings={settings}
             />
           ) : (
             <TripDetails 
