@@ -1,6 +1,10 @@
 import React from 'react';
+import { useAppSettings } from '../../utils/useAppSettings';
 
 function BudgetChart({ budgetData }) {
+  // Get currency formatter from app settings
+  const { currency } = useAppSettings();
+
   // Format the data for the chart
   const chartData = Object.entries(budgetData)
     .filter(([_, value]) => value > 0)
@@ -60,7 +64,7 @@ function BudgetChart({ budgetData }) {
               
               {/* Total amount in center */}
               <text x="50" y="46" textAnchor="middle" fontSize="10" fontWeight="bold">
-                ${total}
+                {currency(total)}
               </text>
               <text x="50" y="58" textAnchor="middle" fontSize="6">
                 Total Budget
@@ -80,7 +84,7 @@ function BudgetChart({ budgetData }) {
                   <span className="text-sm">{item.category}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-sm font-medium mr-2">${item.value}</span>
+                  <span className="text-sm font-medium mr-2">{currency(item.value)}</span>
                   <span className="text-xs text-gray-500">({item.percentage}%)</span>
                 </div>
               </div>

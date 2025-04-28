@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
+import { useAppSettings } from '../../utils/useAppSettings';
 
 function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('food');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Get currency formatter from app settings
+  const { currency } = useAppSettings();
   
   const addExpense = () => {
     if (amount && description) {
@@ -49,7 +53,7 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
           
           <div className="space-y-3 bg-white border border-gray-200 p-4 rounded-lg">
             <div>
-              <label className="block text-gray-700 mb-1 text-sm">Amount ($)</label>
+              <label className="block text-gray-700 mb-1 text-sm">Amount</label>
               <input
                 type="number"
                 value={amount}
@@ -117,7 +121,7 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
           <div className="bg-blue-50 p-4 rounded-lg">
             <div className="text-center mb-4">
               <p className="text-gray-700">Total Spent</p>
-              <p className="text-3xl font-bold text-blue-700">${totalSpent.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-blue-700">{currency(totalSpent)}</p>
             </div>
             
             <div className="space-y-2">
@@ -126,7 +130,7 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
               {Object.entries(expensesByCategory).map(([cat, amount]) => (
                 <div key={cat} className="flex justify-between">
                   <span className="capitalize">{cat}:</span>
-                  <span className="font-medium">${amount.toFixed(2)}</span>
+                  <span className="font-medium">{currency(amount)}</span>
                 </div>
               ))}
             </div>
@@ -170,7 +174,7 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
                     <td className="py-2 px-4 border-b">{expense.date}</td>
                     <td className="py-2 px-4 border-b">{expense.description}</td>
                     <td className="py-2 px-4 border-b capitalize">{expense.category}</td>
-                    <td className="py-2 px-4 border-b text-right">${expense.amount.toFixed(2)}</td>
+                    <td className="py-2 px-4 border-b text-right">{currency(expense.amount)}</td>
                     <td className="py-2 px-4 border-b text-right">
                       <button
                         onClick={() => removeExpense(expense.id)}

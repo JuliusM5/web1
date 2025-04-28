@@ -1,8 +1,12 @@
 import React from 'react';
 import { calculateDuration, calculateTotalBudget } from '../../utils/helpers';
 import BudgetChart from '../Budget/BudgetChart';
+import { useAppSettings } from '../../utils/useAppSettings';
 
 function BudgetTab({ budgetCategories, handleBudgetChange, startDate, endDate }) {
+  // Get currency formatter from app settings
+  const { currency } = useAppSettings();
+  
   return (
     <div>
       <h3 className="text-xl font-semibold mb-4">Budget Planner</h3>
@@ -11,7 +15,7 @@ function BudgetTab({ budgetCategories, handleBudgetChange, startDate, endDate })
         <div>
           <div className="space-y-4 bg-white border border-gray-200 p-4 rounded-lg">
             <div>
-              <label className="block text-gray-700 mb-1">Accommodation ($)</label>
+              <label className="block text-gray-700 mb-1">Accommodation</label>
               <input
                 type="number"
                 value={budgetCategories.accommodation || ''}
@@ -22,7 +26,7 @@ function BudgetTab({ budgetCategories, handleBudgetChange, startDate, endDate })
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-1">Food ($)</label>
+              <label className="block text-gray-700 mb-1">Food</label>
               <input
                 type="number"
                 value={budgetCategories.food || ''}
@@ -33,7 +37,7 @@ function BudgetTab({ budgetCategories, handleBudgetChange, startDate, endDate })
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-1">Transportation ($)</label>
+              <label className="block text-gray-700 mb-1">Transportation</label>
               <input
                 type="number"
                 value={budgetCategories.transportation || ''}
@@ -44,7 +48,7 @@ function BudgetTab({ budgetCategories, handleBudgetChange, startDate, endDate })
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-1">Activities ($)</label>
+              <label className="block text-gray-700 mb-1">Activities</label>
               <input
                 type="number"
                 value={budgetCategories.activities || ''}
@@ -55,7 +59,7 @@ function BudgetTab({ budgetCategories, handleBudgetChange, startDate, endDate })
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-1">Other ($)</label>
+              <label className="block text-gray-700 mb-1">Other</label>
               <input
                 type="number"
                 value={budgetCategories.other || ''}
@@ -77,7 +81,7 @@ function BudgetTab({ budgetCategories, handleBudgetChange, startDate, endDate })
             </div>
             
             <div className="border-t border-blue-200 pt-2 mt-2">
-              <p className="font-bold text-lg">Total: ${calculateTotalBudget(budgetCategories)}</p>
+              <p className="font-bold text-lg">Total: {currency(calculateTotalBudget(budgetCategories))}</p>
             </div>
           </div>
           
@@ -85,7 +89,7 @@ function BudgetTab({ budgetCategories, handleBudgetChange, startDate, endDate })
             <div className="mt-4 bg-green-50 p-4 rounded-lg border border-green-200">
               <h4 className="font-semibold mb-2 text-green-800">Daily Budget</h4>
               <p className="text-green-800">
-                ${(calculateTotalBudget(budgetCategories) / calculateDuration(startDate, endDate)).toFixed(2)} per day for {calculateDuration(startDate, endDate)} days
+                {currency((calculateTotalBudget(budgetCategories) / calculateDuration(startDate, endDate)).toFixed(2))} per day for {calculateDuration(startDate, endDate)} days
               </p>
             </div>
           )}

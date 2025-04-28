@@ -1,10 +1,14 @@
 import React from 'react';
 import { calculateDuration } from '../../utils/helpers';
+import { useAppSettings } from '../../utils/useAppSettings';
 
 function BasicInfoTab({ 
   destination, setDestination, startDate, setStartDate, 
   endDate, setEndDate, budget, setBudget, setTab 
 }) {
+  // Get currency formatter from app settings
+  const { currency } = useAppSettings();
+
   return (
     <div>
       <div className="space-y-4">
@@ -41,7 +45,7 @@ function BasicInfoTab({
         </div>
         
         <div>
-          <label className="block text-gray-700 mb-2">Budget ($)</label>
+          <label className="block text-gray-700 mb-2">Budget</label>
           <input
             type="number"
             value={budget}
@@ -56,7 +60,7 @@ function BasicInfoTab({
         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
           <p><strong>Duration:</strong> {calculateDuration(startDate, endDate)} days</p>
           {budget && (
-            <p><strong>Budget:</strong> ${budget} (${(budget / calculateDuration(startDate, endDate)).toFixed(2)}/day)</p>
+            <p><strong>Budget:</strong> {currency(budget)} ({currency((budget / calculateDuration(startDate, endDate)).toFixed(2))}/day)</p>
           )}
         </div>
       )}
