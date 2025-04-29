@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { exportUserData, importUserData, clearAllAppData } from '../../utils/settingsUtils';
 import { createSettingsPreview, hideSettingsPreview } from '../../utils/settingsPreviewUtils';
+import { useI18n, AVAILABLE_LANGUAGES } from '../../utils/i18n';
 
 function UserSettings({ onClose }) {
   const { settings, updateSettings, resetSettings } = useSettings();
@@ -9,7 +10,8 @@ function UserSettings({ onClose }) {
   const [importFile, setImportFile] = useState(null);
   const [importError, setImportError] = useState('');
   const [settingsChanged, setSettingsChanged] = useState(false);
-  
+  const { t, changeLanguage } = useI18n();
+
   // Local copy of settings for making changes
   const [localSettings, setLocalSettings] = useState({...settings});
   
@@ -117,6 +119,15 @@ function UserSettings({ onClose }) {
   // Toggle dark mode
   const toggleDarkMode = (enabled) => {
     handleChange('appearance', 'darkMode', enabled);
+  };
+
+  // Update for language selection
+  const handleLanguageChange = (e) => {
+    const newLanguage = e.target.value;
+    handleChange('preferences', 'language', newLanguage);
+    
+    // Directly change the language for immediate feedback
+    changeLanguage(newLanguage);
   };
   
   // Available color schemes
@@ -446,20 +457,20 @@ function UserSettings({ onClose }) {
                   
                   {/* Language Setting */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.language')}</label>
                     <select
                       value={localSettings.preferences.language}
-                      onChange={(e) => handleChange('preferences', 'language', e.target.value)}
+                      onChange={handleLanguageChange} // Use the new handler
                       className="w-full p-2 border border-gray-300 rounded-lg"
                     >
-                      {languages.map(language => (
+                      {AVAILABLE_LANGUAGES.map(language => (
                         <option key={language.code} value={language.code}>
                           {language.name}
                         </option>
                       ))}
                     </select>
                     <p className="text-xs text-gray-500 mt-1">
-                      The language used throughout the application.
+                      {t('settings.languageHelp')}
                     </p>
                   </div>
                 </div>

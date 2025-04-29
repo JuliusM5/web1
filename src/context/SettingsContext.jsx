@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getUserSettings, saveUserSettings, applyThemeSettings } from '../utils/settingsUtils';
+import { syncLanguageWithSettings } from '../utils/i18n'; // Import function to sync language
 
 // Updated default settings with new options
 export const DEFAULT_SETTINGS = {
@@ -63,6 +64,10 @@ export const SettingsProvider = ({ children }) => {
       setSettings(mergedSettings);
       applyThemeSettings(mergedSettings);
       applyAccessibilitySettings(mergedSettings);
+      
+      // Sync language with i18n system
+      syncLanguageWithSettings(mergedSettings);
+      
       setLoading(false);
     };
 
@@ -122,6 +127,9 @@ export const SettingsProvider = ({ children }) => {
     // Apply accessibility settings
     applyAccessibilitySettings(newSettings);
     
+    // Sync language with i18n system
+    syncLanguageWithSettings(newSettings);
+    
     return true;
   };
 
@@ -131,6 +139,10 @@ export const SettingsProvider = ({ children }) => {
     saveUserSettings(DEFAULT_SETTINGS);
     applyThemeSettings(DEFAULT_SETTINGS);
     applyAccessibilitySettings(DEFAULT_SETTINGS);
+    
+    // Sync language with i18n system
+    syncLanguageWithSettings(DEFAULT_SETTINGS);
+    
     return true;
   };
 
