@@ -3,7 +3,7 @@ import './App.css';
 import EnhancedTripPlanner from './components/TravelPlanner/EnhancedTripPlanner';
 import EnhancedOfflineIndicator from './components/Offline/EnhancedOfflineIndicator';
 import { SettingsProvider } from './context/SettingsContext';
-import { I18nProvider } from './utils/i18n';
+import { I18nProvider } from './utils/i18n'; // Import I18nProvider
 import AppSettingsWrapper from './components/UI/AppSettingsWrapper';
 import UserSettings from './components/Settings/UserSettings';
 import MobileNavigation from './components/UI/MobileNavigation';

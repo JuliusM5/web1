@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import EnhancedPackingList from '../Packing/EnhancedPackingList';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 /**
  * Packing Tab component for the trip planner
@@ -14,14 +15,17 @@ function PackingTab({
   startDate, 
   endDate
 }) {
+  // Get i18n functionality
+  const { t } = useI18n();
+  
   // Trip type options for packing recommendations
   const tripTypes = [
-    { id: 'leisure', name: 'Leisure/General' },
-    { id: 'business', name: 'Business Trip' },
-    { id: 'beach', name: 'Beach Vacation' },
-    { id: 'adventure', name: 'Adventure/Hiking' },
-    { id: 'winter', name: 'Winter/Ski Trip' },
-    { id: 'city', name: 'City Break' }
+    { id: 'leisure', name: t('packing.tripType.leisure', 'Leisure/General') },
+    { id: 'business', name: t('packing.tripType.business', 'Business Trip') },
+    { id: 'beach', name: t('packing.tripType.beach', 'Beach Vacation') },
+    { id: 'adventure', name: t('packing.tripType.adventure', 'Adventure/Hiking') },
+    { id: 'winter', name: t('packing.tripType.winter', 'Winter/Ski Trip') },
+    { id: 'city', name: t('packing.tripType.city', 'City Break') }
   ];
   
   // State for trip type selection
@@ -58,10 +62,10 @@ function PackingTab({
   
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-6 text-gray-800">Packing List</h3>
+      <h3 className="text-xl font-semibold mb-6 text-gray-800">{t('packing.title', 'Packing List')}</h3>
       
       <div className="mb-6">
-        <label className="block text-gray-700 mb-2">Trip Type</label>
+        <label className="block text-gray-700 mb-2">{t('packing.tripTypeLabel', 'Trip Type')}</label>
         <div className="flex flex-wrap gap-2">
           {tripTypes.map(type => (
             <button
@@ -78,14 +82,14 @@ function PackingTab({
           ))}
         </div>
         <p className="text-xs text-gray-500 mt-1">
-          Select your trip type to get tailored packing recommendations
+          {t('packing.tripTypeHint', 'Select your trip type to get tailored packing recommendations')}
         </p>
       </div>
       
       {!destination && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
           <p className="text-yellow-800">
-            Please set your destination in the Basic Info tab to get personalized packing recommendations.
+            {t('packing.noDestinationWarning', 'Please set your destination in the Basic Info tab to get personalized packing recommendations.')}
           </p>
         </div>
       )}
@@ -93,7 +97,7 @@ function PackingTab({
       <EnhancedPackingList
         tripTasks={tripTasks}
         setTripTasks={setTripTasks}
-        destination={destination || 'Your Trip'}
+        destination={destination || t('packing.defaultDestination', 'Your Trip')}
         startDate={startDate}
         endDate={endDate}
         tripType={selectedTripType}

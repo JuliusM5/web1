@@ -1,6 +1,7 @@
 import React from 'react';
 import { calculateDuration } from '../../utils/helpers';
 import { useAppSettings } from '../../utils/useAppSettings';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 function BasicInfoTab({ 
   destination, setDestination, startDate, setStartDate, 
@@ -8,24 +9,26 @@ function BasicInfoTab({
 }) {
   // Get currency formatter from app settings
   const { currency } = useAppSettings();
+  // Get i18n functionality
+  const { t } = useI18n();
 
   return (
     <div>
       <div className="space-y-4">
         <div>
-          <label className="block text-gray-700 mb-2">Destination</label>
+          <label className="block text-gray-700 mb-2">{t('basicInfo.destination', 'Destination')}</label>
           <input
             type="text"
             value={destination}
             onChange={e => setDestination(e.target.value)}
-            placeholder="Where are you going?"
+            placeholder={t('basicInfo.destinationPlaceholder', 'Where are you going?')}
             className="w-full p-2 border border-gray-300 rounded"
           />
-          <p className="text-xs text-gray-500 mt-1">Enter any city or destination to get started</p>
+          <p className="text-xs text-gray-500 mt-1">{t('basicInfo.destinationHint', 'Enter any city or destination to get started')}</p>
         </div>
         
         <div>
-          <label className="block text-gray-700 mb-2">Start Date</label>
+          <label className="block text-gray-700 mb-2">{t('basicInfo.startDate', 'Start Date')}</label>
           <input
             type="date"
             value={startDate}
@@ -35,7 +38,7 @@ function BasicInfoTab({
         </div>
         
         <div>
-          <label className="block text-gray-700 mb-2">End Date</label>
+          <label className="block text-gray-700 mb-2">{t('basicInfo.endDate', 'End Date')}</label>
           <input
             type="date"
             value={endDate}
@@ -45,12 +48,12 @@ function BasicInfoTab({
         </div>
         
         <div>
-          <label className="block text-gray-700 mb-2">Budget</label>
+          <label className="block text-gray-700 mb-2">{t('basicInfo.budget', 'Budget')}</label>
           <input
             type="number"
             value={budget}
             onChange={e => setBudget(e.target.value)}
-            placeholder="Estimated budget"
+            placeholder={t('basicInfo.budgetPlaceholder', 'Estimated budget')}
             className="w-full p-2 border border-gray-300 rounded"
           />
         </div>
@@ -58,9 +61,15 @@ function BasicInfoTab({
       
       {destination && startDate && endDate && (
         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-          <p><strong>Duration:</strong> {calculateDuration(startDate, endDate)} days</p>
+          <p>
+            <strong>{t('basicInfo.duration', 'Duration')}:</strong> 
+            {calculateDuration(startDate, endDate)} {t('basicInfo.days', 'days')}
+          </p>
           {budget && (
-            <p><strong>Budget:</strong> {currency(budget)} ({currency((budget / calculateDuration(startDate, endDate)).toFixed(2))}/day)</p>
+            <p>
+              <strong>{t('basicInfo.budget', 'Budget')}:</strong> 
+              {currency(budget)} ({currency((budget / calculateDuration(startDate, endDate)).toFixed(2))}/{t('basicInfo.days', 'day')})
+            </p>
           )}
         </div>
       )}

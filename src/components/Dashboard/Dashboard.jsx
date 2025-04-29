@@ -1,10 +1,12 @@
 import React from 'react';
 import { calculateDuration } from '../../utils/helpers';
 import { useAppSettings } from '../../utils/useAppSettings';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 function Dashboard({ trips, viewTrip, setView }) {
-  // Use our custom hook to access settings
+  // Use our custom hooks to access settings and translations
   const { currency, date } = useAppSettings();
+  const { t } = useI18n(); // Use the i18n hook
   
   // Calculate dashboard statistics
   const totalTrips = trips.length;
@@ -24,34 +26,34 @@ function Dashboard({ trips, viewTrip, setView }) {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-800">Dashboard</h2>
+      <h2 className="text-2xl font-semibold mb-6 text-gray-800">{t('dashboard.title')}</h2>
       
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-primary text-white rounded-lg p-4 shadow-md">
-          <h3 className="text-lg font-semibold">Total Trips</h3>
+          <h3 className="text-lg font-semibold">{t('dashboard.stats.totalTrips')}</h3>
           <p className="text-3xl font-bold mt-2">{totalTrips}</p>
         </div>
         
         <div className="bg-green-600 text-white rounded-lg p-4 shadow-md">
-          <h3 className="text-lg font-semibold">Upcoming</h3>
+          <h3 className="text-lg font-semibold">{t('dashboard.stats.upcoming')}</h3>
           <p className="text-3xl font-bold mt-2">{upcomingTrips}</p>
         </div>
         
         <div className="bg-purple-600 text-white rounded-lg p-4 shadow-md">
-          <h3 className="text-lg font-semibold">Days Traveled</h3>
+          <h3 className="text-lg font-semibold">{t('dashboard.stats.daysTraveled')}</h3>
           <p className="text-3xl font-bold mt-2">{totalDays}</p>
         </div>
         
         <div className="bg-orange-600 text-white rounded-lg p-4 shadow-md">
-          <h3 className="text-lg font-semibold">Budget Total</h3>
+          <h3 className="text-lg font-semibold">{t('dashboard.stats.budgetTotal')}</h3>
           <p className="text-3xl font-bold mt-2">{currency(totalBudget)}</p>
         </div>
       </div>
       
       {/* Upcoming Trip */}
       <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">Next Adventure</h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('dashboard.nextAdventure')}</h3>
         
         {upcomingTrip ? (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -61,19 +63,19 @@ function Dashboard({ trips, viewTrip, setView }) {
             <div className="p-4">
               <div className="flex justify-between mb-2">
                 <div>
-                  <span className="text-gray-600">Start Date:</span> {date(upcomingTrip.startDate)}
+                  <span className="text-gray-600">{t('dashboard.startDate')}:</span> {date(upcomingTrip.startDate)}
                 </div>
                 <div>
-                  <span className="text-gray-600">Days:</span> {calculateDuration(upcomingTrip.startDate, upcomingTrip.endDate)}
+                  <span className="text-gray-600">{t('dashboard.days')}:</span> {calculateDuration(upcomingTrip.startDate, upcomingTrip.endDate)}
                 </div>
               </div>
               
               <div className="flex justify-between mb-3">
                 <div>
-                  <span className="text-gray-600">Budget:</span> {currency(upcomingTrip.budget)}
+                  <span className="text-gray-600">{t('dashboard.budget')}:</span> {currency(upcomingTrip.budget)}
                 </div>
                 <div>
-                  <span className="text-gray-600">Transportation:</span> {upcomingTrip.transports?.length || 0} items
+                  <span className="text-gray-600">{t('dashboard.transportation')}:</span> {upcomingTrip.transports?.length || 0} items
                 </div>
               </div>
               
@@ -81,18 +83,18 @@ function Dashboard({ trips, viewTrip, setView }) {
                 onClick={() => viewTrip(upcomingTrip)}
                 className="w-full bg-primary text-white py-2 rounded hover:bg-primary-dark"
               >
-                View Trip Details
+                {t('dashboard.viewDetails')}
               </button>
             </div>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <p className="text-gray-600 mb-4">No upcoming trips planned.</p>
+            <p className="text-gray-600 mb-4">{t('dashboard.noTrips')}</p>
             <button
                 onClick={() => setView('planner')}
                 className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark"
               >
-                Plan a Trip Now
+                {t('dashboard.planTrip')}
               </button>
           </div>
         )}
@@ -100,7 +102,7 @@ function Dashboard({ trips, viewTrip, setView }) {
       
       {/* Trip Timeline */}
       <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">Your Travel Timeline</h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('dashboard.timeline')}</h3>
         
         {trips.length > 0 ? (
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -127,8 +129,8 @@ function Dashboard({ trips, viewTrip, setView }) {
                           <h4 className="text-lg font-bold text-primary">{trip.destination}</h4>
                           <p className="text-gray-600">{date(trip.startDate)} to {date(trip.endDate)}</p>
                           <p className="text-sm text-gray-500 mt-1">
-                            {calculateDuration(trip.startDate, trip.endDate)} days
-                            {trip.budget ? ` · ${currency(trip.budget)} budget` : ''}
+                            {calculateDuration(trip.startDate, trip.endDate)} {t('dashboard.days')}
+                            {trip.budget ? ` · ${currency(trip.budget)} ${t('dashboard.budget')}` : ''}
                           </p>
                         </div>
                       </div>
@@ -139,14 +141,14 @@ function Dashboard({ trips, viewTrip, setView }) {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <p className="text-gray-600">Your travel timeline will appear here once you plan trips.</p>
+            <p className="text-gray-600">{t('Your travel timeline will appear here once you plan trips.')}</p>
           </div>
         )}
       </div>
       
       {/* Travel Statistics */}
       <div>
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">Travel Statistics</h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('Travel Statistics')}</h3>
         
         {trips.length > 0 ? (
           <div className="bg-white rounded-lg shadow-md p-6">

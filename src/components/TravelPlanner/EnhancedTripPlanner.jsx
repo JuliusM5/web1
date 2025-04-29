@@ -14,11 +14,15 @@ import InteractiveCalendar from '../Calendar/InteractiveCalendar';
 import MobileOptimizedDashboard from '../Dashboard/MobileOptimizedDashboard';
 import MobileOptimizedTripDetails from './MobileOptimizedTripDetails';
 import { useDeviceDetection } from '../../utils/deviceDetection';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings }) {
   // Get device info for responsive design
   const deviceInfo = useDeviceDetection();
   const isMobile = deviceInfo.isMobile;
+  
+  // Get i18n functionality
+  const { t } = useI18n();
   
   // Get settings from context
   const { settings } = useSettings();
@@ -411,8 +415,8 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings }) 
         <footer className="bg-gray-800 text-white p-4 mt-12">
           <div className="container mx-auto flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-bold">TravelEase</h3>
-              <p className="text-sm text-gray-400">Plan your trips with ease</p>
+              <h3 className="text-lg font-bold">{t('app.name')}</h3>
+              <p className="text-sm text-gray-400">{t('app.tagline')}</p>
             </div>
             
             <div className="flex space-x-4">
@@ -420,13 +424,13 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings }) 
                 onClick={onOpenSettings}
                 className="text-gray-300 hover:text-white"
               >
-                Settings
+                {t('nav.settings')}
               </button>
               <button
                 onClick={() => setShowTemplateManager(true)}
                 className="text-gray-300 hover:text-white"
               >
-                Templates
+                {t('nav.templates')}
               </button>
             </div>
           </div>
