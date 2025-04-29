@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TaskEditModal from '../Tasks/TaskEditModal';
 import TaskReminders from '../Tasks/TaskReminders';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 function TasksTab({
   tripTasks,
@@ -8,6 +9,9 @@ function TasksTab({
   startDate,
   endDate
 }) {
+  // Get i18n functionality
+  const { t } = useI18n();
+  
   // Task form state
   const [taskText, setTaskText] = useState('');
   const [taskDate, setTaskDate] = useState('');
@@ -93,7 +97,7 @@ function TasksTab({
       
       if (!dependenciesComplete) {
         // Don't allow completion if dependencies aren't complete
-        alert("You need to complete the dependent tasks first!");
+        alert(t('tasks.dependenciesNotCompleteError'));
         return;
       }
     }
@@ -121,7 +125,7 @@ function TasksTab({
     if (dependentTasks.length > 0) {
       // Ask for confirmation
       const confirmDelete = window.confirm(
-        `This task has ${dependentTasks.length} dependent task(s). Deleting it will remove the dependency link. Continue?`
+        t('tasks.deleteTaskWithDependentsConfirmation', { count: dependentTasks.length })
       );
       
       if (!confirmDelete) return;
@@ -211,13 +215,13 @@ function TasksTab({
       });
       
       // Add undated tasks at the end
-      grouped['No Date'] = sortedTasks.filter(task => !task.date);
+      grouped[t('tasks.noDate')] = sortedTasks.filter(task => !task.date);
       
       // Sort date groups chronologically
       groupedTasks = Object.entries(grouped)
         .sort(([dateA], [dateB]) => {
-          if (dateA === 'No Date') return 1;
-          if (dateB === 'No Date') return -1;
+          if (dateA === t('tasks.noDate')) return 1;
+          if (dateB === t('tasks.noDate')) return -1;
           return new Date(dateA) - new Date(dateB);
         });
     } else if (groupBy === 'category') {
@@ -234,7 +238,7 @@ function TasksTab({
     }
   } else {
     // If no grouping, wrap tasks in a format compatible with the rendering logic
-    groupedTasks = [['All Tasks', sortedTasks]];
+    groupedTasks = [[t('tasks.allTasks'), sortedTasks]];
   }
   
   // Helper to get priority color
@@ -295,23 +299,23 @@ function TasksTab({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Add Task Form */}
         <div>
-          <h3 className="font-semibold mb-3">Add Task</h3>
+          <h3 className="font-semibold mb-3">{t('tasks.addTask')}</h3>
           
           <div className="space-y-3 bg-white border border-gray-200 p-4 rounded-lg">
             <div>
-              <label className="block text-gray-700 mb-1 text-sm">Task Description</label>
+              <label className="block text-gray-700 mb-1 text-sm">{t('tasks.taskDescription')}</label>
               <input
                 type="text"
                 value={taskText}
                 onChange={e => setTaskText(e.target.value)}
-                placeholder="What needs to be done?"
+                placeholder={t('tasks.whatNeedsToBeDone')}
                 className="w-full p-2 border border-gray-300 rounded"
               />
             </div>
             
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-gray-700 mb-1 text-sm">Due Date</label>
+                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.dueDate')}</label>
                 <input
                   type="date"
                   value={taskDate}
@@ -322,7 +326,7 @@ function TasksTab({
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-1 text-sm">Time (Optional)</label>
+                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.time')} ({t('tasks.optional')})</label>
                 <input
                   type="time"
                   value={taskTime}
@@ -334,38 +338,38 @@ function TasksTab({
             
             {startDate && endDate && (
               <p className="text-xs text-gray-500">
-                Trip dates: {formatDate(startDate)} to {formatDate(endDate)}
+                {t('tasks.tripDates')}: {formatDate(startDate)} {t('tasks.to')} {formatDate(endDate)}
               </p>
             )}
             
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-gray-700 mb-1 text-sm">Category</label>
+                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.category')}</label>
                 <select
                   value={taskCategory}
                   onChange={e => setTaskCategory(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded"
                 >
-                  <option value="preparation">Preparation</option>
-                  <option value="packing">Packing</option>
-                  <option value="booking">Booking</option>
-                  <option value="activity">Activity</option>
-                  <option value="transportation">Transportation</option>
-                  <option value="accommodation">Accommodation</option>
-                  <option value="other">Other</option>
+                  <option value="preparation">{t('tasks.categories.preparation')}</option>
+                  <option value="packing">{t('tasks.categories.packing')}</option>
+                  <option value="booking">{t('tasks.categories.booking')}</option>
+                  <option value="activity">{t('tasks.categories.activity')}</option>
+                  <option value="transportation">{t('tasks.categories.transportation')}</option>
+                  <option value="accommodation">{t('tasks.categories.accommodation')}</option>
+                  <option value="other">{t('tasks.categories.other')}</option>
                 </select>
               </div>
               
               <div>
-                <label className="block text-gray-700 mb-1 text-sm">Priority</label>
+                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.priority')}</label>
                 <select
                   value={taskPriority}
                   onChange={e => setTaskPriority(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded"
                 >
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
+                  <option value="high">{t('tasks.priorities.high')}</option>
+                  <option value="medium">{t('tasks.priorities.medium')}</option>
+                  <option value="low">{t('tasks.priorities.low')}</option>
                 </select>
               </div>
             </div>
@@ -379,19 +383,19 @@ function TasksTab({
                   : 'bg-blue-500 text-white hover:bg-blue-600'
               }`}
             >
-              Add Task
+              {t('tasks.addTask')}
             </button>
           </div>
           
           {/* Task statistics */}
           {tripTasks.length > 0 && (
             <div className="mt-4 bg-blue-50 p-3 rounded-lg">
-              <h4 className="font-semibold text-blue-800 mb-2">Task Progress</h4>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm">{completedTasks} of {totalTasks} completed</span>
+              <h4 className="font-semibold text-blue-800 mb-2">{t('tasks.taskProgress')}</h4>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">{completedTasks} {t('tasks.of')} {totalTasks} {t('tasks.completed')}</span>
                 <span className="text-sm font-medium">{completionPercentage}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="mt-3 w-full bg-gray-200 rounded-full h-2.5">
                 <div
                   className="bg-blue-600 h-2.5 rounded-full"
                   style={{ width: `${completionPercentage}%` }}
@@ -400,7 +404,7 @@ function TasksTab({
               
               {/* Task breakdown by category */}
               <div className="mt-3 pt-3 border-t border-blue-200">
-                <h5 className="text-sm font-medium text-blue-800 mb-2">Task Breakdown</h5>
+                <h5 className="text-sm font-medium text-blue-800 mb-2">{t('tasks.taskBreakdown')}</h5>
                 <div className="grid grid-cols-2 gap-x-2 gap-y-1">
                   {categories.filter(cat => cat !== 'all').map(category => {
                     const categoryTasks = tripTasks.filter(task => task.category === category);
@@ -410,7 +414,7 @@ function TasksTab({
                     
                     return (
                       <div key={category} className="flex justify-between items-center">
-                        <span className="text-xs capitalize">{category}:</span>
+                        <span className="text-xs capitalize">{t(`tasks.categories.${category}`, category)}:</span>
                         <span className="text-xs">
                           {categoryCompleted}/{categoryTasks.length}
                         </span>
@@ -426,7 +430,7 @@ function TasksTab({
         {/* Tasks List with Filters */}
         <div>
           <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold">Your Tasks</h3>
+            <h3 className="font-semibold">{t('tasks.yourTasks')}</h3>
             
             {/* Task filters/sort dropdown */}
             <div className="relative">
@@ -435,7 +439,7 @@ function TasksTab({
                 className="text-sm bg-white border border-gray-300 rounded px-3 py-1 flex items-center"
                 onClick={() => document.getElementById('task-options').classList.toggle('hidden')}
               >
-                <span>Options</span>
+                <span>{t('tasks.options')}</span>
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
@@ -451,21 +455,21 @@ function TasksTab({
                       onChange={() => setShowCompleted(!showCompleted)}
                       className="mr-2"
                     />
-                    <span className="text-sm">Show Completed</span>
+                    <span className="text-sm">{t('tasks.showCompleted')}</span>
                   </label>
                   
                   {/* Category filter */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Filter by Category</label>
+                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.filterByCategory')}</label>
                     <select
                       value={filterCategory}
                       onChange={e => setFilterCategory(e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded"
                     >
-                      <option value="all">All Categories</option>
+                      <option value="all">{t('tasks.allCategories')}</option>
                       {categories.filter(cat => cat !== 'all').map(category => (
                         <option key={category} value={category} className="capitalize">
-                          {category}
+                          {t(`tasks.categories.${category}`, category)}
                         </option>
                       ))}
                     </select>
@@ -473,45 +477,45 @@ function TasksTab({
                   
                   {/* Priority filter */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Filter by Priority</label>
+                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.filterByPriority')}</label>
                     <select
                       value={filterPriority}
                       onChange={e => setFilterPriority(e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded"
                     >
-                      <option value="all">All Priorities</option>
-                      <option value="high">High</option>
-                      <option value="medium">Medium</option>
-                      <option value="low">Low</option>
+                      <option value="all">{t('tasks.allPriorities')}</option>
+                      <option value="high">{t('tasks.priorities.high')}</option>
+                      <option value="medium">{t('tasks.priorities.medium')}</option>
+                      <option value="low">{t('tasks.priorities.low')}</option>
                     </select>
                   </div>
                   
                   {/* Sort options */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Sort By</label>
+                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.sortBy')}</label>
                     <select
                       value={sortBy}
                       onChange={e => setSortBy(e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded"
                     >
-                      <option value="date">Due Date</option>
-                      <option value="time">Time</option>
-                      <option value="priority">Priority</option>
-                      <option value="created">Recently Added</option>
+                      <option value="date">{t('tasks.dueDate')}</option>
+                      <option value="time">{t('tasks.time')}</option>
+                      <option value="priority">{t('tasks.priority')}</option>
+                      <option value="created">{t('tasks.recentlyAdded')}</option>
                     </select>
                   </div>
                   
                   {/* Group options */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Group By</label>
+                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.groupBy')}</label>
                     <select
                       value={groupBy}
                       onChange={e => setGroupBy(e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded"
                     >
-                      <option value="date">Date</option>
-                      <option value="category">Category</option>
-                      <option value="none">No Grouping</option>
+                      <option value="date">{t('tasks.date')}</option>
+                      <option value="category">{t('tasks.category')}</option>
+                      <option value="none">{t('tasks.noGrouping')}</option>
                     </select>
                   </div>
                 </div>
@@ -521,7 +525,7 @@ function TasksTab({
           
           {filteredTasks.length === 0 ? (
             <div className="bg-gray-50 p-4 rounded-lg text-center">
-              <p className="text-gray-500">No tasks match your filters.</p>
+              <p className="text-gray-500">{t('tasks.noTasksMatch')}</p>
               <button
                 onClick={() => {
                   setShowCompleted(true);
@@ -530,7 +534,7 @@ function TasksTab({
                 }}
                 className="mt-2 text-blue-500 text-sm"
               >
-                Reset filters
+                {t('tasks.resetFilters')}
               </button>
             </div>
           ) : (
@@ -540,19 +544,19 @@ function TasksTab({
                 {groupedTasks.map(([groupName, tasks]) => (
                   <div key={groupName} className="border-b border-gray-200 last:border-b-0">
                     <div className="bg-gray-100 px-4 py-2 font-medium flex justify-between items-center">
-                      {groupBy === 'date' && groupName !== 'No Date' ? (
+                      {groupBy === 'date' && groupName !== t('tasks.noDate') ? (
                         <span>{formatDate(groupName)}</span>
                       ) : (
-                        <span className="capitalize">{groupName}</span>
+                        <span className="capitalize">{t(`tasks.categories.${groupName}`, groupName)}</span>
                       )}
                       <span className="text-xs text-gray-500">
-                        {tasks.length} task{tasks.length !== 1 ? 's' : ''}
+                        {tasks.length} {t('tasks.taskCount', { count: tasks.length })}
                       </span>
                     </div>
                     <div>
                       {tasks.length === 0 ? (
                         <div className="p-3 text-center text-sm text-gray-500">
-                          No tasks in this group
+                          {t('tasks.noTasksInGroup')}
                         </div>
                       ) : (
                         tasks.map(task => {
@@ -572,7 +576,7 @@ function TasksTab({
                                   className="h-4 w-4"
                                   disabled={!task.completed && hasDependencies && !allCompleted}
                                   title={!task.completed && hasDependencies && !allCompleted ? 
-                                    "Complete dependencies first" : ""}
+                                    t('tasks.completeDependenciesFirst') : ""}
                                 />
                               </div>
                               <div className="ml-3 flex-1">
@@ -584,9 +588,9 @@ function TasksTab({
                                     <span 
                                       className={`ml-2 inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full
                                         ${allCompleted ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
-                                      title={allCompleted ? "Dependencies complete" : "Dependencies pending"}
+                                      title={allCompleted ? t('tasks.dependenciesComplete') : t('tasks.dependenciesPending')}
                                     >
-                                      {allCompleted ? "Ready" : "Waiting"}
+                                      {allCompleted ? t('tasks.ready') : t('tasks.waiting')}
                                     </span>
                                   )}
                                 </div>
@@ -606,10 +610,10 @@ function TasksTab({
                                     <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                     </svg>
-                                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                    {t(`tasks.priorities.${task.priority}`, task.priority.charAt(0).toUpperCase() + task.priority.slice(1))}
                                   </span>
                                   <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-800 capitalize">
-                                    {task.category}
+                                    {t(`tasks.categories.${task.category}`, task.category)}
                                   </span>
                                 </div>
                               </div>
@@ -617,7 +621,7 @@ function TasksTab({
                                 <button
                                   onClick={() => openEditModal(task)}
                                   className="text-gray-400 hover:text-blue-500 p-1"
-                                  title="Edit task"
+                                  title={t('tasks.editTask')}
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
@@ -626,7 +630,7 @@ function TasksTab({
                                 <button
                                   onClick={() => deleteTask(task.id)}
                                   className="text-gray-400 hover:text-red-500 p-1"
-                                  title="Delete task"
+                                  title={t('tasks.deleteTask')}
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -646,12 +650,12 @@ function TasksTab({
           
           {/* Quick tip card */}
           <div className="mt-4 bg-yellow-50 border border-yellow-200 p-3 rounded text-sm">
-            <h4 className="font-semibold text-yellow-800">Task Planning Tips:</h4>
+            <h4 className="font-semibold text-yellow-800">{t('tasks.taskPlanningTips')}:</h4>
             <ul className="mt-1 ml-4 list-disc text-yellow-800">
-              <li>Create a packing checklist well before your trip</li>
-              <li>Add reminders for important booking deadlines</li>
-              <li>Set high priority for time-sensitive items</li>
-              <li>Use dependencies to organize sequential tasks</li>
+              <li>{t('tasks.tips.packingChecklist')}</li>
+              <li>{t('tasks.tips.bookingDeadlines')}</li>
+              <li>{t('tasks.tips.prioritySensitive')}</li>
+              <li>{t('tasks.tips.useDependencies')}</li>
             </ul>
           </div>
         </div>

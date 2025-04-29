@@ -1,62 +1,66 @@
 import React from 'react';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 function TransportTab({ 
   transportType, setTransportType, transportFrom, setTransportFrom,
   transportTo, setTransportTo, transportPrice, setTransportPrice,
   transports, setTransports, addTransport
 }) {
+  // Get i18n functionality
+  const { t } = useI18n();
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <h3 className="font-semibold mb-3">Add Transportation</h3>
+        <h3 className="font-semibold mb-3">{t('transport.addTransportation')}</h3>
         
         <div className="space-y-3 bg-white border border-gray-200 p-4 rounded-lg">
           <div>
-            <label className="block text-gray-700 mb-1 text-sm">Type</label>
+            <label className="block text-gray-700 mb-1 text-sm">{t('transport.type')}</label>
             <select
               value={transportType}
               onChange={e => setTransportType(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded"
             >
-              <option value="">Select type</option>
-              <option value="Flight">Flight</option>
-              <option value="Train">Train</option>
-              <option value="Bus">Bus</option>
-              <option value="Ferry">Ferry</option>
-              <option value="Rental Car">Rental Car</option>
-              <option value="Taxi/Rideshare">Taxi/Rideshare</option>
+              <option value="">{t('transport.selectType')}</option>
+              <option value="Flight">{t('transport.flight')}</option>
+              <option value="Train">{t('transport.train')}</option>
+              <option value="Bus">{t('transport.bus')}</option>
+              <option value="Ferry">{t('transport.ferry')}</option>
+              <option value="Rental Car">{t('transport.rentalCar')}</option>
+              <option value="Taxi/Rideshare">{t('transport.taxiRideshare')}</option>
             </select>
           </div>
           
           <div>
-            <label className="block text-gray-700 mb-1 text-sm">From</label>
+            <label className="block text-gray-700 mb-1 text-sm">{t('transport.from')}</label>
             <input
               type="text"
               value={transportFrom}
               onChange={e => setTransportFrom(e.target.value)}
-              placeholder="Departure point"
+              placeholder={t('transport.departurePoint')}
               className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
           
           <div>
-            <label className="block text-gray-700 mb-1 text-sm">To</label>
+            <label className="block text-gray-700 mb-1 text-sm">{t('transport.to')}</label>
             <input
               type="text"
               value={transportTo}
               onChange={e => setTransportTo(e.target.value)}
-              placeholder="Arrival point"
+              placeholder={t('transport.arrivalPoint')}
               className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
           
           <div>
-            <label className="block text-gray-700 mb-1 text-sm">Price ($)</label>
+            <label className="block text-gray-700 mb-1 text-sm">{t('transport.price')}</label>
             <input
               type="number"
               value={transportPrice}
               onChange={e => setTransportPrice(e.target.value)}
-              placeholder="Cost"
+              placeholder={t('transport.cost')}
               className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
@@ -70,17 +74,17 @@ function TransportTab({
                 : 'bg-blue-500 text-white hover:bg-blue-600'
             }`}
           >
-            Add Transportation
+            {t('transport.addTransportation')}
           </button>
         </div>
       </div>
       
       <div>
-        <h3 className="font-semibold mb-3">Your Transportation</h3>
+        <h3 className="font-semibold mb-3">{t('transport.yourTransportation')}</h3>
         
         {transports.length === 0 ? (
           <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <p className="text-gray-500">No transportation options added yet.</p>
+            <p className="text-gray-500">{t('transport.noOptions')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -94,15 +98,15 @@ function TransportTab({
                 </button>
                 
                 <div className="font-medium">{t.type}</div>
-                <div className="text-sm">From: {t.from}</div>
-                <div className="text-sm">To: {t.to}</div>
-                {t.price && <div className="text-sm">Price: ${t.price}</div>}
+                <div className="text-sm">{t('transport.from')}: {t.from}</div>
+                <div className="text-sm">{t('transport.to')}: {t.to}</div>
+                {t.price && <div className="text-sm">{t('transport.price')}: ${t.price}</div>}
               </div>
             ))}
             
             <div className="mt-4 bg-blue-100 p-3 rounded-lg">
-              <p><strong>Total options:</strong> {transports.length}</p>
-              <p><strong>Total cost:</strong> $
+              <p><strong>{t('transport.totalOptions')}:</strong> {transports.length}</p>
+              <p><strong>{t('transport.totalCost')}:</strong> $
                 {transports.reduce((sum, t) => sum + (Number(t.price) || 0), 0)}
               </p>
             </div>
