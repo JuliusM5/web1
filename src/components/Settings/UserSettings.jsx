@@ -161,18 +161,6 @@ function UserSettings({ onClose }) {
     { id: 'D MMMM YYYY', display: 'D Month YYYY', example: '13 April 2025' },
   ];
   
-  // Language options
-  const languages = [
-    { code: 'en-US', name: 'English (US)' },
-    { code: 'en-GB', name: 'English (UK)' },
-    { code: 'es-ES', name: 'Spanish' },
-    { code: 'fr-FR', name: 'French' },
-    { code: 'de-DE', name: 'German' },
-    { code: 'it-IT', name: 'Italian' },
-    { code: 'ja-JP', name: 'Japanese' },
-    { code: 'zh-CN', name: 'Chinese (Simplified)' },
-  ];
-  
   // Accessibility options
   const accessibilityOptions = [
     { id: 'highContrast', label: 'High Contrast Mode', description: 'Increases contrast for better readability' },
@@ -184,7 +172,7 @@ function UserSettings({ onClose }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="p-4 bg-blue-600 text-white rounded-t-lg flex justify-between items-center">
-          <h2 className="text-xl font-semibold">User Settings</h2>
+          <h2 className="text-xl font-semibold">{t('settings.title', 'User Settings')}</h2>
           <button
             onClick={onClose}
             className="text-white hover:text-gray-200"
@@ -205,7 +193,7 @@ function UserSettings({ onClose }) {
                 }`}
                 onClick={() => setActiveTab('appearance')}
               >
-                Appearance
+                {t('settings.tabs.appearance', 'Appearance')}
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
@@ -213,7 +201,7 @@ function UserSettings({ onClose }) {
                 }`}
                 onClick={() => setActiveTab('preferences')}
               >
-                Preferences
+                {t('settings.tabs.preferences', 'Preferences')}
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
@@ -221,7 +209,7 @@ function UserSettings({ onClose }) {
                 }`}
                 onClick={() => setActiveTab('notifications')}
               >
-                Notifications
+                {t('settings.tabs.notifications', 'Notifications')}
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
@@ -229,7 +217,7 @@ function UserSettings({ onClose }) {
                 }`}
                 onClick={() => setActiveTab('privacy')}
               >
-                Privacy
+                {t('settings.tabs.privacy', 'Privacy')}
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
@@ -237,7 +225,7 @@ function UserSettings({ onClose }) {
                 }`}
                 onClick={() => setActiveTab('accessibility')}
               >
-                Accessibility
+                {t('settings.tabs.accessibility', 'Accessibility')}
               </button>
               <button
                 className={`w-full text-left px-3 py-2 rounded-lg ${
@@ -245,7 +233,7 @@ function UserSettings({ onClose }) {
                 }`}
                 onClick={() => setActiveTab('data')}
               >
-                Data Management
+                {t('settings.tabs.data', 'Data Management')}
               </button>
             </nav>
             
@@ -254,7 +242,7 @@ function UserSettings({ onClose }) {
                 onClick={handleResetToDefaults}
                 className="w-full px-3 py-2 text-left text-red-600 hover:bg-red-50 rounded-lg"
               >
-                Reset to Defaults
+                {t('settings.resetDefaults', 'Reset to Defaults')}
               </button>
             </div>
           </div>
@@ -264,7 +252,7 @@ function UserSettings({ onClose }) {
             {/* Appearance Tab */}
             {activeTab === 'appearance' && (
               <div>
-                <h3 className="text-lg font-medium mb-4">Appearance Settings</h3>
+                <h3 className="text-lg font-medium mb-4">{t('settings.appearance.title', 'Appearance Settings')}</h3>
                 
                 <div className="space-y-6">
                   {/* Dark Mode Setting */}
@@ -280,14 +268,14 @@ function UserSettings({ onClose }) {
                         <div className={`block w-14 h-8 rounded-full ${localSettings.appearance.darkMode ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
                         <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${localSettings.appearance.darkMode ? 'transform translate-x-6' : ''}`}></div>
                       </div>
-                      <span className="font-medium">Dark Mode</span>
+                      <span className="font-medium">{t('settings.appearance.darkMode', 'Dark Mode')}</span>
                     </label>
-                    <p className="text-sm text-gray-500 mt-1 ml-16">Switch between light and dark theme</p>
+                    <p className="text-sm text-gray-500 mt-1 ml-16">{t('settings.appearance.darkModeHelp', 'Switch between light and dark theme')}</p>
                   </div>
                 
                   {/* Font Size Setting */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.appearance.fontSize', 'Font Size')}</label>
                     <div className="flex space-x-4">
                       <button
                         className={`px-4 py-2 rounded-lg ${
@@ -297,7 +285,7 @@ function UserSettings({ onClose }) {
                         }`}
                         onClick={() => handleChange('appearance', 'fontSize', 'small')}
                       >
-                        Small
+                        {t('settings.appearance.small', 'Small')}
                       </button>
                       <button
                         className={`px-4 py-2 rounded-lg ${
@@ -307,7 +295,7 @@ function UserSettings({ onClose }) {
                         }`}
                         onClick={() => handleChange('appearance', 'fontSize', 'medium')}
                       >
-                        Medium
+                        {t('settings.appearance.medium', 'Medium')}
                       </button>
                       <button
                         className={`px-4 py-2 rounded-lg ${
@@ -317,14 +305,14 @@ function UserSettings({ onClose }) {
                         }`}
                         onClick={() => handleChange('appearance', 'fontSize', 'large')}
                       >
-                        Large
+                        {t('settings.appearance.large', 'Large')}
                       </button>
                     </div>
                   </div>
                   
                   {/* Color Scheme Setting */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Color Scheme</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.appearance.colorScheme', 'Color Scheme')}</label>
                     <div className="grid grid-cols-3 gap-3">
                       {colorSchemes.map(scheme => (
                         <button
@@ -340,7 +328,7 @@ function UserSettings({ onClose }) {
                             className="w-6 h-6 rounded-full" 
                             style={{ backgroundColor: scheme.color }}
                           ></div>
-                          <span>{scheme.name}</span>
+                          <span>{t(`settings.appearance.colors.${scheme.id}`, scheme.name)}</span>
                         </button>
                       ))}
                     </div>
@@ -349,7 +337,7 @@ function UserSettings({ onClose }) {
                 
                 <div className="bg-blue-50 p-4 rounded-lg mt-6">
                   <p className="text-sm text-blue-700">
-                    <strong>Note:</strong> Click "Save and Close" at the bottom of the screen to apply your appearance settings.
+                    <strong>{t('settings.notes.note', 'Note')}:</strong> {t('settings.notes.saveToApply', 'Click "Save and Close" at the bottom of the screen to apply your appearance settings.')}
                   </p>
                 </div>
               </div>
@@ -358,12 +346,12 @@ function UserSettings({ onClose }) {
             {/* Preferences Tab */}
             {activeTab === 'preferences' && (
               <div>
-                <h3 className="text-lg font-medium mb-4">General Preferences</h3>
+                <h3 className="text-lg font-medium mb-4">{t('settings.preferences.title', 'General Preferences')}</h3>
                 
                 <div className="space-y-6">
                   {/* Currency Setting */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Default Currency</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.preferences.defaultCurrency', 'Default Currency')}</label>
                     <select
                       value={localSettings.preferences.defaultCurrency}
                       onChange={(e) => handleChange('preferences', 'defaultCurrency', e.target.value)}
@@ -371,18 +359,18 @@ function UserSettings({ onClose }) {
                     >
                       {currencies.map(currency => (
                         <option key={currency.code} value={currency.code}>
-                          {currency.code} ({currency.symbol}) - {currency.name}
+                          {currency.code} ({currency.symbol}) - {t(`settings.preferences.currencies.${currency.code}`, currency.name)}
                         </option>
                       ))}
                     </select>
                     <p className="text-xs text-gray-500 mt-1">
-                      Default currency used for budgeting and expenses.
+                      {t('settings.preferences.currencyHelp', 'Default currency used for budgeting and expenses.')}
                     </p>
                   </div>
                   
                   {/* Date Format Setting */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Date Format</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.preferences.dateFormat', 'Date Format')}</label>
                     <div className="space-y-2">
                       {dateFormats.map(format => (
                         <label key={format.id} className="flex items-center">
@@ -403,7 +391,7 @@ function UserSettings({ onClose }) {
                   
                   {/* Distance Unit Setting */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Distance Unit</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.preferences.distanceUnit', 'Distance Unit')}</label>
                     <div className="flex space-x-4">
                       <button
                         className={`px-4 py-2 rounded-lg ${
@@ -413,7 +401,7 @@ function UserSettings({ onClose }) {
                         }`}
                         onClick={() => handleChange('preferences', 'distanceUnit', 'miles')}
                       >
-                        Miles
+                        {t('settings.preferences.miles', 'Miles')}
                       </button>
                       <button
                         className={`px-4 py-2 rounded-lg ${
@@ -423,14 +411,14 @@ function UserSettings({ onClose }) {
                         }`}
                         onClick={() => handleChange('preferences', 'distanceUnit', 'kilometers')}
                       >
-                        Kilometers
+                        {t('settings.preferences.kilometers', 'Kilometers')}
                       </button>
                     </div>
                   </div>
                   
                   {/* Temperature Unit Setting */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Temperature Unit</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.preferences.temperatureUnit', 'Temperature Unit')}</label>
                     <div className="flex space-x-4">
                       <button
                         className={`px-4 py-2 rounded-lg ${
@@ -440,7 +428,7 @@ function UserSettings({ onClose }) {
                         }`}
                         onClick={() => handleChange('preferences', 'temperatureUnit', 'fahrenheit')}
                       >
-                        Fahrenheit (°F)
+                        {t('settings.preferences.fahrenheit', 'Fahrenheit (°F)')}
                       </button>
                       <button
                         className={`px-4 py-2 rounded-lg ${
@@ -450,17 +438,17 @@ function UserSettings({ onClose }) {
                         }`}
                         onClick={() => handleChange('preferences', 'temperatureUnit', 'celsius')}
                       >
-                        Celsius (°C)
+                        {t('settings.preferences.celsius', 'Celsius (°C)')}
                       </button>
                     </div>
                   </div>
                   
                   {/* Language Setting */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.language')}</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.preferences.language', 'Language')}</label>
                     <select
                       value={localSettings.preferences.language}
-                      onChange={handleLanguageChange} // Use the new handler
+                      onChange={handleLanguageChange}
                       className="w-full p-2 border border-gray-300 rounded-lg"
                     >
                       {AVAILABLE_LANGUAGES.map(language => (
@@ -470,7 +458,7 @@ function UserSettings({ onClose }) {
                       ))}
                     </select>
                     <p className="text-xs text-gray-500 mt-1">
-                      {t('settings.languageHelp')}
+                      {t('settings.preferences.languageHelp', 'Select your preferred language for the application.')}
                     </p>
                   </div>
                 </div>
@@ -480,13 +468,13 @@ function UserSettings({ onClose }) {
             {/* Notifications Tab */}
             {activeTab === 'notifications' && (
               <div>
-                <h3 className="text-lg font-medium mb-4">Notification Settings</h3>
+                <h3 className="text-lg font-medium mb-4">{t('settings.notifications.title', 'Notification Settings')}</h3>
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <h4 className="font-medium">Trip Reminders</h4>
-                      <p className="text-sm text-gray-500">Receive reminders about upcoming trips</p>
+                      <h4 className="font-medium">{t('settings.notifications.tripReminders', 'Trip Reminders')}</h4>
+                      <p className="text-sm text-gray-500">{t('settings.notifications.tripRemindersHelp', 'Receive reminders about upcoming trips')}</p>
                     </div>
                     <label className="flex items-center cursor-pointer">
                       <div className="relative">
@@ -504,8 +492,8 @@ function UserSettings({ onClose }) {
                   
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <h4 className="font-medium">Task Reminders</h4>
-                      <p className="text-sm text-gray-500">Receive reminders about upcoming tasks and deadlines</p>
+                      <h4 className="font-medium">{t('settings.notifications.taskReminders', 'Task Reminders')}</h4>
+                      <p className="text-sm text-gray-500">{t('settings.notifications.taskRemindersHelp', 'Receive reminders about upcoming tasks and deadlines')}</p>
                     </div>
                     <label className="flex items-center cursor-pointer">
                       <div className="relative">
@@ -523,8 +511,8 @@ function UserSettings({ onClose }) {
                   
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <h4 className="font-medium">Budget Alerts</h4>
-                      <p className="text-sm text-gray-500">Receive alerts when you're approaching your budget limits</p>
+                      <h4 className="font-medium">{t('settings.notifications.budgetAlerts', 'Budget Alerts')}</h4>
+                      <p className="text-sm text-gray-500">{t('settings.notifications.budgetAlertsHelp', "Receive alerts when you're approaching your budget limits")}</p>
                     </div>
                     <label className="flex items-center cursor-pointer">
                       <div className="relative">
@@ -542,8 +530,8 @@ function UserSettings({ onClose }) {
                   
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <h4 className="font-medium">Email Notifications</h4>
-                      <p className="text-sm text-gray-500">Receive notifications via email</p>
+                      <h4 className="font-medium">{t('settings.notifications.emailNotifications', 'Email Notifications')}</h4>
+                      <p className="text-sm text-gray-500">{t('settings.notifications.emailNotificationsHelp', 'Receive notifications via email')}</p>
                     </div>
                     <label className="flex items-center cursor-pointer">
                       <div className="relative">
@@ -562,29 +550,29 @@ function UserSettings({ onClose }) {
                   {/* Email configuration section (shown when email notifications are enabled) */}
                   {localSettings.notifications.emailNotifications && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <h4 className="font-medium mb-3">Email Configuration</h4>
+                      <h4 className="font-medium mb-3">{t('settings.notifications.emailConfig', 'Email Configuration')}</h4>
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">{t('settings.notifications.emailAddress', 'Email Address')}</label>
                           <input
                             type="email"
                             value={localSettings.notifications.emailAddress || ''}
                             onChange={(e) => handleChange('notifications', 'emailAddress', e.target.value)}
-                            placeholder="Enter your email address"
+                            placeholder={t('settings.notifications.emailPlaceholder', 'Enter your email address')}
                             className="w-full p-2 border border-gray-300 rounded"
                           />
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Notification Frequency</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">{t('settings.notifications.frequency', 'Notification Frequency')}</label>
                           <select
                             value={localSettings.notifications.emailFrequency || 'daily'}
                             onChange={(e) => handleChange('notifications', 'emailFrequency', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded"
                           >
-                            <option value="instant">Instant</option>
-                            <option value="daily">Daily Summary</option>
-                            <option value="weekly">Weekly Summary</option>
+                            <option value="instant">{t('settings.notifications.instant', 'Instant')}</option>
+                            <option value="daily">{t('settings.notifications.daily', 'Daily Summary')}</option>
+                            <option value="weekly">{t('settings.notifications.weekly', 'Weekly Summary')}</option>
                           </select>
                         </div>
                       </div>
@@ -594,7 +582,7 @@ function UserSettings({ onClose }) {
                 
                 <div className="bg-yellow-50 p-4 rounded-lg mt-6">
                   <p className="text-sm text-yellow-700">
-                    <strong>Note:</strong> Browser notifications require permission. If you've denied permission, you'll need to update your browser settings.
+                    <strong>{t('settings.notes.note', 'Note')}:</strong> {t('settings.notifications.permissionsNote', "Browser notifications require permission. If you've denied permission, you'll need to update your browser settings.")}
                   </p>
                 </div>
               </div>
@@ -603,13 +591,13 @@ function UserSettings({ onClose }) {
             {/* Privacy Tab */}
             {activeTab === 'privacy' && (
               <div>
-                <h3 className="text-lg font-medium mb-4">Privacy Settings</h3>
+                <h3 className="text-lg font-medium mb-4">{t('settings.privacy.title', 'Privacy Settings')}</h3>
                 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <h4 className="font-medium">Share Location Data</h4>
-                      <p className="text-sm text-gray-500">Allow access to your location for better recommendations</p>
+                      <h4 className="font-medium">{t('settings.privacy.shareLocation', 'Share Location Data')}</h4>
+                      <p className="text-sm text-gray-500">{t('settings.privacy.shareLocationHelp', 'Allow access to your location for better recommendations')}</p>
                     </div>
                     <label className="flex items-center cursor-pointer">
                       <div className="relative">
@@ -627,8 +615,8 @@ function UserSettings({ onClose }) {
                   
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <h4 className="font-medium">Usage Analytics</h4>
-                      <p className="text-sm text-gray-500">Allow anonymous usage data collection to improve the app</p>
+                      <h4 className="font-medium">{t('settings.privacy.analytics', 'Usage Analytics')}</h4>
+                      <p className="text-sm text-gray-500">{t('settings.privacy.analyticsHelp', 'Allow anonymous usage data collection to improve the app')}</p>
                     </div>
                     <label className="flex items-center cursor-pointer">
                       <div className="relative">
@@ -646,8 +634,8 @@ function UserSettings({ onClose }) {
                   
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <h4 className="font-medium">Auto-Save</h4>
-                      <p className="text-sm text-gray-500">Automatically save trips and changes</p>
+                      <h4 className="font-medium">{t('settings.privacy.autoSave', 'Auto-Save')}</h4>
+                      <p className="text-sm text-gray-500">{t('settings.privacy.autoSaveHelp', 'Automatically save trips and changes')}</p>
                     </div>
                     <label className="flex items-center cursor-pointer">
                       <div className="relative">
@@ -665,23 +653,23 @@ function UserSettings({ onClose }) {
 
                   {/* Data Retention Settings */}
                   <div className="mt-6">
-                    <h4 className="font-medium mb-3">Data Retention</h4>
+                    <h4 className="font-medium mb-3">{t('settings.privacy.dataRetention', 'Data Retention')}</h4>
                     
                     <div className="p-3 bg-gray-50 rounded-lg">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Keep trip history for</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.privacy.keepHistoryFor', 'Keep trip history for')}</label>
                       <select
                         value={localSettings.privacy.dataRetention || 'forever'}
                         onChange={(e) => handleChange('privacy', 'dataRetention', e.target.value)}
                         className="w-full p-2 border border-gray-300 rounded"
                       >
-                        <option value="1month">1 month</option>
-                        <option value="3months">3 months</option>
-                        <option value="6months">6 months</option>
-                        <option value="1year">1 year</option>
-                        <option value="forever">Forever</option>
+                        <option value="1month">{t('settings.privacy.1month', '1 month')}</option>
+                        <option value="3months">{t('settings.privacy.3months', '3 months')}</option>
+                        <option value="6months">{t('settings.privacy.6months', '6 months')}</option>
+                        <option value="1year">{t('settings.privacy.1year', '1 year')}</option>
+                        <option value="forever">{t('settings.privacy.forever', 'Forever')}</option>
                       </select>
                       <p className="text-xs text-gray-500 mt-1">
-                        Past trips older than this will be automatically deleted.
+                        {t('settings.privacy.dataRetentionHelp', 'Past trips older than this will be automatically deleted.')}
                       </p>
                     </div>
                   </div>
@@ -692,14 +680,14 @@ function UserSettings({ onClose }) {
             {/* Accessibility Tab */}
             {activeTab === 'accessibility' && (
               <div>
-                <h3 className="text-lg font-medium mb-4">Accessibility Settings</h3>
+                <h3 className="text-lg font-medium mb-4">{t('settings.accessibility.title', 'Accessibility Settings')}</h3>
                 
                 <div className="space-y-4">
                   {accessibilityOptions.map(option => (
                     <div key={option.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
-                        <h4 className="font-medium">{option.label}</h4>
-                        <p className="text-sm text-gray-500">{option.description}</p>
+                        <h4 className="font-medium">{t(`settings.accessibility.${option.id}`, option.label)}</h4>
+                        <p className="text-sm text-gray-500">{t(`settings.accessibility.${option.id}Help`, option.description)}</p>
                       </div>
                       <label className="flex items-center cursor-pointer">
                         <div className="relative">
@@ -718,8 +706,8 @@ function UserSettings({ onClose }) {
                   
                   {/* Text Size Adjustment (separate from font size setting) */}
                   <div className="p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-medium mb-2">Text Scaling</h4>
-                    <p className="text-sm text-gray-500 mb-3">Adjust text size independently from the interface size</p>
+                    <h4 className="font-medium mb-2">{t('settings.accessibility.textScaling', 'Text Scaling')}</h4>
+                    <p className="text-sm text-gray-500 mb-3">{t('settings.accessibility.textScalingHelp', 'Adjust text size independently from the interface size')}</p>
                     
                     <input
                       type="range"
@@ -737,7 +725,7 @@ function UserSettings({ onClose }) {
                     </div>
                     <div className="mt-3 text-center">
                       <span className="font-medium">
-                        Current: {localSettings.accessibility?.textScaling || 100}%
+                        {t('settings.accessibility.current', 'Current')}: {localSettings.accessibility?.textScaling || 100}%
                       </span>
                     </div>
                   </div>
@@ -745,8 +733,8 @@ function UserSettings({ onClose }) {
                   {/* Screen Reader Optimization */}
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <h4 className="font-medium">Screen Reader Optimization</h4>
-                      <p className="text-sm text-gray-500">Enhanced descriptions for screen readers</p>
+                      <h4 className="font-medium">{t('settings.accessibility.screenReader', 'Screen Reader Optimization')}</h4>
+                      <p className="text-sm text-gray-500">{t('settings.accessibility.screenReaderHelp', 'Enhanced descriptions for screen readers')}</p>
                     </div>
                     <label className="flex items-center cursor-pointer">
                       <div className="relative">
@@ -765,7 +753,7 @@ function UserSettings({ onClose }) {
                 
                 <div className="bg-blue-50 p-4 rounded-lg mt-6">
                   <p className="text-sm text-blue-700">
-                    <strong>Note:</strong> These settings help make the application more accessible for all users.
+                    <strong>{t('settings.notes.note', 'Note')}:</strong> {t('settings.accessibility.note', 'These settings help make the application more accessible for all users.')}
                   </p>
                 </div>
               </div>
@@ -774,26 +762,26 @@ function UserSettings({ onClose }) {
             {/* Data Management Tab */}
             {activeTab === 'data' && (
               <div>
-                <h3 className="text-lg font-medium mb-4">Data Management</h3>
+                <h3 className="text-lg font-medium mb-4">{t('settings.data.title', 'Data Management')}</h3>
                 
                 <div className="space-y-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-blue-700 mb-2">Export Your Data</h4>
+                    <h4 className="font-medium text-blue-700 mb-2">{t('settings.data.exportData', 'Export Your Data')}</h4>
                     <p className="text-sm mb-3">
-                      Download all your trip data and settings as a backup file. You can import this file later to restore your data.
+                      {t('settings.data.exportHelp', 'Download all your trip data and settings as a backup file. You can import this file later to restore your data.')}
                     </p>
                     <button
                       onClick={handleExportData}
                       className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
-                      Export All Data
+                      {t('settings.data.exportButton', 'Export All Data')}
                     </button>
                   </div>
                   
                   <div className="bg-green-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-green-700 mb-2">Import Data</h4>
+                    <h4 className="font-medium text-green-700 mb-2">{t('settings.data.importData', 'Import Data')}</h4>
                     <p className="text-sm mb-3">
-                      Restore your data from a previously exported backup file.
+                      {t('settings.data.importHelp', 'Restore your data from a previously exported backup file.')}
                     </p>
                     
                     <div className="space-y-2">
@@ -818,21 +806,21 @@ function UserSettings({ onClose }) {
                         disabled={!importFile}
                         className={`px-4 py-2 rounded ${!importFile ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
                       >
-                        Import Data
+                        {t('settings.data.importButton', 'Import Data')}
                       </button>
                     </div>
                   </div>
                   
                   <div className="bg-red-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-red-700 mb-2">Clear All Data</h4>
+                    <h4 className="font-medium text-red-700 mb-2">{t('settings.data.clearData', 'Clear All Data')}</h4>
                     <p className="text-sm mb-3">
-                      This will permanently delete all your trips, templates, and settings. This action cannot be undone.
+                      {t('settings.data.clearHelp', 'This will permanently delete all your trips, templates, and settings. This action cannot be undone.')}
                     </p>
                     <button
                       onClick={handleClearData}
                       className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                     >
-                      Clear All Data
+                      {t('settings.data.clearButton', 'Clear All Data')}
                     </button>
                   </div>
                 </div>
@@ -846,7 +834,7 @@ function UserSettings({ onClose }) {
             onClick={saveAndClose}
             className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            {settingsChanged ? 'Save and Close' : 'Close'}
+            {settingsChanged ? t('settings.buttons.saveClose', 'Save and Close') : t('settings.buttons.close', 'Close')}
           </button>
         </div>
       </div>

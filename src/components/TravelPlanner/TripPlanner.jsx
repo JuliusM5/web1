@@ -170,7 +170,7 @@ function TripPlanner({
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
       <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-        {editMode ? t('planner.updateTrip') : t('planner.saveTrip')}
+        {editMode ? t('planner.updateTrip', 'Update Trip') : t('planner.saveTrip', 'Save Trip')}
       </h2>
       
       {/* Tabs */}
@@ -179,49 +179,49 @@ function TripPlanner({
           onClick={() => setTab('basic')}
           className={`px-3 py-1 rounded ${tab === 'basic' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
-          {t('planner.basicInfo')}
+          {t('planner.basicInfo', 'Basic Info')}
         </button>
         <button 
           onClick={() => setTab('budget')}
           className={`px-3 py-1 rounded ${tab === 'budget' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
-          {t('planner.budget')}
+          {t('planner.budget', 'Budget')}
         </button>
         <button 
           onClick={() => setTab('transport')}
           className={`px-3 py-1 rounded ${tab === 'transport' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
-          {t('planner.transport')}
+          {t('planner.transport', 'Transportation')}
         </button>
         <button 
           onClick={() => setTab('photos')}
           className={`px-3 py-1 rounded ${tab === 'photos' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
-          {t('planner.photos')}
+          {t('planner.photos', 'Photos')}
         </button>
         <button 
           onClick={() => setTab('tasks')}
           className={`px-3 py-1 rounded ${tab === 'tasks' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
-          {t('planner.tasks')}
+          {t('planner.tasks', 'Tasks')}
         </button>
         <button 
           onClick={() => setTab('packing')}
           className={`px-3 py-1 rounded ${tab === 'packing' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
-          {t('planner.packing')}
+          {t('planner.packing', 'Packing')}
         </button>
         <button 
           onClick={() => setTab('notes')}
           className={`px-3 py-1 rounded ${tab === 'notes' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
-          {t('planner.notes')}
+          {t('planner.notes', 'Notes')}
         </button>
         <button 
           onClick={() => setTab('external')}
           className={`px-3 py-1 rounded ${tab === 'external' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         >
-          {t('planner.external')}
+          {t('planner.external', 'External')}
         </button>
       </div>
       
@@ -337,7 +337,7 @@ function TripPlanner({
               : 'bg-green-500 text-white hover:bg-green-600 shadow-md'
           }`}
         >
-          {editMode ? t('planner.updateTrip') : t('planner.saveTrip')}
+          {editMode ? t('planner.updateTrip', 'Update Trip') : t('planner.saveTrip', 'Save Trip')}
         </button>
         
         {editMode && (
@@ -345,7 +345,7 @@ function TripPlanner({
             onClick={cancelEdit}
             className="ml-4 px-6 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 shadow-md"
           >
-            {t('form.cancel')}
+            {t('form.cancel', 'Cancel')}
           </button>
         )}
       </div>
