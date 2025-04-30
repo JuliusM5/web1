@@ -1,5 +1,6 @@
 // Import the DEFAULT_SETTINGS from SettingsContext
 import { DEFAULT_SETTINGS } from '../context/SettingsContext';
+import translations from './translations';
 
 // Get current user settings (or defaults if none exist)
 export const getUserSettings = () => {
@@ -128,12 +129,36 @@ export const applyAccessibilitySettings = (settings) => {
   return true;
 };
 
-// Format date according to user preferences
-export const formatDate = (dateString, settings) => {
+/**
+ * Create a translation function for the specified language
+ * 
+ * @param {string} language Language code (e.g., 'en-US', 'es-ES')
+ * @returns {Function} Translation function
+ */
+export const createTranslateFunction = (language) => {
+  const defaultLanguage = 'en-US';
+  
+  // Return a translation function that gets strings for the specified language
+  return (key, replacements = {}) => {
+    // Get the translation from the current language or fall back to default
+    let translation = translations[language]?.[key] || translations[defaultLanguage]?.[key] || key;
+    
+    // Replace placeholders with actual values
+    Object.entries(replacements).forEach(([placeholder, value]) => {
+      translation = translation.replace(`{${placeholder}}`, value);
+    });
+    
+    return translation;
+  };
+};
+
+// Format date according to user preferences with internationalization
+export const formatDate = (dateString, settings, language = 'en-US') => {
   if (!dateString) return '';
   
   const date = new Date(dateString);
   const format = settings?.preferences?.dateFormat || 'MM/DD/YYYY';
+  const t = createTranslateFunction(language);
   
   switch (format) {
     case 'DD/MM/YYYY':
@@ -141,9 +166,9 @@ export const formatDate = (dateString, settings) => {
     case 'YYYY-MM-DD':
       return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
     case 'MMMM D, YYYY':
-      return `${getMonthName(date.getMonth())} ${date.getDate()}, ${date.getFullYear()}`;
+      return `${getMonthName(date.getMonth(), language, t)} ${date.getDate()}, ${date.getFullYear()}`;
     case 'D MMMM YYYY':
-      return `${date.getDate()} ${getMonthName(date.getMonth())} ${date.getFullYear()}`;
+      return `${date.getDate()} ${getMonthName(date.getMonth(), language, t)} ${date.getFullYear()}`;
     case 'MM/DD/YYYY':
     default:
       return `${padZero(date.getMonth() + 1)}/${padZero(date.getDate())}/${date.getFullYear()}`;
@@ -151,7 +176,7 @@ export const formatDate = (dateString, settings) => {
 };
 
 // Format currency according to user preferences
-export const formatCurrency = (amount, settings) => {
+export const formatCurrency = (amount, settings, language = 'en-US') => {
   if (amount === undefined || amount === null) return '';
   
   const currencyCode = settings?.preferences?.defaultCurrency || 'USD';
@@ -173,37 +198,43 @@ export const formatCurrency = (amount, settings) => {
   // Format the amount with 2 decimal places (except for JPY)
   let formattedAmount;
   if (currencyCode === 'JPY' || currencyCode === 'CNY') {
-    formattedAmount = Math.round(amount).toLocaleString();
+    formattedAmount = Math.round(amount).toLocaleString(language);
   } else {
-    formattedAmount = Number(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    // Use locale-sensitive number formatting
+    formattedAmount = Number(amount).toLocaleString(language, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
   }
   
   return `${symbol}${formattedAmount}`;
 };
 
 // Convert temperature according to user preferences
-export const formatTemperature = (celsius, settings) => {
+export const formatTemperature = (celsius, settings, language = 'en-US') => {
+  const t = createTranslateFunction(language);
   const unit = settings?.preferences?.temperatureUnit || 'fahrenheit';
   
   if (unit === 'celsius') {
-    return `${Math.round(celsius)}°C`;
+    return t('format.temperature.celsius', { value: Math.round(celsius) });
   } else {
     // Convert to Fahrenheit
     const fahrenheit = (celsius * 9/5) + 32;
-    return `${Math.round(fahrenheit)}°F`;
+    return t('format.temperature.fahrenheit', { value: Math.round(fahrenheit) });
   }
 };
 
 // Convert distance according to user preferences
-export const formatDistance = (kilometers, settings) => {
+export const formatDistance = (kilometers, settings, language = 'en-US') => {
+  const t = createTranslateFunction(language);
   const unit = settings?.preferences?.distanceUnit || 'miles';
   
   if (unit === 'kilometers') {
-    return `${kilometers.toFixed(1)} km`;
+    return t('format.distance.kilometers', { value: kilometers.toFixed(1) });
   } else {
     // Convert to miles
     const miles = kilometers * 0.621371;
-    return `${miles.toFixed(1)} mi`;
+    return t('format.distance.miles', { value: miles.toFixed(1) });
   }
 };
 
@@ -212,17 +243,32 @@ const padZero = (num) => {
   return num.toString().padStart(2, '0');
 };
 
-const getMonthName = (monthIndex) => {
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-  return months[monthIndex];
+const getMonthName = (monthIndex, language = 'en-US', t = null) => {
+  // If translation function is provided, use it
+  if (t) {
+    return t(`date.month.${monthIndex}`);
+  }
+  
+  // Fallback to using localized month names
+  try {
+    const date = new Date();
+    date.setMonth(monthIndex);
+    return date.toLocaleString(language, { month: 'long' });
+  } catch (error) {
+    // Fallback to English month names if locale is not supported
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[monthIndex];
+  }
 };
 
 // Reset all app data (for privacy clear option)
-export const clearAllAppData = () => {
-  if (window.confirm("Are you sure you want to clear ALL data? This will delete all your trips, templates, and settings. This action cannot be undone.")) {
+export const clearAllAppData = (language = 'en-US') => {
+  const t = createTranslateFunction(language);
+  
+  if (window.confirm(t('settings.privacy.confirmClearAllData'))) {
     try {
       localStorage.clear();
       return true;
@@ -235,7 +281,7 @@ export const clearAllAppData = () => {
 };
 
 // Export all user data as JSON
-export const exportUserData = () => {
+export const exportUserData = (language = 'en-US') => {
   try {
     const data = {
       trips: JSON.parse(localStorage.getItem('travelPlannerTrips') || '[]'),
@@ -246,7 +292,9 @@ export const exportUserData = () => {
     const dataStr = JSON.stringify(data, null, 2);
     const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
     
-    const exportFileName = `travelease_backup_${new Date().toISOString().split('T')[0]}.json`;
+    const t = createTranslateFunction(language);
+    const currentDate = new Date().toISOString().split('T')[0];
+    const exportFileName = `${t('app.name').toLowerCase()}_backup_${currentDate}.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -261,7 +309,9 @@ export const exportUserData = () => {
 };
 
 // Import user data from JSON file
-export const importUserData = async (file) => {
+export const importUserData = async (file, language = 'en-US') => {
+  const t = createTranslateFunction(language);
+  
   try {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -272,7 +322,7 @@ export const importUserData = async (file) => {
           
           // Validate the imported data has expected structure
           if (!data.trips || !data.templates || !data.settings) {
-            reject(new Error("Invalid data format. The file does not contain valid TravelEase data."));
+            reject(new Error(t('settings.import.invalidDataFormat')));
             return;
           }
           
@@ -283,12 +333,12 @@ export const importUserData = async (file) => {
           
           resolve(true);
         } catch (error) {
-          reject(new Error("Failed to parse the imported file: " + error.message));
+          reject(new Error(t('settings.import.parseError', { error: error.message })));
         }
       };
       
       reader.onerror = () => {
-        reject(new Error("Failed to read the file"));
+        reject(new Error(t('settings.import.readError')));
       };
       
       reader.readAsText(file);

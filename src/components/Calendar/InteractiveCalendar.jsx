@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useI18n } from '../../utils/i18n'; // Updated import path
 
 function InteractiveCalendar({ 
   startDate, 
@@ -9,6 +10,7 @@ function InteractiveCalendar({
   onUpdateEvent,
   onDeleteEvent 
 }) {
+  const { t } = useI18n(); // Add the translation function
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
   const [currentMonth, setCurrentMonth] = useState('');
@@ -82,7 +84,7 @@ function InteractiveCalendar({
   // Handle saving event
   const handleSaveEvent = () => {
     if (!eventTitle.trim()) {
-      alert('Please enter an event title');
+      alert(t('calendar.enterEventTitle')); // Translated alert
       return;
     }
     
@@ -218,7 +220,7 @@ function InteractiveCalendar({
   
   // Format event title for display
   const formatEventTitle = (event) => {
-    const title = event.text || event.title || 'Event';
+    const title = event.text || event.title || t('calendar.defaultEventName'); // Translate default name
     if (title.length > 15) {
       return title.substring(0, 12) + '...';
     }
@@ -239,6 +241,17 @@ function InteractiveCalendar({
     }
   };
   
+  // Define weekdays for different languages
+  const weekdays = [
+    t('calendar.sun'), 
+    t('calendar.mon'), 
+    t('calendar.tue'), 
+    t('calendar.wed'), 
+    t('calendar.thu'), 
+    t('calendar.fri'), 
+    t('calendar.sat')
+  ];
+  
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       {/* Calendar header */}
@@ -252,7 +265,7 @@ function InteractiveCalendar({
               onClick={goToTripMonth}
               className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
             >
-              Trip Month
+              {t('calendar.tripMonth')}
             </button>
           )}
           <button 
@@ -272,7 +285,7 @@ function InteractiveCalendar({
       
       {/* Weekday headers */}
       <div className="grid grid-cols-7 text-center">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+        {weekdays.map((day, index) => (
           <div key={index} className="py-2 border-b border-gray-200 font-medium text-gray-600">
             {day}
           </div>
@@ -340,7 +353,7 @@ function InteractiveCalendar({
                   
                   {day.events?.length > 3 && (
                     <div className="text-xs text-center text-gray-600">
-                      +{day.events.length - 3} more
+                      +{day.events.length - 3} {t('calendar.more')}
                     </div>
                   )}
                 </div>
@@ -355,27 +368,27 @@ function InteractiveCalendar({
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
           <div className="flex items-center">
             <div className="w-3 h-3 bg-blue-50 border border-gray-200 mr-1"></div>
-            <span>Trip Days</span>
+            <span>{t('calendar.tripDays')}</span>
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 border-l-4 border-green-500 mr-1"></div>
-            <span>Start Date</span>
+            <span>{t('calendar.startDate')}</span>
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 border-r-4 border-red-500 mr-1"></div>
-            <span>End Date</span>
+            <span>{t('calendar.endDate')}</span>
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 rounded bg-red-200 mr-1"></div>
-            <span>High Priority</span>
+            <span>{t('tasks.priorities.high')}</span>
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 rounded bg-yellow-200 mr-1"></div>
-            <span>Medium Priority</span>
+            <span>{t('tasks.priorities.medium')}</span>
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 rounded bg-green-200 mr-1"></div>
-            <span>Low Priority</span>
+            <span>{t('tasks.priorities.low')}</span>
           </div>
         </div>
       </div>
@@ -385,35 +398,35 @@ function InteractiveCalendar({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">
-              {editingEvent ? 'Edit Event' : 'Add Event to Calendar'}
+              {editingEvent ? t('calendar.editEvent') : t('calendar.addEvent')}
             </h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-700 mb-1">Event Title</label>
+                <label className="block text-gray-700 mb-1">{t('calendar.eventTitle')}</label>
                 <input
                   type="text"
                   value={eventTitle}
                   onChange={(e) => setEventTitle(e.target.value)}
-                  placeholder="What's happening?"
+                  placeholder={t('calendar.eventTitlePlaceholder')}
                   className="w-full p-2 border border-gray-300 rounded"
                   autoFocus
                 />
               </div>
               
               <div>
-                <label className="block text-gray-700 mb-1">Date</label>
+                <label className="block text-gray-700 mb-1">{t('calendar.date')}</label>
                 <input
                   type="date"
                   value={selectedDate}
                   disabled
                   className="w-full p-2 border border-gray-300 rounded bg-gray-100"
                 />
-                <p className="text-xs text-gray-500 mt-1">To change date, click a different day on the calendar</p>
+                <p className="text-xs text-gray-500 mt-1">{t('calendar.dateChangeHint')}</p>
               </div>
               
               <div>
-                <label className="block text-gray-700 mb-1">Time (Optional)</label>
+                <label className="block text-gray-700 mb-1">{t('calendar.time')} ({t('form.optional')})</label>
                 <input
                   type="time"
                   value={eventTime}
@@ -424,32 +437,32 @@ function InteractiveCalendar({
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-700 mb-1">Category</label>
+                  <label className="block text-gray-700 mb-1">{t('calendar.category')}</label>
                   <select
                     value={eventCategory}
                     onChange={(e) => setEventCategory(e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded"
                   >
-                    <option value="activity">Activity</option>
-                    <option value="transportation">Transportation</option>
-                    <option value="accommodation">Accommodation</option>
-                    <option value="meal">Meal</option>
-                    <option value="meeting">Meeting</option>
-                    <option value="tour">Tour</option>
-                    <option value="other">Other</option>
+                    <option value="activity">{t('tasks.categories.activity')}</option>
+                    <option value="transportation">{t('tasks.categories.transportation')}</option>
+                    <option value="accommodation">{t('tasks.categories.accommodation')}</option>
+                    <option value="meal">{t('calendar.categories.meal')}</option>
+                    <option value="meeting">{t('calendar.categories.meeting')}</option>
+                    <option value="tour">{t('calendar.categories.tour')}</option>
+                    <option value="other">{t('tasks.categories.other')}</option>
                   </select>
                 </div>
                 
                 <div>
-                  <label className="block text-gray-700 mb-1">Priority</label>
+                  <label className="block text-gray-700 mb-1">{t('tasks.priority')}</label>
                   <select
                     value={eventPriority}
                     onChange={(e) => setEventPriority(e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded"
                   >
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
+                    <option value="high">{t('tasks.priorities.high')}</option>
+                    <option value="medium">{t('tasks.priorities.medium')}</option>
+                    <option value="low">{t('tasks.priorities.low')}</option>
                   </select>
                 </div>
               </div>
@@ -462,7 +475,7 @@ function InteractiveCalendar({
                     onClick={handleDeleteEvent}
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                   >
-                    Delete
+                    {t('form.delete')}
                   </button>
                 )}
               </div>
@@ -472,13 +485,13 @@ function InteractiveCalendar({
                   onClick={() => setShowEventModal(false)}
                   className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100"
                 >
-                  Cancel
+                  {t('form.cancel')}
                 </button>
                 <button
                   onClick={handleSaveEvent}
                   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                 >
-                  {editingEvent ? 'Update' : 'Add'} Event
+                  {editingEvent ? t('form.update') : t('form.add')} {t('calendar.event')}
                 </button>
               </div>
             </div>
