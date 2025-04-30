@@ -1,15 +1,19 @@
 import React from 'react';
 import { useAppSettings } from '../../utils/useAppSettings';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 function BudgetChart({ budgetData }) {
   // Get currency formatter from app settings
   const { currency } = useAppSettings();
+  // Get i18n functionality
+  const { t } = useI18n();
 
   // Format the data for the chart
   const chartData = Object.entries(budgetData)
     .filter(([_, value]) => value > 0)
     .map(([category, value]) => ({
-      category: category.charAt(0).toUpperCase() + category.slice(1),
+      category: t(`budget.${category}`), // Translate category names
+      categoryKey: category, // Keep original key for color
       value,
       percentage: 0, // We'll calculate this
       color: getCategoryColor(category)
@@ -47,8 +51,8 @@ function BudgetChart({ budgetData }) {
       {chartData.length === 0 ? (
         <div className="flex items-center justify-center h-48 bg-gray-50 rounded-lg border border-gray-200">
           <p className="text-gray-500 text-center">
-            No budget data to display.<br />
-            <span className="text-sm">Add budget items to see the chart.</span>
+            {t('budget.noData.line1', 'No budget data to display.')}<br />
+            <span className="text-sm">{t('budget.noData.line2', 'Add budget items to see the chart.')}</span>
           </p>
         </div>
       ) : (
@@ -67,7 +71,7 @@ function BudgetChart({ budgetData }) {
                 {currency(total)}
               </text>
               <text x="50" y="58" textAnchor="middle" fontSize="6">
-                Total Budget
+                {t('budget.totalBudget', 'Total Budget')}
               </text>
             </svg>
           </div>

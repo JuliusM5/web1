@@ -1,14 +1,17 @@
-// First, we need to create the folder structure correctly
 // src/components/Packing/EnhancedPackingList.jsx
 
 import React, { useState, useEffect } from 'react';
 import { getPackingRecommendations } from '../../utils/packingUtils';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 /**
  * Enhanced Packing List component that builds on existing task system
  * but provides specialized UI and functionality for packing
  */
 function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, endDate, tripType = "leisure" }) {
+  // Get i18n functionality
+  const { t } = useI18n();
+  
   const [packingTasks, setPackingTasks] = useState([]);
   const [newItemText, setNewItemText] = useState('');
   const [newItemCategory, setNewItemCategory] = useState('clothing');
@@ -18,13 +21,13 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
   
   // Categories for packing items
   const packingCategories = [
-    { id: 'clothing', name: 'Clothing', icon: '👕' },
-    { id: 'toiletries', name: 'Toiletries', icon: '🧴' },
-    { id: 'electronics', name: 'Electronics', icon: '📱' },
-    { id: 'documents', name: 'Documents', icon: '📄' },
-    { id: 'accessories', name: 'Accessories', icon: '👓' },
-    { id: 'medications', name: 'Medications', icon: '💊' },
-    { id: 'misc', name: 'Miscellaneous', icon: '🔮' }
+    { id: 'clothing', name: t('packing.categories.clothing'), icon: '👕' },
+    { id: 'toiletries', name: t('packing.categories.toiletries'), icon: '🧴' },
+    { id: 'electronics', name: t('packing.categories.electronics'), icon: '📱' },
+    { id: 'documents', name: t('packing.categories.documents'), icon: '📄' },
+    { id: 'accessories', name: t('packing.categories.accessories'), icon: '👓' },
+    { id: 'medications', name: t('packing.categories.medications'), icon: '💊' },
+    { id: 'misc', name: t('packing.categories.miscellaneous'), icon: '🔮' }
   ];
   
   // Extract packing tasks from all trip tasks
@@ -111,14 +114,12 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
   // Get packing recommendations based on destination, trip duration, and weather
   const getRecommendations = () => {
     if (!destination || !startDate || !endDate) {
-      alert('Please set your destination and travel dates first.');
+      alert(t('packing.noDestinationWarning'));
       return [];
     }
     
     const duration = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
-    const recommendations = getPackingRecommendations(destination, duration, weatherData, tripType);
-    
-    return recommendations;
+    return getPackingRecommendations(destination, duration, weatherData, tripType, t);
   };
   
   // Calculate packing stats
@@ -129,9 +130,9 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
   return (
     <div className="bg-white rounded-lg shadow-lg p-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">Packing List</h2>
+        <h2 className="text-xl font-semibold text-gray-800">{t('packing.title')}</h2>
         <div className="text-sm text-gray-600">
-          {packedItems} of {totalItems} packed ({packingProgress}%)
+          {t('packing.progress', { packed: packedItems, total: totalItems, percentage: packingProgress })}
         </div>
       </div>
       
@@ -149,7 +150,7 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
           type="text"
           value={newItemText}
           onChange={e => setNewItemText(e.target.value)}
-          placeholder="Add packing item..."
+          placeholder={t('tasks.whatNeedsToBeDone')}
           className="flex-1 p-2 border border-gray-300 rounded-l"
         />
         <select
@@ -168,7 +169,7 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
             !newItemText.trim() ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'
           }`}
         >
-          Add
+          {t('packing.add')}
         </button>
       </div>
       
@@ -178,7 +179,9 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
           onClick={() => setShowRecommendations(!showRecommendations)}
           className="w-full py-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center justify-center"
         >
-          <span className="mr-2">{showRecommendations ? 'Hide' : 'Show'} Packing Recommendations</span>
+          <span className="mr-2">
+            {showRecommendations ? t('packing.hideRecommendations') : t('packing.showRecommendations')}
+          </span>
           {showRecommendations ? '↑' : '↓'}
         </button>
       </div>
@@ -186,7 +189,9 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
       {/* Recommendations panel */}
       {showRecommendations && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <h3 className="font-medium text-green-800 mb-2">Recommended Items for {destination}</h3>
+          <h3 className="font-medium text-green-800 mb-2">
+            {t('tasks.categories.packing')} - {destination}
+          </h3>
           
           {weatherData && (
             <div className="mb-3 p-2 bg-blue-50 rounded flex items-center text-sm">
@@ -196,8 +201,8 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
                  weatherData.conditions === 'humid' ? '💧' : '🌤️'}
               </span>
               <div>
-                <p><strong>Expected Weather:</strong> {weatherData.conditions}, avg. {weatherData.avgTemp}°C</p>
-                <p><strong>Rainfall:</strong> {weatherData.rainfall}</p>
+                <p><strong>{t('weather.expected')}:</strong> {t(`weather.conditions.${weatherData.conditions}`, weatherData.conditions)}, avg. {weatherData.avgTemp}°C</p>
+                <p><strong>{t('weather.rainfall')}:</strong> {t(`weather.rainfall.${weatherData.rainfall}`, weatherData.rainfall)}</p>
               </div>
             </div>
           )}
@@ -259,7 +264,7 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
               }}
               className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
             >
-              Add All Missing Items
+              {t('form.add')}
             </button>
           </div>
         </div>
@@ -274,7 +279,7 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
               filterCategory === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
             }`}
           >
-            All Items
+            {t('packing.allItems')}
           </button>
           
           {packingCategories.map(category => (
@@ -295,8 +300,8 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
       <div className="space-y-2 mt-4">
         {getFilteredPackingTasks().length === 0 ? (
           <div className="text-center py-8 bg-gray-50 rounded-lg">
-            <p className="text-gray-500 mb-2">No packing items added yet.</p>
-            <p className="text-sm text-gray-400">Add items above or use recommendations</p>
+            <p className="text-gray-500 mb-2">{t('packing.noItems')}</p>
+            <p className="text-sm text-gray-400">{t('packing.addItemsPrompt')}</p>
           </div>
         ) : (
           getFilteredPackingTasks().map(item => (
@@ -320,11 +325,13 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
                 <div className="flex items-center mt-1 text-xs text-gray-500">
                   {packingCategories.find(cat => cat.id === item.subcategory)?.icon || '📦'}&nbsp;
                   <span className="capitalize">
-                    {packingCategories.find(cat => cat.id === item.subcategory)?.name || 'Item'}
+                    {packingCategories.find(cat => cat.id === item.subcategory)?.name || t('tasks.categories.other')}
                   </span>
                   
                   {item.priority === 'high' && (
-                    <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-800 rounded-full">Essential</span>
+                    <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-800 rounded-full">
+                      {t('tasks.priorities.high')}
+                    </span>
                   )}
                 </div>
               </div>
@@ -332,7 +339,7 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
               <button
                 onClick={() => deletePackingItem(item.id)}
                 className="ml-2 text-gray-400 hover:text-red-500"
-                title="Delete item"
+                title={t('form.delete')}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -345,12 +352,12 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
       
       {/* Tips */}
       <div className="mt-6 p-3 bg-blue-50 rounded-lg text-sm">
-        <h3 className="font-medium text-blue-800 mb-1">Packing Tips:</h3>
+        <h3 className="font-medium text-blue-800 mb-1">{t('packing.tips.title')}</h3>
         <ul className="space-y-1 text-blue-700">
-          <li>• Check destination weather forecast before finalizing your list</li>
-          <li>• Roll clothes instead of folding to save space</li>
-          <li>• Pack essential items and medications in your carry-on</li>
-          <li>• Use packing cubes to organize different categories</li>
+          <li>• {t('packing.tips.weather')}</li>
+          <li>• {t('packing.tips.rolling')}</li>
+          <li>• {t('packing.tips.essentials')}</li>
+          <li>• {t('packing.tips.organization')}</li>
         </ul>
       </div>
     </div>

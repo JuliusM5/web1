@@ -16,15 +16,15 @@ function BasicInfoTab({
     <div>
       <div className="space-y-4">
         <div>
-          <label className="block text-gray-700 mb-2">{t('basicInfo.destination', 'Destination')}</label>
-          <input
-            type="text"
-            value={destination}
-            onChange={e => setDestination(e.target.value)}
-            placeholder={t('basicInfo.destinationPlaceholder', 'Where are you going?')}
-            className="w-full p-2 border border-gray-300 rounded"
-          />
-          <p className="text-xs text-gray-500 mt-1">{t('basicInfo.destinationHint', 'Enter any city or destination to get started')}</p>
+        <label className="block text-gray-700 mb-2">{t('basicInfo.destination')}</label>
+        <input
+          type="text"
+          value={destination}
+          onChange={e => setDestination(e.target.value)}
+          placeholder={t('basicInfo.destinationPlaceholder')}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+        <p className="text-xs text-gray-500 mt-1">{t('basicInfo.destinationHint')}</p>
         </div>
         
         <div>

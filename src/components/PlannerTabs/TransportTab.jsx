@@ -1,5 +1,6 @@
 import React from 'react';
 import { useI18n } from '../../utils/i18n'; // Import the i18n hook
+import { useAppSettings } from '../../utils/useAppSettings'; // Import the app settings hook
 
 function TransportTab({ 
   transportType, setTransportType, transportFrom, setTransportFrom,
@@ -8,6 +9,8 @@ function TransportTab({
 }) {
   // Get i18n functionality
   const { t } = useI18n();
+  // Get currency formatter
+  const { currency } = useAppSettings();
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -23,12 +26,12 @@ function TransportTab({
               className="w-full p-2 border border-gray-300 rounded"
             >
               <option value="">{t('transport.selectType')}</option>
-              <option value="Flight">{t('transport.flight')}</option>
-              <option value="Train">{t('transport.train')}</option>
-              <option value="Bus">{t('transport.bus')}</option>
-              <option value="Ferry">{t('transport.ferry')}</option>
-              <option value="Rental Car">{t('transport.rentalCar')}</option>
-              <option value="Taxi/Rideshare">{t('transport.taxiRideshare')}</option>
+              <option value="Flight">{t('transport.types.Flight')}</option>
+              <option value="Train">{t('transport.types.Train')}</option>
+              <option value="Bus">{t('transport.types.Bus')}</option>
+              <option value="Ferry">{t('transport.types.Ferry')}</option>
+              <option value="Rental Car">{t('transport.types.Rental Car')}</option>
+              <option value="Taxi/Rideshare">{t('transport.types.Taxi/Rideshare')}</option>
             </select>
           </div>
           
@@ -88,27 +91,27 @@ function TransportTab({
           </div>
         ) : (
           <div className="space-y-3">
-            {transports.map(t => (
-              <div key={t.id} className="bg-blue-50 p-3 rounded-lg relative">
+            {transports.map(transport => (
+              <div key={transport.id} className="bg-blue-50 p-3 rounded-lg relative">
                 <button
-                  onClick={() => setTransports(transports.filter(item => item.id !== t.id))}
+                  onClick={() => setTransports(transports.filter(item => item.id !== transport.id))}
                   className="absolute top-2 right-2 text-red-500 hover:text-red-700"
                 >
                   ✕
                 </button>
                 
-                <div className="font-medium">{t.type}</div>
-                <div className="text-sm">{t('transport.from')}: {t.from}</div>
-                <div className="text-sm">{t('transport.to')}: {t.to}</div>
-                {t.price && <div className="text-sm">{t('transport.price')}: ${t.price}</div>}
+                <div className="font-medium">{t('transport.types.' + transport.type)}</div>
+                <div className="text-sm">{t('transport.from')}: {transport.from}</div>
+                <div className="text-sm">{t('transport.to')}: {transport.to}</div>
+                {transport.price && <div className="text-sm">{t('transport.price')}: {currency(transport.price)}</div>}
               </div>
             ))}
             
             <div className="mt-4 bg-blue-100 p-3 rounded-lg">
               <p><strong>{t('transport.totalOptions')}:</strong> {transports.length}</p>
-              <p><strong>{t('transport.totalCost')}:</strong> $
-                {transports.reduce((sum, t) => sum + (Number(t.price) || 0), 0)}
-              </p>
+              <p><strong>{t('transport.totalCost')}:</strong> {
+                currency(transports.reduce((sum, t) => sum + (Number(t.price) || 0), 0))
+              }</p>
             </div>
           </div>
         )}

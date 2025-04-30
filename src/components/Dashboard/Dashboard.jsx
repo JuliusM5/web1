@@ -141,14 +141,15 @@ function Dashboard({ trips, viewTrip, setView }) {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <p className="text-gray-600">{t('Your travel timeline will appear here once you plan trips.')}</p>
+            <p className="text-gray-600">{t('dashboard.timelineEmpty')}</p>
           </div>
         )}
       </div>
       
       {/* Travel Statistics */}
       <div>
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('Travel Statistics')}</h3>
+      <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('dashboard.statisticsTitle')}</h3>
+
         
         {trips.length > 0 ? (
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -182,7 +183,7 @@ function Dashboard({ trips, viewTrip, setView }) {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <p className="text-gray-600">Your travel statistics will appear here once you plan trips.</p>
+            <p className="text-gray-600">{t('dashboard.statisticsEmpty')}</p>
           </div>
         )}
       </div>

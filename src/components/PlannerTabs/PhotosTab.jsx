@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 function PhotosTab({ 
@@ -7,6 +7,7 @@ function PhotosTab({
 }) {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [uploadPreview, setUploadPreview] = useState('');
+  const fileInputRef = useRef(null);
   const { t } = useI18n(); // Use the i18n hook
   
   // Handle file input change
@@ -23,6 +24,11 @@ function PhotosTab({
       const fileName = file.name.split('.').slice(0, -1).join('.');
       setPhotoCaption(fileName);
     }
+  };
+  
+  // Trigger file input click
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
   };
   
   // Add uploaded photo
@@ -43,6 +49,11 @@ function PhotosTab({
     setUploadedFile(null);
     setUploadPreview('');
     setPhotoCaption('');
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -54,7 +65,10 @@ function PhotosTab({
         <div className="space-y-3 bg-white border border-gray-200 p-4 rounded-lg mb-4">
           <h4 className="font-medium text-gray-700">{t('photos.uploadFromDevice', 'Upload from Device')}</h4>
           
-          <div className="border-2 border-dashed border-gray-300 p-4 rounded-lg text-center">
+          <div 
+            className="border-2 border-dashed border-gray-300 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-50"
+            onClick={handleUploadClick}
+          >
             {uploadPreview ? (
               <div className="mb-3">
                 <img 
@@ -69,14 +83,25 @@ function PhotosTab({
                 <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
+                <button 
+                  className="mt-3 px-4 py-2 bg-gray-100 border border-gray-300 rounded text-sm hover:bg-gray-200 transition-colors" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUploadClick();
+                  }}
+                >
+                  {t('photos.chooseFile', 'Choose file')}
+                </button>
+                <p className="mt-2 text-sm text-gray-500">{t('photos.noFileChosen', 'No file chosen')}</p>
               </div>
             )}
             
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="w-full"
+              className="hidden"
               aria-label={t('photos.chooseFile', 'Choose file')}
             />
           </div>
@@ -96,7 +121,7 @@ function PhotosTab({
               
               <button
                 onClick={addUploadedPhoto}
-                className="w-full py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
+                className="w-full py-2 rounded bg-blue-500 text-white hover:bg-blue-600 transition-colors"
               >
                 {t('photos.addPhoto', 'Add Photo')}
               </button>
@@ -125,7 +150,7 @@ function PhotosTab({
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {photos.map(photo => (
-              <div key={photo.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <div key={photo.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 <div className="relative">
                   <img 
                     src={photo.url} 
@@ -138,14 +163,14 @@ function PhotosTab({
                   />
                   <button
                     onClick={() => setPhotos(photos.filter(p => p.id !== photo.id))}
-                    className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600"
+                    className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                     aria-label={t('photos.remove', 'Remove')}
                   >
                     ✕
                   </button>
                 </div>
                 {photo.caption && (
-                  <div className="p-2 text-sm">
+                  <div className="p-2 text-sm text-gray-700">
                     {photo.caption}
                   </div>
                 )}

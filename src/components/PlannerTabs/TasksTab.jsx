@@ -97,7 +97,7 @@ function TasksTab({
       
       if (!dependenciesComplete) {
         // Don't allow completion if dependencies aren't complete
-        alert(t('tasks.dependenciesNotCompleteError'));
+        alert(t('tasks.dependenciesNotCompleteError', 'You must complete all dependencies first'));
         return;
       }
     }
@@ -125,7 +125,9 @@ function TasksTab({
     if (dependentTasks.length > 0) {
       // Ask for confirmation
       const confirmDelete = window.confirm(
-        t('tasks.deleteTaskWithDependentsConfirmation', { count: dependentTasks.length })
+        t('tasks.deleteTaskWithDependentsConfirmation', 
+          `This task has ${dependentTasks.length} dependent task(s). Deleting it will remove the dependency. Continue?`, 
+          { count: dependentTasks.length })
       );
       
       if (!confirmDelete) return;
@@ -215,13 +217,13 @@ function TasksTab({
       });
       
       // Add undated tasks at the end
-      grouped[t('tasks.noDate')] = sortedTasks.filter(task => !task.date);
+      grouped[t('tasks.noDate', 'No Date')] = sortedTasks.filter(task => !task.date);
       
       // Sort date groups chronologically
       groupedTasks = Object.entries(grouped)
         .sort(([dateA], [dateB]) => {
-          if (dateA === t('tasks.noDate')) return 1;
-          if (dateB === t('tasks.noDate')) return -1;
+          if (dateA === t('tasks.noDate', 'No Date')) return 1;
+          if (dateB === t('tasks.noDate', 'No Date')) return -1;
           return new Date(dateA) - new Date(dateB);
         });
     } else if (groupBy === 'category') {
@@ -238,7 +240,7 @@ function TasksTab({
     }
   } else {
     // If no grouping, wrap tasks in a format compatible with the rendering logic
-    groupedTasks = [[t('tasks.allTasks'), sortedTasks]];
+    groupedTasks = [[t('tasks.allTasks', 'All Tasks'), sortedTasks]];
   }
   
   // Helper to get priority color
@@ -299,23 +301,23 @@ function TasksTab({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Add Task Form */}
         <div>
-          <h3 className="font-semibold mb-3">{t('tasks.addTask')}</h3>
+          <h3 className="font-semibold mb-3">{t('tasks.addTask', 'Add Task')}</h3>
           
           <div className="space-y-3 bg-white border border-gray-200 p-4 rounded-lg">
             <div>
-              <label className="block text-gray-700 mb-1 text-sm">{t('tasks.taskDescription')}</label>
+              <label className="block text-gray-700 mb-1 text-sm">{t('tasks.taskDescription', 'Task Description')}</label>
               <input
                 type="text"
                 value={taskText}
                 onChange={e => setTaskText(e.target.value)}
-                placeholder={t('tasks.whatNeedsToBeDone')}
+                placeholder={t('tasks.whatNeedsToBeDone', 'What needs to be done?')}
                 className="w-full p-2 border border-gray-300 rounded"
               />
             </div>
             
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.dueDate')}</label>
+                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.dueDate', 'Due Date')}</label>
                 <input
                   type="date"
                   value={taskDate}
@@ -326,7 +328,9 @@ function TasksTab({
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.time')} ({t('tasks.optional')})</label>
+                <label className="block text-gray-700 mb-1 text-sm">
+                  {t('tasks.time', 'Time')} ({t('tasks.optional', 'Optional')})
+                </label>
                 <input
                   type="time"
                   value={taskTime}
@@ -338,38 +342,38 @@ function TasksTab({
             
             {startDate && endDate && (
               <p className="text-xs text-gray-500">
-                {t('tasks.tripDates')}: {formatDate(startDate)} {t('tasks.to')} {formatDate(endDate)}
+                {t('tasks.tripDates', 'Trip Dates')}: {formatDate(startDate)} {t('tasks.to', 'to')} {formatDate(endDate)}
               </p>
             )}
             
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.category')}</label>
+                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.category', 'Category')}</label>
                 <select
                   value={taskCategory}
                   onChange={e => setTaskCategory(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded"
                 >
-                  <option value="preparation">{t('tasks.categories.preparation')}</option>
-                  <option value="packing">{t('tasks.categories.packing')}</option>
-                  <option value="booking">{t('tasks.categories.booking')}</option>
-                  <option value="activity">{t('tasks.categories.activity')}</option>
-                  <option value="transportation">{t('tasks.categories.transportation')}</option>
-                  <option value="accommodation">{t('tasks.categories.accommodation')}</option>
-                  <option value="other">{t('tasks.categories.other')}</option>
+                  <option value="preparation">{t('tasks.categories.preparation', 'Preparation')}</option>
+                  <option value="packing">{t('tasks.categories.packing', 'Packing')}</option>
+                  <option value="booking">{t('tasks.categories.booking', 'Booking')}</option>
+                  <option value="activity">{t('tasks.categories.activity', 'Activity')}</option>
+                  <option value="transportation">{t('tasks.categories.transportation', 'Transportation')}</option>
+                  <option value="accommodation">{t('tasks.categories.accommodation', 'Accommodation')}</option>
+                  <option value="other">{t('tasks.categories.other', 'Other')}</option>
                 </select>
               </div>
               
               <div>
-                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.priority')}</label>
+                <label className="block text-gray-700 mb-1 text-sm">{t('tasks.priority', 'Priority')}</label>
                 <select
                   value={taskPriority}
                   onChange={e => setTaskPriority(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded"
                 >
-                  <option value="high">{t('tasks.priorities.high')}</option>
-                  <option value="medium">{t('tasks.priorities.medium')}</option>
-                  <option value="low">{t('tasks.priorities.low')}</option>
+                  <option value="high">{t('tasks.priorities.high', 'High')}</option>
+                  <option value="medium">{t('tasks.priorities.medium', 'Medium')}</option>
+                  <option value="low">{t('tasks.priorities.low', 'Low')}</option>
                 </select>
               </div>
             </div>
@@ -383,16 +387,18 @@ function TasksTab({
                   : 'bg-blue-500 text-white hover:bg-blue-600'
               }`}
             >
-              {t('tasks.addTask')}
+              {t('tasks.addTask', 'Add Task')}
             </button>
           </div>
           
           {/* Task statistics */}
           {tripTasks.length > 0 && (
             <div className="mt-4 bg-blue-50 p-3 rounded-lg">
-              <h4 className="font-semibold text-blue-800 mb-2">{t('tasks.taskProgress')}</h4>
+              <h4 className="font-semibold text-blue-800 mb-2">{t('tasks.taskProgress', 'Task Progress')}</h4>
               <div className="flex justify-between items-center">
-                <span className="text-sm">{completedTasks} {t('tasks.of')} {totalTasks} {t('tasks.completed')}</span>
+                <span className="text-sm">
+                  {completedTasks} {t('tasks.of', 'of')} {totalTasks} {t('tasks.completed', 'completed')}
+                </span>
                 <span className="text-sm font-medium">{completionPercentage}%</span>
               </div>
               <div className="mt-3 w-full bg-gray-200 rounded-full h-2.5">
@@ -404,7 +410,7 @@ function TasksTab({
               
               {/* Task breakdown by category */}
               <div className="mt-3 pt-3 border-t border-blue-200">
-                <h5 className="text-sm font-medium text-blue-800 mb-2">{t('tasks.taskBreakdown')}</h5>
+                <h5 className="text-sm font-medium text-blue-800 mb-2">{t('tasks.taskBreakdown', 'Task Breakdown')}</h5>
                 <div className="grid grid-cols-2 gap-x-2 gap-y-1">
                   {categories.filter(cat => cat !== 'all').map(category => {
                     const categoryTasks = tripTasks.filter(task => task.category === category);
@@ -414,7 +420,9 @@ function TasksTab({
                     
                     return (
                       <div key={category} className="flex justify-between items-center">
-                        <span className="text-xs capitalize">{t(`tasks.categories.${category}`, category)}:</span>
+                        <span className="text-xs capitalize">
+                          {t(`tasks.categories.${category}`, category)}:
+                        </span>
                         <span className="text-xs">
                           {categoryCompleted}/{categoryTasks.length}
                         </span>
@@ -430,7 +438,7 @@ function TasksTab({
         {/* Tasks List with Filters */}
         <div>
           <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold">{t('tasks.yourTasks')}</h3>
+            <h3 className="font-semibold">{t('tasks.yourTasks', 'Your Tasks')}</h3>
             
             {/* Task filters/sort dropdown */}
             <div className="relative">
@@ -439,7 +447,7 @@ function TasksTab({
                 className="text-sm bg-white border border-gray-300 rounded px-3 py-1 flex items-center"
                 onClick={() => document.getElementById('task-options').classList.toggle('hidden')}
               >
-                <span>{t('tasks.options')}</span>
+                <span>{t('tasks.options', 'Options')}</span>
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
@@ -455,18 +463,18 @@ function TasksTab({
                       onChange={() => setShowCompleted(!showCompleted)}
                       className="mr-2"
                     />
-                    <span className="text-sm">{t('tasks.showCompleted')}</span>
+                    <span className="text-sm">{t('tasks.showCompleted', 'Show Completed')}</span>
                   </label>
                   
                   {/* Category filter */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.filterByCategory')}</label>
+                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.filterByCategory', 'Filter by Category')}</label>
                     <select
                       value={filterCategory}
                       onChange={e => setFilterCategory(e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded"
                     >
-                      <option value="all">{t('tasks.allCategories')}</option>
+                      <option value="all">{t('tasks.allCategories', 'All Categories')}</option>
                       {categories.filter(cat => cat !== 'all').map(category => (
                         <option key={category} value={category} className="capitalize">
                           {t(`tasks.categories.${category}`, category)}
@@ -477,45 +485,45 @@ function TasksTab({
                   
                   {/* Priority filter */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.filterByPriority')}</label>
+                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.filterByPriority', 'Filter by Priority')}</label>
                     <select
                       value={filterPriority}
                       onChange={e => setFilterPriority(e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded"
                     >
-                      <option value="all">{t('tasks.allPriorities')}</option>
-                      <option value="high">{t('tasks.priorities.high')}</option>
-                      <option value="medium">{t('tasks.priorities.medium')}</option>
-                      <option value="low">{t('tasks.priorities.low')}</option>
+                      <option value="all">{t('tasks.allPriorities', 'All Priorities')}</option>
+                      <option value="high">{t('tasks.priorities.high', 'High')}</option>
+                      <option value="medium">{t('tasks.priorities.medium', 'Medium')}</option>
+                      <option value="low">{t('tasks.priorities.low', 'Low')}</option>
                     </select>
                   </div>
                   
                   {/* Sort options */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.sortBy')}</label>
+                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.sortBy', 'Sort By')}</label>
                     <select
                       value={sortBy}
                       onChange={e => setSortBy(e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded"
                     >
-                      <option value="date">{t('tasks.dueDate')}</option>
-                      <option value="time">{t('tasks.time')}</option>
-                      <option value="priority">{t('tasks.priority')}</option>
-                      <option value="created">{t('tasks.recentlyAdded')}</option>
+                      <option value="date">{t('tasks.dueDate', 'Due Date')}</option>
+                      <option value="time">{t('tasks.time', 'Time')}</option>
+                      <option value="priority">{t('tasks.priority', 'Priority')}</option>
+                      <option value="created">{t('tasks.recentlyAdded', 'Recently Added')}</option>
                     </select>
                   </div>
                   
                   {/* Group options */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.groupBy')}</label>
+                    <label className="block text-xs text-gray-500 mb-1">{t('tasks.groupBy', 'Group By')}</label>
                     <select
                       value={groupBy}
                       onChange={e => setGroupBy(e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded"
                     >
-                      <option value="date">{t('tasks.date')}</option>
-                      <option value="category">{t('tasks.category')}</option>
-                      <option value="none">{t('tasks.noGrouping')}</option>
+                      <option value="date">{t('tasks.date', 'Date')}</option>
+                      <option value="category">{t('tasks.category', 'Category')}</option>
+                      <option value="none">{t('tasks.noGrouping', 'No Grouping')}</option>
                     </select>
                   </div>
                 </div>
@@ -525,7 +533,7 @@ function TasksTab({
           
           {filteredTasks.length === 0 ? (
             <div className="bg-gray-50 p-4 rounded-lg text-center">
-              <p className="text-gray-500">{t('tasks.noTasksMatch')}</p>
+              <p className="text-gray-500">{t('tasks.noTasksMatch', 'No tasks match your filters.')}</p>
               <button
                 onClick={() => {
                   setShowCompleted(true);
@@ -534,7 +542,7 @@ function TasksTab({
                 }}
                 className="mt-2 text-blue-500 text-sm"
               >
-                {t('tasks.resetFilters')}
+                {t('tasks.resetFilters', 'Reset Filters')}
               </button>
             </div>
           ) : (
@@ -544,19 +552,21 @@ function TasksTab({
                 {groupedTasks.map(([groupName, tasks]) => (
                   <div key={groupName} className="border-b border-gray-200 last:border-b-0">
                     <div className="bg-gray-100 px-4 py-2 font-medium flex justify-between items-center">
-                      {groupBy === 'date' && groupName !== t('tasks.noDate') ? (
+                      {groupBy === 'date' && groupName !== t('tasks.noDate', 'No Date') ? (
                         <span>{formatDate(groupName)}</span>
                       ) : (
-                        <span className="capitalize">{t(`tasks.categories.${groupName}`, groupName)}</span>
+                        <span className="capitalize">
+                          {t(`tasks.categories.${groupName}`, groupName)}
+                        </span>
                       )}
                       <span className="text-xs text-gray-500">
-                        {tasks.length} {t('tasks.taskCount', { count: tasks.length })}
+                        {tasks.length} {t('tasks.taskCount', 'task(s)', { count: tasks.length })}
                       </span>
                     </div>
                     <div>
                       {tasks.length === 0 ? (
                         <div className="p-3 text-center text-sm text-gray-500">
-                          {t('tasks.noTasksInGroup')}
+                          {t('tasks.noTasksInGroup', 'No tasks in this group')}
                         </div>
                       ) : (
                         tasks.map(task => {
@@ -576,7 +586,7 @@ function TasksTab({
                                   className="h-4 w-4"
                                   disabled={!task.completed && hasDependencies && !allCompleted}
                                   title={!task.completed && hasDependencies && !allCompleted ? 
-                                    t('tasks.completeDependenciesFirst') : ""}
+                                    t('tasks.completeDependenciesFirst', 'Complete dependencies first') : ""}
                                 />
                               </div>
                               <div className="ml-3 flex-1">
@@ -588,9 +598,13 @@ function TasksTab({
                                     <span 
                                       className={`ml-2 inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full
                                         ${allCompleted ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
-                                      title={allCompleted ? t('tasks.dependenciesComplete') : t('tasks.dependenciesPending')}
+                                      title={allCompleted ? 
+                                        t('tasks.dependenciesComplete', 'Dependencies complete') : 
+                                        t('tasks.dependenciesPending', 'Dependencies pending')}
                                     >
-                                      {allCompleted ? t('tasks.ready') : t('tasks.waiting')}
+                                      {allCompleted ? 
+                                        t('tasks.ready', 'Ready') : 
+                                        t('tasks.waiting', 'Waiting')}
                                     </span>
                                   )}
                                 </div>
@@ -621,7 +635,7 @@ function TasksTab({
                                 <button
                                   onClick={() => openEditModal(task)}
                                   className="text-gray-400 hover:text-blue-500 p-1"
-                                  title={t('tasks.editTask')}
+                                  title={t('tasks.editTask', 'Edit Task')}
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
@@ -630,7 +644,7 @@ function TasksTab({
                                 <button
                                   onClick={() => deleteTask(task.id)}
                                   className="text-gray-400 hover:text-red-500 p-1"
-                                  title={t('tasks.deleteTask')}
+                                  title={t('tasks.deleteTask', 'Delete Task')}
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -650,12 +664,12 @@ function TasksTab({
           
           {/* Quick tip card */}
           <div className="mt-4 bg-yellow-50 border border-yellow-200 p-3 rounded text-sm">
-            <h4 className="font-semibold text-yellow-800">{t('tasks.taskPlanningTips')}:</h4>
+            <h4 className="font-semibold text-yellow-800">{t('tasks.taskPlanningTips', 'Task Planning Tips')}:</h4>
             <ul className="mt-1 ml-4 list-disc text-yellow-800">
-              <li>{t('tasks.tips.packingChecklist')}</li>
-              <li>{t('tasks.tips.bookingDeadlines')}</li>
-              <li>{t('tasks.tips.prioritySensitive')}</li>
-              <li>{t('tasks.tips.useDependencies')}</li>
+              <li>{t('tasks.tips.packingChecklist', 'Create a packing checklist before your trip')}</li>
+              <li>{t('tasks.tips.bookingDeadlines', 'Set reminders for booking deadlines')}</li>
+              <li>{t('tasks.tips.prioritySensitive', 'Mark time-sensitive tasks with high priority')}</li>
+              <li>{t('tasks.tips.useDependencies', 'Use dependencies for tasks that must be done in order')}</li>
             </ul>
           </div>
         </div>
