@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useI18n } from '../../utils/i18n'; // Add import for i18n
 
 function TaskReminders({ tasks, onViewTask }) {
+  const { t } = useI18n(); // Add i18n hook
   const [upcomingTasks, setUpcomingTasks] = useState([]);
   const [showReminders, setShowReminders] = useState(false);
   
@@ -65,14 +67,17 @@ function TaskReminders({ tasks, onViewTask }) {
     const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     
     if (diffHrs <= 0 && diffMins <= 0) {
-      return 'Now';
+      return t('tasks.timeRemaining.now', 'Now');
     } else if (diffHrs < 1) {
-      return `${diffMins} min`;
+      return t('tasks.timeRemaining.minutes', '{{minutes}} min', { minutes: diffMins });
     } else if (diffHrs < 24) {
-      return `${diffHrs} hr${diffHrs > 1 ? 's' : ''}`;
+      return t('tasks.timeRemaining.hours', '{{hours}} hr{{plural}}', { 
+        hours: diffHrs,
+        plural: diffHrs > 1 ? 's' : ''
+      });
     }
     
-    return 'Soon';
+    return t('tasks.timeRemaining.soon', 'Soon');
   };
   
   // Get priority color
@@ -96,7 +101,7 @@ function TaskReminders({ tasks, onViewTask }) {
   return (
     <div className="fixed bottom-4 right-4 z-50 w-80 bg-white rounded-lg shadow-lg border border-gray-200">
       <div className="bg-blue-500 text-white px-4 py-2 rounded-t-lg flex justify-between items-center">
-        <div className="font-semibold">Upcoming Tasks</div>
+        <div className="font-semibold">{t('tasks.upcomingTasks', 'Upcoming Tasks')}</div>
         <button 
           onClick={() => setShowReminders(false)}
           className="text-white hover:text-gray-200"
@@ -120,14 +125,14 @@ function TaskReminders({ tasks, onViewTask }) {
               </div>
             </div>
             <div className="text-sm text-gray-500 mt-1">
-              {task.date} {task.time && `at ${task.time}`}
+              {task.date} {task.time && `${t('tasks.at', 'at')} ${task.time}`}
             </div>
           </div>
         ))}
       </div>
       <div className="px-4 py-2 bg-gray-50 rounded-b-lg text-center text-sm">
         <button className="text-blue-600 hover:text-blue-800" onClick={() => setShowReminders(false)}>
-          Dismiss All
+          {t('tasks.dismissAll', 'Dismiss All')}
         </button>
       </div>
     </div>

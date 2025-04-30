@@ -137,12 +137,12 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                 {trip.transports && trip.transports.length > 0 ? (
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="space-y-3">
-                      {trip.transports.map(transport => (
-                        <div key={transport.id} className="bg-white p-3 rounded-lg shadow-sm">
-                          <div className="font-medium">{transport.type}</div>
-                          <div className="text-sm">{t('trip.from', 'From')}: {transport.from}</div>
-                          <div className="text-sm">{t('trip.to', 'To')}: {transport.to}</div>
-                          {transport.price && <div className="text-sm">{t('trip.price', 'Price')}: ${transport.price}</div>}
+                      {trip.transports.map(t => (
+                        <div key={t.id} className="bg-white p-3 rounded-lg shadow-sm">
+                          <div className="font-medium">{t.type}</div>
+                          <div className="text-sm">{t('trip.from', 'From')}: {t.from}</div>
+                          <div className="text-sm">{t('trip.to', 'To')}: {t.to}</div>
+                          {t.price && <div className="text-sm">{t('trip.price', 'Price')}: ${t.price}</div>}
                         </div>
                       ))}
                     </div>
@@ -362,38 +362,38 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                       <div className="bg-gray-100 px-4 py-2 font-medium capitalize">
                         {category}
                         <span className="ml-2 text-sm text-gray-600">
-                          ({categoryTasks.filter(taskItem => taskItem.completed).length}/{categoryTasks.length} {t('trip.completed', 'completed')})
+                          ({categoryTasks.filter(t => t.completed).length}/{categoryTasks.length} {t('trip.completed', 'completed')})
                         </span>
                       </div>
                       <div>
-                        {categoryTasks.map(taskItem => (
+                        {categoryTasks.map(task => (
                           <div 
-                            key={taskItem.id} 
-                            className={`flex items-start p-3 border-b border-gray-100 last:border-b-0 ${taskItem.completed ? 'bg-gray-50' : ''}`}
+                            key={task.id} 
+                            className={`flex items-start p-3 border-b border-gray-100 last:border-b-0 ${task.completed ? 'bg-gray-50' : ''}`}
                           >
                             <div className="flex-1">
-                              <p className={`${taskItem.completed ? 'line-through text-gray-500' : ''}`}>
-                                {taskItem.text}
+                              <p className={`${task.completed ? 'line-through text-gray-500' : ''}`}>
+                                {task.text}
                               </p>
                               <div className="mt-1 flex text-xs space-x-2">
-                                {taskItem.date && (
+                                {task.date && (
                                   <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800">
-                                    {new Date(taskItem.date).toLocaleDateString()}
+                                    {new Date(task.date).toLocaleDateString()}
                                   </span>
                                 )}
                                 <span className={`px-2 py-0.5 rounded-full bg-gray-100 ${
-                                  taskItem.priority === 'high' 
+                                  task.priority === 'high' 
                                     ? 'text-red-600' 
-                                    : taskItem.priority === 'medium'
+                                    : task.priority === 'medium'
                                       ? 'text-yellow-600'
                                       : 'text-green-600'
                                 }`}>
-                                  {taskItem.priority ? (taskItem.priority.charAt(0).toUpperCase() + taskItem.priority.slice(1)) : 'Normal'} {t('tasks.priority', 'Priority')}
+                                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} {t('tasks.priority', 'Priority')}
                                 </span>
                               </div>
                             </div>
                             <div className="ml-2 flex items-center">
-                              {taskItem.completed ? (
+                              {task.completed ? (
                                 <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                                   {t('tasks.status.completed', 'Completed')}
                                 </span>

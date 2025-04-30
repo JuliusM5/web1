@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useI18n } from '../../utils/i18n'; // Add import for i18n
 
 function TaskDependencies({ task, tasks, updateTask }) {
+  const { t } = useI18n(); // Add i18n hook
   const [showDependencyModal, setShowDependencyModal] = useState(false);
   
   // Get task dependencies
@@ -16,7 +18,7 @@ function TaskDependencies({ task, tasks, updateTask }) {
   
   // Format task for display
   const formatTaskName = (t) => {
-    if (!t) return 'Unknown Task';
+    if (!t) return t('tasks.unknownTask', 'Unknown Task');
     
     let name = t.text;
     
@@ -73,13 +75,13 @@ function TaskDependencies({ task, tasks, updateTask }) {
   return (
     <div>
       <div className="mb-4">
-        <h4 className="font-medium text-gray-700 mb-2">Task Dependencies</h4>
+        <h4 className="font-medium text-gray-700 mb-2">{t('tasks.dependencies', 'Task Dependencies')}</h4>
         
         {/* Tasks this task depends on */}
         <div className="mb-3">
-          <h5 className="text-sm text-gray-500 mb-1">This task depends on:</h5>
+          <h5 className="text-sm text-gray-500 mb-1">{t('tasks.taskDependsOn', 'This task depends on:')}</h5>
           {dependsOn.length === 0 ? (
-            <p className="text-sm text-gray-400 italic">No dependencies</p>
+            <p className="text-sm text-gray-400 italic">{t('tasks.noDependencies', 'No dependencies')}</p>
           ) : (
             <ul className="space-y-1">
               {dependsOn.map(depTask => (
@@ -95,7 +97,7 @@ function TaskDependencies({ task, tasks, updateTask }) {
                   <button
                     onClick={() => removeDependency(depTask.id)}
                     className="text-red-500 hover:text-red-700"
-                    title="Remove dependency"
+                    title={t('tasks.removeDependency', 'Remove dependency')}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -110,7 +112,7 @@ function TaskDependencies({ task, tasks, updateTask }) {
         {/* Tasks that depend on this task */}
         {dependents.length > 0 && (
           <div>
-            <h5 className="text-sm text-gray-500 mb-1">Tasks that depend on this:</h5>
+            <h5 className="text-sm text-gray-500 mb-1">{t('tasks.tasksDependOnThis', 'Tasks that depend on this:')}</h5>
             <ul className="space-y-1">
               {dependents.map(depTask => (
                 <li 
@@ -131,19 +133,19 @@ function TaskDependencies({ task, tasks, updateTask }) {
         onClick={() => setShowDependencyModal(true)}
         className="w-full py-2 px-4 bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
       >
-        Manage Dependencies
+        {t('tasks.manageDependencies', 'Manage Dependencies')}
       </button>
       
       {/* Dependency Management Modal */}
       {showDependencyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Manage Dependencies</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">{t('tasks.manageDependencies', 'Manage Dependencies')}</h3>
             
             <div className="mb-4">
-              <h4 className="font-medium text-gray-700 mb-2">Current Dependencies</h4>
+              <h4 className="font-medium text-gray-700 mb-2">{t('tasks.currentDependencies', 'Current Dependencies')}</h4>
               {dependsOn.length === 0 ? (
-                <p className="text-sm text-gray-400 italic">No dependencies</p>
+                <p className="text-sm text-gray-400 italic">{t('tasks.noDependencies', 'No dependencies')}</p>
               ) : (
                 <ul className="space-y-1 mb-3">
                   {dependsOn.map(depTask => (
@@ -157,7 +159,7 @@ function TaskDependencies({ task, tasks, updateTask }) {
                       <button
                         onClick={() => removeDependency(depTask.id)}
                         className="text-red-500 hover:text-red-700"
-                        title="Remove dependency"
+                        title={t('tasks.removeDependency', 'Remove dependency')}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -170,9 +172,9 @@ function TaskDependencies({ task, tasks, updateTask }) {
             </div>
             
             <div className="mb-4">
-              <h4 className="font-medium text-gray-700 mb-2">Add Dependencies</h4>
+              <h4 className="font-medium text-gray-700 mb-2">{t('tasks.addDependencies', 'Add Dependencies')}</h4>
               {availableTasks.length === 0 ? (
-                <p className="text-sm text-gray-400 italic">No available tasks to add as dependencies</p>
+                <p className="text-sm text-gray-400 italic">{t('tasks.noAvailableTasks', 'No available tasks to add as dependencies')}</p>
               ) : (
                 <div className="max-h-60 overflow-y-auto border border-gray-200 rounded">
                   <ul className="divide-y divide-gray-200">
@@ -201,7 +203,7 @@ function TaskDependencies({ task, tasks, updateTask }) {
                 onClick={() => setShowDependencyModal(false)}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
-                Done
+                {t('form.done', 'Done')}
               </button>
             </div>
           </div>

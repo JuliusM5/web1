@@ -221,6 +221,9 @@ const enUS = {
     'tasks.waiting': 'Waiting',
     'tasks.dependenciesNotCompleteError': 'You must complete all dependencies first',
     'tasks.deleteTaskWithDependentsConfirmation': 'This task has {count} dependent task(s). Deleting it will remove the dependency. Continue?',
+    'tasks.status.completed': 'Completed',
+    'tasks.status.pending': 'Pending',
+
   
     // Task categories
     'tasks.categories.preparation': 'Preparation',
@@ -230,6 +233,15 @@ const enUS = {
     'tasks.categories.transportation': 'Transportation',
     'tasks.categories.accommodation': 'Accommodation',
     'tasks.categories.other': 'Other',
+    'tasks.categories.No Date': 'No Date',
+    'tasks.upcomingTasks': 'Upcoming Tasks',
+    'tasks.timeRemaining.now': 'Now',
+    'tasks.timeRemaining.minutes': '{{minutes}} min',
+    'tasks.timeRemaining.hours': '{{hours}} hr{{plural}}',
+    'tasks.timeRemaining.soon': 'Soon',
+    'tasks.at': 'at',
+    'tasks.dismissAll': 'Dismiss All',
+
   
     // Task priorities
     'tasks.priorities.high': 'High',
@@ -474,6 +486,8 @@ const enUS = {
     'trips.viewDetails': 'View Details',
     'trips.editTrip': 'Edit Trip',
     'trips.delete': 'Delete',
+    'trip.of': 'of',
+    'trip.tasksComplete': 'tasks complete',
   
     // External tab messages
     'external.title': 'External Services & Integration',
@@ -575,6 +589,35 @@ const enUS = {
     'trip.tripNotes': 'Trip Notes',
     'trip.externalServices': 'External Services',
     'trip.noExternalServices': 'No external services added to this trip.',
+    'trip.collaborateWithTravelCompanions': 'Collaborate with Travel Companions',
+    'trip.inviteOthersText': 'Invite others to view and contribute to your trip planning.',
+    'trip.permissions.canView': 'Can View',
+    'trip.permissions.canEdit': 'Can Edit',
+    'trip.sharedWith': 'Shared With',
+    'trip.noSharedYet': 'No one yet. Invite companions above.',
+    'trip.shareViaSocialMedia': 'Share via Social Media',
+    'trip.overallProgress': 'Overall Progress',
+    'trip.manageTasks': 'Manage Tasks',
+    'trip.pleaseEnterEmail': 'Please enter an email address',
+    'trip.emailSentConfirmation': 'Trip details sent to {email}',
+    'trip.moreActions': 'More actions',
+    'trip.shareTitle': 'Trip to {destination}',
+    'trip.shareText': 'Check out my trip to {destination}!',
+    'trip.shareApiNotSupported': 'Web Share API not supported on this browser',
+    'trip.shareTrip': 'Share Trip',
+    'trip.seeAll': 'See all',
+    'trip.moreTransports': 'more transports',
+    'trip.moreTasks': 'more tasks',
+    'trip.localInformation': 'Local Information',
+    'trip.emergency': 'Emergency',
+    'trip.currency': 'Currency',
+    'trip.language': 'Language',
+    'trip.dayByDaySchedule': 'Day-by-Day Schedule',
+    'trip.noScheduledActivities': 'No scheduled activities found.',
+    'trip.tripItinerary': 'Trip Itinerary',
+    'trip.date': 'Date',
+    'trip.noBudgetBreakdown': 'No detailed budget breakdown available.',
+    'trip.moreExpenses': 'more expenses',
   };
   
   export default enUS;
