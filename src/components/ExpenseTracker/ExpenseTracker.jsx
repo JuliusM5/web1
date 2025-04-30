@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAppSettings } from '../../utils/useAppSettings';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
   const [amount, setAmount] = useState('');
@@ -9,6 +10,19 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
   
   // Get currency formatter from app settings
   const { currency } = useAppSettings();
+  
+  // Get i18n functionality
+  const { t } = useI18n();
+  
+  // Define expense categories map with fallbacks
+  const expenseCategories = {
+    food: t('expenses.categories.food', 'Food'),
+    accommodation: t('expenses.categories.accommodation', 'Accommodation'),
+    transportation: t('expenses.categories.transportation', 'Transportation'),
+    activities: t('expenses.categories.activities', 'Activities'),
+    shopping: t('expenses.categories.shopping', 'Shopping'),
+    other: t('expenses.categories.other', 'Other')
+  };
   
   const addExpense = () => {
     if (amount && description) {
@@ -44,16 +58,16 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
   
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-xl font-semibold mb-4 text-gray-800">Trip Expense Tracker</h3>
+      <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('expenses.title', 'Trip Expense Tracker')}</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Add New Expense */}
         <div>
-          <h4 className="font-semibold mb-3">Add New Expense</h4>
+          <h4 className="font-semibold mb-3">{t('expenses.addExpense', 'Add New Expense')}</h4>
           
           <div className="space-y-3 bg-white border border-gray-200 p-4 rounded-lg">
             <div>
-              <label className="block text-gray-700 mb-1 text-sm">Amount</label>
+              <label className="block text-gray-700 mb-1 text-sm">{t('expenses.amount', 'Amount')}</label>
               <input
                 type="number"
                 value={amount}
@@ -64,34 +78,34 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-1 text-sm">Description</label>
+              <label className="block text-gray-700 mb-1 text-sm">{t('expenses.description', 'Description')}</label>
               <input
                 type="text"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
-                placeholder="What did you spend on?"
+                placeholder={t('expenses.descriptionPlaceholder', 'What did you spend on?')}
                 className="w-full p-2 border border-gray-300 rounded"
               />
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-1 text-sm">Category</label>
+              <label className="block text-gray-700 mb-1 text-sm">{t('expenses.category', 'Category')}</label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded"
               >
-                <option value="food">Food</option>
-                <option value="accommodation">Accommodation</option>
-                <option value="transportation">Transportation</option>
-                <option value="activities">Activities</option>
-                <option value="shopping">Shopping</option>
-                <option value="other">Other</option>
+                <option value="food">{expenseCategories.food}</option>
+                <option value="accommodation">{expenseCategories.accommodation}</option>
+                <option value="transportation">{expenseCategories.transportation}</option>
+                <option value="activities">{expenseCategories.activities}</option>
+                <option value="shopping">{expenseCategories.shopping}</option>
+                <option value="other">{expenseCategories.other}</option>
               </select>
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-1 text-sm">Date</label>
+              <label className="block text-gray-700 mb-1 text-sm">{t('expenses.date', 'Date')}</label>
               <input
                 type="date"
                 value={date}
@@ -109,27 +123,27 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
                   : 'bg-blue-500 text-white hover:bg-blue-600'
               }`}
             >
-              Add Expense
+              {t('expenses.addButton', 'Add Expense')}
             </button>
           </div>
         </div>
         
         {/* Expense Summary */}
         <div>
-          <h4 className="font-semibold mb-3">Expense Summary</h4>
+          <h4 className="font-semibold mb-3">{t('expenses.summary', 'Expense Summary')}</h4>
           
           <div className="bg-blue-50 p-4 rounded-lg">
             <div className="text-center mb-4">
-              <p className="text-gray-700">Total Spent</p>
+              <p className="text-gray-700">{t('expenses.totalSpent', 'Total Spent')}</p>
               <p className="text-3xl font-bold text-blue-700">{currency(totalSpent)}</p>
             </div>
             
             <div className="space-y-2">
-              <h5 className="font-medium">Breakdown by Category:</h5>
+              <h5 className="font-medium">{t('expenses.breakdownByCategory', 'Breakdown by Category')}:</h5>
               
               {Object.entries(expensesByCategory).map(([cat, amount]) => (
                 <div key={cat} className="flex justify-between">
-                  <span className="capitalize">{cat}:</span>
+                  <span className="capitalize">{expenseCategories[cat] || cat}:</span>
                   <span className="font-medium">{currency(amount)}</span>
                 </div>
               ))}
@@ -137,12 +151,12 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
           </div>
           
           <div className="mt-4 bg-yellow-50 border border-yellow-200 p-3 rounded text-sm">
-            <h4 className="font-semibold text-yellow-800">Expense Tracking Tips:</h4>
+            <h4 className="font-semibold text-yellow-800">{t('expenses.trackingTips', 'Expense Tracking Tips')}:</h4>
             <ul className="mt-1 ml-4 list-disc text-yellow-800">
-              <li>Track expenses as they occur to stay on budget</li>
-              <li>Save receipts and take photos for reference</li>
-              <li>Set daily spending limits for better control</li>
-              <li>Consider using local payment methods to avoid fees</li>
+              <li>{t('expenses.tip1', 'Track expenses as they occur to stay on budget')}</li>
+              <li>{t('expenses.tip2', 'Save receipts and take photos for reference')}</li>
+              <li>{t('expenses.tip3', 'Set daily spending limits for better control')}</li>
+              <li>{t('expenses.tip4', 'Consider using local payment methods to avoid fees')}</li>
             </ul>
           </div>
         </div>
@@ -150,21 +164,21 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
       
       {/* Expense List */}
       <div className="mt-6">
-        <h4 className="font-semibold mb-3">Recent Expenses</h4>
+        <h4 className="font-semibold mb-3">{t('expenses.recentExpenses', 'Recent Expenses')}</h4>
         
         {tripExpenses.length === 0 ? (
           <div className="text-center py-4 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">No expenses recorded yet.</p>
+            <p className="text-gray-500">{t('expenses.noExpenses', 'No expenses recorded yet.')}</p>
           </div>
         ) : (
           <div className="overflow-hidden rounded-lg border border-gray-200">
             <table className="min-w-full bg-white">
               <thead>
                 <tr>
-                  <th className="py-2 px-4 border-b text-left">Date</th>
-                  <th className="py-2 px-4 border-b text-left">Description</th>
-                  <th className="py-2 px-4 border-b text-left">Category</th>
-                  <th className="py-2 px-4 border-b text-right">Amount</th>
+                  <th className="py-2 px-4 border-b text-left">{t('expenses.date', 'Date')}</th>
+                  <th className="py-2 px-4 border-b text-left">{t('expenses.description', 'Description')}</th>
+                  <th className="py-2 px-4 border-b text-left">{t('expenses.category', 'Category')}</th>
+                  <th className="py-2 px-4 border-b text-right">{t('expenses.amount', 'Amount')}</th>
                   <th className="py-2 px-4 border-b"></th>
                 </tr>
               </thead>
@@ -173,12 +187,15 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
                   <tr key={expense.id} className="hover:bg-gray-50">
                     <td className="py-2 px-4 border-b">{expense.date}</td>
                     <td className="py-2 px-4 border-b">{expense.description}</td>
-                    <td className="py-2 px-4 border-b capitalize">{expense.category}</td>
+                    <td className="py-2 px-4 border-b capitalize">
+                      {expenseCategories[expense.category] || expense.category}
+                    </td>
                     <td className="py-2 px-4 border-b text-right">{currency(expense.amount)}</td>
                     <td className="py-2 px-4 border-b text-right">
                       <button
                         onClick={() => removeExpense(expense.id)}
                         className="text-red-500 hover:text-red-700"
+                        aria-label={t('expenses.removeExpense', 'Remove expense')}
                       >
                         ✕
                       </button>

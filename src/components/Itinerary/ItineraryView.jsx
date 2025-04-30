@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import DynamicCalendar from '../Calendar/DynamicCalendar';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
 function ItineraryView({ trip, tripTasks = [] }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateEvents, setDateEvents] = useState([]);
   const [dailyItinerary, setDailyItinerary] = useState({});
+  
+  // Get i18n functionality
+  const { t } = useI18n();
   
   // Set selected date to trip start date initially
   useEffect(() => {
@@ -13,9 +17,9 @@ function ItineraryView({ trip, tripTasks = [] }) {
     }
   }, [trip, selectedDate]);
   
-  // Create a structured daily itinerary from tasks
-  useEffect(() => {
-    if (!tripTasks || tripTasks.length === 0) return;
+  // Create a structured daily itinerary from tasks - using useMemo to prevent recreation on every render
+  const structuredItinerary = useMemo(() => {
+    if (!tripTasks || tripTasks.length === 0) return {};
     
     const itinerary = {};
     
@@ -38,25 +42,32 @@ function ItineraryView({ trip, tripTasks = [] }) {
           }
           itinerary[transport.date].push({
             ...transport,
-            text: `${transport.type}: ${transport.from} to ${transport.to}`,
+            text: `${transport.type}: ${transport.from} ${t('itinerary.to', 'to')} ${transport.to}`,
             category: 'transportation'
           });
         }
       });
     }
     
-    setDailyItinerary(itinerary);
-    
-    // Update events for selected date
+    return itinerary;
+  }, [tripTasks, trip.transports, t]); // Only recreate when these dependencies change
+  
+  // Update itinerary state when the memoized value changes
+  useEffect(() => {
+    setDailyItinerary(structuredItinerary);
+  }, [structuredItinerary]);
+  
+  // Update events for selected date when either selectedDate or dailyItinerary changes
+  useEffect(() => {
     if (selectedDate) {
-      setDateEvents(itinerary[selectedDate] || []);
+      setDateEvents(dailyItinerary[selectedDate] || []);
     }
-  }, [tripTasks, trip.transports, selectedDate]);
+  }, [selectedDate, dailyItinerary]);
   
   // Handle date selection in calendar
   const handleDateSelect = (date) => {
     setSelectedDate(date);
-    setDateEvents(dailyItinerary[date] || []);
+    // Events will be updated via the useEffect above
   };
   
   // Format date for display
@@ -64,7 +75,10 @@ function ItineraryView({ trip, tripTasks = [] }) {
     if (!dateString) return '';
     
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+    // Get browser locale or use 'en-US' as fallback
+    const userLocale = navigator.language || 'en-US';
+    
+    return date.toLocaleDateString(userLocale, { 
       weekday: 'long',
       month: 'long', 
       day: 'numeric',
@@ -72,8 +86,8 @@ function ItineraryView({ trip, tripTasks = [] }) {
     });
   };
   
-  // Add missing dates between start and end
-  const getAllTripDates = () => {
+  // Add missing dates between start and end - memoized to avoid recreation on every render
+  const allDates = useMemo(() => {
     if (!trip || !trip.startDate || !trip.endDate) return [];
     
     const dates = [];
@@ -86,30 +100,33 @@ function ItineraryView({ trip, tripTasks = [] }) {
     }
     
     return dates;
-  };
+  }, [trip?.startDate, trip?.endDate]); // Only recalculate when dates change
   
-  // Get all trip dates
-  const allDates = getAllTripDates();
+  // Prepare task events for calendar once - memoized to prevent recreation on every render
+  const calendarEvents = useMemo(() => {
+    return tripTasks.filter(task => task.date);
+  }, [tripTasks]);
   
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-gray-800">Trip Itinerary</h3>
+      <h3 className="text-xl font-semibold text-gray-800">{t('itinerary.title', 'Trip Itinerary')}</h3>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Calendar View */}
         <div>
-          <h4 className="font-medium mb-3">Trip Calendar</h4>
+          <h4 className="font-medium mb-3">{t('itinerary.tripCalendar', 'Trip Calendar')}</h4>
           <DynamicCalendar 
             startDate={trip.startDate} 
             endDate={trip.endDate} 
-            events={tripTasks.filter(task => task.date)}
+            events={calendarEvents} // Use memoized events
             onDateClick={handleDateSelect}
+            selectedDate={selectedDate} // Pass this explicitly
           />
         </div>
         
         {/* Daily View */}
         <div>
-          <h4 className="font-medium mb-3">Daily Schedule</h4>
+          <h4 className="font-medium mb-3">{t('itinerary.dailySchedule', 'Daily Schedule')}</h4>
           {selectedDate ? (
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
               <div className="bg-blue-50 px-4 py-3 border-b border-gray-200">
@@ -151,7 +168,7 @@ function ItineraryView({ trip, tripTasks = [] }) {
                           
                           <div className="flex mt-2 text-xs">
                             <span className="px-2 py-0.5 bg-white rounded-full capitalize">
-                              {event.category}
+                              {t(`tasks.categories.${event.category}`, event.category)}
                             </span>
                             {event.priority && (
                               <span className={`ml-2 px-2 py-0.5 rounded-full ${
@@ -159,7 +176,7 @@ function ItineraryView({ trip, tripTasks = [] }) {
                                 event.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 
                                 'bg-green-100 text-green-800'
                               }`}>
-                                {event.priority}
+                                {t(`tasks.priorities.${event.priority}`, event.priority)}
                               </span>
                             )}
                           </div>
@@ -169,9 +186,9 @@ function ItineraryView({ trip, tripTasks = [] }) {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">No events scheduled for this day.</p>
+                    <p className="text-gray-500">{t('itinerary.noEvents', 'No events scheduled for this day.')}</p>
                     <p className="text-sm text-gray-400 mt-1">
-                      Add tasks or events with this date to see them here.
+                      {t('itinerary.addEventsHint', 'Add tasks or events with this date to see them here.')}
                     </p>
                   </div>
                 )}
@@ -179,7 +196,7 @@ function ItineraryView({ trip, tripTasks = [] }) {
             </div>
           ) : (
             <div className="bg-gray-50 p-4 rounded-lg text-center">
-              <p className="text-gray-600">Select a date on the calendar to view events.</p>
+              <p className="text-gray-600">{t('itinerary.selectDatePrompt', 'Select a date on the calendar to view events.')}</p>
             </div>
           )}
         </div>
@@ -187,7 +204,7 @@ function ItineraryView({ trip, tripTasks = [] }) {
       
       {/* Full Itinerary */}
       <div>
-        <h4 className="font-medium mb-3">Complete Itinerary</h4>
+        <h4 className="font-medium mb-3">{t('itinerary.completeItinerary', 'Complete Itinerary')}</h4>
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           {allDates.length > 0 ? (
             <div className="divide-y divide-gray-200">
@@ -202,7 +219,7 @@ function ItineraryView({ trip, tripTasks = [] }) {
                   >
                     <span>{formatDate(date)}</span>
                     <span className="text-sm text-gray-500">
-                      {dailyItinerary[date]?.length || 0} events
+                      {dailyItinerary[date]?.length || 0} {t('itinerary.events', 'events')}
                     </span>
                   </div>
                   
@@ -245,9 +262,9 @@ function ItineraryView({ trip, tripTasks = [] }) {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No itinerary dates available.</p>
+              <p className="text-gray-500">{t('itinerary.noItineraryDates', 'No itinerary dates available.')}</p>
               <p className="text-gray-400 text-sm mt-1">
-                Add trip start and end dates to see your itinerary.
+                {t('itinerary.addTripDatesHint', 'Add trip start and end dates to see your itinerary.')}
               </p>
             </div>
           )}

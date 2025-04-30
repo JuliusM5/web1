@@ -391,6 +391,29 @@ const translations = {
     'nav.settings': 'Configuración',
     'nav.templates': 'Plantillas',
 
+    // Itinerary translations
+    'itinerary.title': 'Itinerario de Viaje',
+    'itinerary.tripCalendar': 'Calendario de Viaje',
+    'itinerary.dailySchedule': 'Programa Diario',
+    'itinerary.to': 'a',
+    'itinerary.noEvents': 'No hay eventos programados para este día.',
+    'itinerary.addEventsHint': 'Añade tareas o eventos con esta fecha para verlos aquí.',
+    'itinerary.selectDatePrompt': 'Selecciona una fecha en el calendario para ver los eventos.',
+    'itinerary.completeItinerary': 'Itinerario Completo',
+    'itinerary.events': 'eventos',
+    'itinerary.noItineraryDates': 'No hay fechas de itinerario disponibles.',
+    'itinerary.addTripDatesHint': 'Añade fechas de inicio y fin del viaje para ver tu itinerario.',
+
+    // Calendar translations
+    'calendar.tripDays': 'Días de Viaje',
+    'calendar.events': 'Eventos',
+    'calendar.today': 'Hoy',
+    'calendar.month': 'Mes',
+    'calendar.week': 'Semana',
+    'calendar.day': 'Día',
+    'calendar.noEvents': 'No hay eventos para mostrar.',
+    'calendar.addEvent': 'Añadir Evento',
+
     'itinerary.title': 'Itinerario de Viaje',
     'itinerary.day': 'Día',
     'itinerary.schedule': 'Horario',
@@ -956,6 +979,41 @@ const translations = {
     'nav.trips': 'Mes Voyages',
     'nav.settings': 'Paramètres',
     'nav.templates': 'Modèles',
+
+      // Itinerary translations
+    'itinerary.title': 'Itinéraire de Voyage',
+    'itinerary.tripCalendar': 'Calendrier de Voyage',
+    'itinerary.dailySchedule': 'Programme Journalier',
+    'itinerary.to': 'à',
+    'itinerary.noEvents': 'Aucun événement prévu pour ce jour.',
+    'itinerary.addEventsHint': 'Ajoutez des tâches ou des événements à cette date pour les voir ici.',
+    'itinerary.selectDatePrompt': 'Sélectionnez une date sur le calendrier pour voir les événements.',
+    'itinerary.completeItinerary': 'Itinéraire Complet',
+    'itinerary.events': 'événements',
+    'itinerary.noItineraryDates': 'Aucune date d\'itinéraire disponible.',
+    'itinerary.addTripDatesHint': 'Ajoutez les dates de début et de fin du voyage pour voir votre itinéraire.',
+
+    'expenses.summary': 'Expense Summary', // 'Resumen de Gastos' in Spanish
+    'expenses.totalSpent': 'Total Spent', // 'Total Gastado' in Spanish
+    'expenses.breakdownByCategory': 'Breakdown by Category', // 'Desglose por Categoría' in Spanish
+    'expenses.recentExpenses': 'Recent Expenses', // 'Gastos Recientes' in Spanish
+    'expenses.categories.food': 'Food', // 'Comida' in Spanish
+    'expenses.categories.accommodation': 'Accommodation', // 'Alojamiento' in Spanish
+    'expenses.categories.transportation': 'Transportation', // 'Transporte' in Spanish
+    'expenses.categories.activities': 'Activities', // 'Actividades' in Spanish
+    'expenses.categories.shopping': 'Shopping', // 'Compras' in Spanish
+    'expenses.categories.other': 'Other',
+
+    // Calendar translations
+    'calendar.tripDays': 'Jours de Voyage',
+    'calendar.events': 'Événements',
+    'calendar.today': 'Aujourd\'hui',
+    'calendar.month': 'Mois',
+    'calendar.week': 'Semaine',
+    'calendar.day': 'Jour',
+    'calendar.noEvents': 'Aucun événement à afficher.',
+    'calendar.addEvent': 'Ajouter un Événement',
+
     // TripDetails translations
     'tripDetails.backToTrips': 'Retour aux Voyages',
     'tripDetails.overview': 'Aperçu',
