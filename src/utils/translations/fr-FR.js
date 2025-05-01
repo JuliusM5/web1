@@ -889,6 +889,7 @@ const frFR = {
     // Éléments de formulaire génériques manquants
     'form.button': 'Bouton',
     'form.primary': 'Principal',
+    
   };
   
   export default frFR;

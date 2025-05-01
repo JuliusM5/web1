@@ -150,7 +150,7 @@ const esES = {
     'settings.preview.fontSize': 'Tamaño de fuente',
     'settings.preview.darkMode': 'Modo oscuro',
     'settings.preview.changesWillApply': 'Los cambios se aplicarán cuando guardes la configuración',
-    'settings.preview.dateFormatTitle': 'Vista previa del formato de fecha',
+    'settings.preview.dase': 'Vista previa del formato de fecha',
     'settings.preview.dateFormat': 'Fecha de ejemplo: {date}',
     'settings.preview.currentFormat': 'Formato actual: {format}',
     'settings.preview.example': 'Ejemplo',
@@ -166,6 +166,7 @@ const esES = {
     'settings.preview.sampleNumber': 'Número de ejemplo',
     'settings.preview.sampleCurrency': 'Moneda de ejemplo',
     'settings.preview.sampleTime': 'Hora de ejemplo',
+    
     
     // Examples for different formats
     'settings.preview.dateExample': 'Ejemplo de fecha',
