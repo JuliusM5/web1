@@ -142,6 +142,44 @@ const esES = {
     'trip.sharedWith': 'Compartido Con',
     'trip.noSharedYet': 'Nadie aún. Invita a compañeros arriba.',
     'trip.shareViaSocialMedia': 'Compartir por Redes Sociales',
+    'trip.send': 'Enviar',
+    'trip.invite': 'Invitar',
+
+    'settings.preview.theme': 'Vista previa del tema',
+    'settings.preview.color': 'Color',
+    'settings.preview.fontSize': 'Tamaño de fuente',
+    'settings.preview.darkMode': 'Modo oscuro',
+    'settings.preview.changesWillApply': 'Los cambios se aplicarán cuando guardes la configuración',
+    'settings.preview.dateFormatTitle': 'Vista previa del formato de fecha',
+    'settings.preview.dateFormat': 'Fecha de ejemplo: {date}',
+    'settings.preview.currentFormat': 'Formato actual: {format}',
+    'settings.preview.example': 'Ejemplo',
+    'settings.colors.blue': 'Azul',
+    'settings.colors.purple': 'Morado',
+    'settings.colors.green': 'Verde',
+    'settings.colors.red': 'Rojo',
+    'settings.colors.amber': 'Ámbar',
+    'settings.colors.indigo': 'Índigo',
+    
+    'settings.fontSizes.small': 'Pequeño',
+    'settings.fontSizes.medium': 'Mediano',
+    'settings.fontSizes.large': 'Grande',
+    
+    'settings.preview.on': 'Activado',
+    'settings.preview.off': 'Desactivado',
+
+    'settings.title': 'Configuración de Usuario',
+    'settings.tabs.appearance': 'Apariencia',
+    'settings.tabs.preferences': 'Preferencias',
+    'settings.tabs.notifications': 'Notificaciones',
+    'settings.tabs.privacy': 'Privacidad',
+    'settings.tabs.accessibility': 'Accesibilidad',
+    'settings.tabs.data': 'Gestión de Datos',
+    'settings.resetDefaults': 'Restablecer valores predeterminados',
+    'settings.appearance.title': 'Configuración de Apariencia',
+    'settings.appearance.darkMode': 'Modo Oscuro',
+    'settings.buttons.saveClose': 'Guardar y Cerrar',
+    'settings.buttons.close': 'Cerrar',
     
     // Dashboard
     'dashboard.title': 'Panel',
@@ -543,6 +581,7 @@ const esES = {
     'external.edit': 'Editar servicio',
     
     // Expenses translations
+    'expenses.descriptionPlaceholder': '¿En qué gastaste?',
     'expenses.title': 'Seguimiento de Gastos',
     'expenses.addExpense': 'Añadir Gasto',
     'expenses.category': 'Categoría',

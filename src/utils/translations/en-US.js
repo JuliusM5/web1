@@ -562,6 +562,7 @@ const enUS = {
     'expenses.categories.activities': 'Activities',
     'expenses.categories.shopping': 'Shopping',
     'expenses.categories.other': 'Other',
+    'expenses.descriptionPlaceholder': 'What did you spend on?',
 
     // Trip
     'trip.editTrip': 'Edit Trip',
@@ -618,6 +619,151 @@ const enUS = {
     'trip.date': 'Date',
     'trip.noBudgetBreakdown': 'No detailed budget breakdown available.',
     'trip.moreExpenses': 'more expenses',
+
+    // Tab titles
+    'settings.title': 'User Settings',
+    'settings.tabs.appearance': 'Appearance',
+    'settings.tabs.preferences': 'Preferences',
+    'settings.tabs.notifications': 'Notifications',
+    'settings.tabs.privacy': 'Privacy',
+    'settings.tabs.accessibility': 'Accessibility',
+    'settings.tabs.data': 'Data Management',
+    'settings.resetDefaults': 'Reset to Defaults',
+    'settings.preview.dateFormatTitle': 'Date Format Preview',
+    'settings.preview.dateFormat': 'Sample Date: {date}',
+    'settings.preview.currentFormat': 'Current Format: {format}',
+    'settings.preview.example': 'Example',
+    
+
+    // Preview settings
+    'settings.preview.theme': 'Theme Preview',
+    'settings.preview.color': 'Color',
+    'settings.preview.fontSize': 'Font Size',
+    'settings.preview.darkMode': 'Dark Mode',
+    'settings.preview.changesWillApply': 'Changes will apply when you save settings',
+    
+    // Color and font size references 
+    'settings.colors.blue': 'Blue',
+    'settings.colors.purple': 'Purple',
+    'settings.colors.green': 'Green',
+    'settings.colors.red': 'Red',
+    'settings.colors.amber': 'Amber',
+    'settings.colors.indigo': 'Indigo',
+    
+    'settings.fontSizes.small': 'Small',
+    'settings.fontSizes.medium': 'Medium',
+    'settings.fontSizes.large': 'Large',
+    
+    'settings.preview.on': 'On',
+    'settings.preview.off': 'Off',
+
+    // Appearance settings
+    'settings.appearance.title': 'Appearance Settings',
+    'settings.appearance.darkMode': 'Dark Mode',
+    'settings.appearance.darkModeHelp': 'Switch between light and dark theme',
+    'settings.appearance.fontSize': 'Font Size',
+    'settings.appearance.small': 'Small',
+    'settings.appearance.medium': 'Medium',
+    'settings.appearance.large': 'Large',
+    'settings.appearance.colorScheme': 'Color Scheme',
+    'settings.appearance.colors.blue': 'Blue',
+    'settings.appearance.colors.purple': 'Purple',
+    'settings.appearance.colors.green': 'Green',
+    'settings.appearance.colors.red': 'Red',
+    'settings.appearance.colors.amber': 'Amber',
+    'settings.appearance.colors.indigo': 'Indigo',
+
+    // Preferences settings
+    'settings.preferences.title': 'General Preferences',
+    'settings.preferences.defaultCurrency': 'Default Currency',
+    'settings.preferences.dateFormat': 'Date Format',
+    'settings.preferences.distanceUnit': 'Distance Unit',
+    'settings.preferences.temperatureUnit': 'Temperature Unit',
+    'settings.preferences.language': 'Language',
+    'settings.preferences.languageHelp': 'Select your preferred language for the application.',
+    'settings.preferences.miles': 'Miles',
+    'settings.preferences.kilometers': 'Kilometers',
+    'settings.preferences.fahrenheit': 'Fahrenheit (°F)',
+    'settings.preferences.celsius': 'Celsius (°C)',
+    'settings.preferences.currencyHelp': 'Default currency used for budgeting and expenses.',
+    'settings.preferences.currencies.USD': 'US Dollar',
+    'settings.preferences.currencies.EUR': 'Euro',
+    'settings.preferences.currencies.GBP': 'British Pound',
+    'settings.preferences.currencies.JPY': 'Japanese Yen',
+    'settings.preferences.currencies.CAD': 'Canadian Dollar',
+    'settings.preferences.currencies.AUD': 'Australian Dollar',
+    'settings.preferences.currencies.CNY': 'Chinese Yuan',
+    'settings.preferences.currencies.INR': 'Indian Rupee',
+    
+    // Notifications settings
+    'settings.notifications.title': 'Notification Settings',
+    'settings.notifications.tripReminders': 'Trip Reminders',
+    'settings.notifications.tripRemindersHelp': 'Receive reminders about upcoming trips',
+    'settings.notifications.taskReminders': 'Task Reminders',
+    'settings.notifications.taskRemindersHelp': 'Receive reminders about upcoming tasks and deadlines',
+    'settings.notifications.budgetAlerts': 'Budget Alerts',
+    'settings.notifications.budgetAlertsHelp': "Receive alerts when you're approaching your budget limits",
+    'settings.notifications.emailNotifications': 'Email Notifications',
+    'settings.notifications.emailNotificationsHelp': 'Receive notifications via email',
+    'settings.notifications.emailConfig': 'Email Configuration',
+    'settings.notifications.emailAddress': 'Email Address',
+    'settings.notifications.emailPlaceholder': 'Enter your email address',
+    'settings.notifications.frequency': 'Notification Frequency',
+    'settings.notifications.instant': 'Instant',
+    'settings.notifications.daily': 'Daily Summary',
+    'settings.notifications.weekly': 'Weekly Summary',
+    'settings.notifications.permissionsNote': "Browser notifications require permission. If you've denied permission, you'll need to update your browser settings.",
+    
+    // Privacy settings
+    'settings.privacy.title': 'Privacy Settings',
+    'settings.privacy.shareLocation': 'Share Location Data',
+    'settings.privacy.shareLocationHelp': 'Allow access to your location for better recommendations',
+    'settings.privacy.analytics': 'Usage Analytics',
+    'settings.privacy.analyticsHelp': 'Allow anonymous usage data collection to improve the app',
+    'settings.privacy.autoSave': 'Auto-Save',
+    'settings.privacy.autoSaveHelp': 'Automatically save trips and changes',
+    'settings.privacy.dataRetention': 'Data Retention',
+    'settings.privacy.keepHistoryFor': 'Keep trip history for',
+    'settings.privacy.1month': '1 month',
+    'settings.privacy.3months': '3 months',
+    'settings.privacy.6months': '6 months',
+    'settings.privacy.1year': '1 year',
+    'settings.privacy.forever': 'Forever',
+    'settings.privacy.dataRetentionHelp': 'Past trips older than this will be automatically deleted.',
+    
+    // Accessibility settings
+    'settings.accessibility.title': 'Accessibility Settings',
+    'settings.accessibility.highContrast': 'High Contrast Mode',
+    'settings.accessibility.highContrastHelp': 'Increases contrast for better readability',
+    'settings.accessibility.reducedMotion': 'Reduce Motion',
+    'settings.accessibility.reducedMotionHelp': 'Minimizes animations and transitions',
+    'settings.accessibility.largerClickTargets': 'Larger Click Targets',
+    'settings.accessibility.largerClickTargetsHelp': 'Makes buttons and interactive elements larger',
+    'settings.accessibility.textScaling': 'Text Scaling',
+    'settings.accessibility.textScalingHelp': 'Adjust text size independently from the interface size',
+    'settings.accessibility.current': 'Current',
+    'settings.accessibility.screenReader': 'Screen Reader Optimization',
+    'settings.accessibility.screenReaderHelp': 'Enhanced descriptions for screen readers',
+    'settings.accessibility.note': 'These settings help make the application more accessible for all users.',
+    
+    // Data management settings
+    'settings.data.title': 'Data Management',
+    'settings.data.exportData': 'Export Your Data',
+    'settings.data.exportHelp': 'Download all your trip data and settings as a backup file. You can import this file later to restore your data.',
+    'settings.data.exportButton': 'Export All Data',
+    'settings.data.importData': 'Import Data',
+    'settings.data.importHelp': 'Restore your data from a previously exported backup file.',
+    'settings.data.importButton': 'Import Data',
+    'settings.data.clearData': 'Clear All Data',
+    'settings.data.clearHelp': 'This will permanently delete all your trips, templates, and settings. This action cannot be undone.',
+    'settings.data.clearButton': 'Clear All Data',
+    
+    // Common settings elements
+    'settings.notes.note': 'Note',
+    'settings.notes.saveToApply': 'Click "Save and Close" at the bottom of the screen to apply your appearance settings.',
+    'settings.buttons.saveClose': 'Save and Close',
+    'settings.buttons.close': 'Close',
+
   };
   
-  export default enUS;
+export default enUS;

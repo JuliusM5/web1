@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { calculateDuration, shareTrip, exportTripToPDF, emailTripDetails } from '../../utils/helpers';
-import { useI18n } from '../../utils/i18n'; // Add import for i18n
+import { useI18n } from '../../utils/i18n'; 
 import ExpenseTracker from '../ExpenseTracker/ExpenseTracker';
 import BudgetChart from '../Budget/BudgetChart';
 import DynamicCalendar from '../Calendar/DynamicCalendar';
 import ItineraryView from '../Itinerary/ItineraryView';
+
 
 function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
   const { t } = useI18n(); // Add i18n hook
@@ -137,19 +138,19 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                 {trip.transports && trip.transports.length > 0 ? (
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="space-y-3">
-                      {trip.transports.map(t => (
-                        <div key={t.id} className="bg-white p-3 rounded-lg shadow-sm">
-                          <div className="font-medium">{t.type}</div>
-                          <div className="text-sm">{t('trip.from', 'From')}: {t.from}</div>
-                          <div className="text-sm">{t('trip.to', 'To')}: {t.to}</div>
-                          {t.price && <div className="text-sm">{t('trip.price', 'Price')}: ${t.price}</div>}
+                      {trip.transports.map(transport => (
+                        <div key={transport.id} className="bg-white p-3 rounded-lg shadow-sm">
+                          <div className="font-medium">{transport.type}</div>
+                          <div className="text-sm">{t('transport.from', 'From')}: {transport.from}</div>
+                          <div className="text-sm">{t('transport.to', 'To')}: {transport.to}</div>
+                          {transport.price && <div className="text-sm">{t('transport.price', 'Price')}: ${transport.price}</div>}
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
                   <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <p className="text-gray-500">{t('trip.noTransportation', 'No transportation options added.')}</p>
+                    <p className="text-gray-500">{t('tripDetails.noTransportation', 'No transportation options added.')}</p>
                   </div>
                 )}
               </div>
@@ -190,7 +191,7 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                   </div>
                 ) : (
                   <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <p className="text-gray-500">{t('trip.noTasks', 'No tasks added to this trip.')}</p>
+                    <p className="text-gray-500">{t('tripDetails.noTasks', 'No tasks added to this trip.')}</p>
                   </div>
                 )}
               </div>
@@ -205,7 +206,7 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                     <div key={photo.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
                       <img 
                         src={photo.url} 
-                        alt={photo.caption || t('trip.travelInspiration', 'Travel inspiration')}
+                        alt={photo.caption || t('photos.travelInspiration', 'Travel inspiration')}
                         className="w-full h-36 object-cover"
                         onError={e => {
                           e.target.onerror = null;
@@ -222,7 +223,7 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                 </div>
               ) : (
                 <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-gray-500">{t('trip.noPhotos', 'No photos added to this trip.')}</p>
+                  <p className="text-gray-500">{t('tripDetails.noPhotos', 'No photos added to this trip.')}</p>
                 </div>
               )}
             </div>
@@ -248,7 +249,7 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                 </div>
               ) : (
                 <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-gray-500">{t('trip.noNotes', 'No notes added to this trip.')}</p>
+                  <p className="text-gray-500">{t('tripDetails.noNotes', 'No notes added to this trip.')}</p>
                 </div>
               )}
             </div>
@@ -312,24 +313,24 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
             <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('trip.tripTasks', 'Trip Tasks')}</h3>
             
             {(!trip.tasks || trip.tasks.length === 0) ? (
-              <div className="bg-gray-50 p-4 rounded-lg text-center">
-                <p className="text-gray-500">{t('trip.noTasksAdded', 'No tasks have been added to this trip.')}</p>
-                <button
-                  onClick={() => editTrip(trip)}
-                  className="mt-3 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                >
-                  {t('trip.addTasks', 'Add Tasks')}
-                </button>
-              </div>
+             <div className="bg-gray-50 p-4 rounded-lg text-center">
+              <p className="text-gray-500">{t('tripDetails.noTasksAdded', 'No tasks have been added to this trip.')}</p>
+              <button
+                onClick={() => editTrip(trip)}
+                className="mt-3 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+              >
+                {t('tripDetails.addTasks', 'Add Tasks')}
+              </button>
+            </div>
             ) : (
               <div>
                 {/* Task Progress */}
                 <div className="bg-blue-50 p-4 rounded-lg mb-6">
                   <div className="flex justify-between items-center">
-                    <h4 className="font-semibold">{t('trip.overallProgress', 'Overall Progress')}</h4>
+                    <h4 className="font-semibold">{t('tripDetails.overallProgress', 'Overall Progress')}</h4>
                     <div className="text-right">
                       <span className="font-medium">
-                        {trip.tasks.filter(task => task.completed).length} {t('trip.of', 'of')} {trip.tasks.length} {t('trip.tasksComplete', 'tasks complete')}
+                        {trip.tasks.filter(task => task.completed).length} {t('tripDetails.of', 'of')} {trip.tasks.length} {t('tripDetails.tasksComplete', 'tasks complete')}
                       </span>
                       <span className="ml-2 px-2 py-1 bg-blue-100 rounded-full text-sm">
                         {Math.round((trip.tasks.filter(task => task.completed).length / trip.tasks.length) * 100)}%
@@ -362,7 +363,7 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                       <div className="bg-gray-100 px-4 py-2 font-medium capitalize">
                         {category}
                         <span className="ml-2 text-sm text-gray-600">
-                          ({categoryTasks.filter(t => t.completed).length}/{categoryTasks.length} {t('trip.completed', 'completed')})
+                          ({categoryTasks.filter(t => t.completed).length}/{categoryTasks.length} {t('tripDetails.completed', 'completed')})
                         </span>
                       </div>
                       <div>
@@ -388,7 +389,7 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                                       ? 'text-yellow-600'
                                       : 'text-green-600'
                                 }`}>
-                                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} {t('tasks.priority', 'Priority')}
+                                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} {t('tripDetails.priority', 'Priority')}
                                 </span>
                               </div>
                             </div>
@@ -434,7 +435,7 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
         {/* Share Tab */}
         {activeTab === 'share' && (
           <div>
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('trip.shareYourTrip', 'Share Your Trip')}</h3>
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('tripDetails.shareYourTrip', 'Share Your Trip')}</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -462,26 +463,26 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
               </div>
               
               <div>
-                <h4 className="font-semibold mb-3">{t('trip.exportOptions', 'Export Options')}</h4>
+              <h4 className="font-semibold mb-3">{t('tripDetails.exportOptions', 'Export Options')}</h4>
                 <div className="bg-white border border-gray-200 p-4 rounded-lg space-y-4">
-                  <button
-                    onClick={() => exportTripToPDF(trip)}
-                    className="w-full flex items-center justify-center bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-                  >
-                    <span className="mr-2">{t('trip.exportAsPDF', 'Export as PDF')}</span>
-                  </button>
+                <button
+                  onClick={() => exportTripToPDF(trip)}
+                  className="w-full flex items-center justify-center bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                >
+                  <span className="mr-2">{t('tripDetails.exportAsPDF', 'Export as PDF')}</span>
+                </button>
                   
                   <div className="pt-2">
-                    <label className="block text-gray-700 mb-2">{t('trip.emailItinerary', 'Email Itinerary')}</label>
+                  <label className="block text-gray-700 mb-2">{t('tripDetails.emailItinerary', 'Email Itinerary')}</label>
                     <div className="flex gap-2">
-                      <input
-                        type="email"
-                        value={shareEmail}
-                        onChange={e => setShareEmail(e.target.value)}
-                        placeholder={t('trip.enterEmailAddress', 'Enter email address')}
-                        className="flex-1 p-2 border border-gray-300 rounded"
-                      />
-                      <button
+                    <input
+                      type="email"
+                      value={shareEmail}
+                      onChange={e => setShareEmail(e.target.value)}
+                      placeholder={t('tripDetails.enterEmail', 'Enter email address')}
+                      className="flex-1 p-2 border border-gray-300 rounded"
+                    />
+                     <button
                         onClick={() => emailTripDetails(trip, shareEmail)}
                         disabled={!shareEmail}
                         className={`px-4 py-2 rounded ${
@@ -508,11 +509,11 @@ function TripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
                 
                 <div className="space-y-3">
                   <div className="flex gap-2">
-                    <input
-                      type="email"
-                      placeholder={t('trip.enterCompanionEmail', "Enter companion's email")}
-                      className="flex-1 p-2 border border-gray-300 rounded"
-                    />
+                  <input
+                    type="email"
+                    placeholder={t('tripDetails.enterCompanionEmail', "Enter companion's email")}
+                    className="flex-1 p-2 border border-gray-300 rounded"
+                  />
                     <select className="p-2 border border-gray-300 rounded">
                       <option value="view">{t('trip.permissions.canView', 'Can View')}</option>
                       <option value="edit">{t('trip.permissions.canEdit', 'Can Edit')}</option>

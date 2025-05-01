@@ -78,14 +78,14 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
             </div>
             
             <div>
-              <label className="block text-gray-700 mb-1 text-sm">{t('expenses.description', 'Description')}</label>
-              <input
-                type="text"
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder={t('expenses.descriptionPlaceholder', 'What did you spend on?')}
-                className="w-full p-2 border border-gray-300 rounded"
-              />
+            <label className="block text-gray-700 mb-1 text-sm">{t('expenses.description', 'Description')}</label>
+            <input
+              type="text"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder={t('expenses.descriptionPlaceholder', 'What did you spend on?')}
+              className="w-full p-2 border border-gray-300 rounded"
+            />
             </div>
             
             <div>
@@ -155,7 +155,7 @@ function ExpenseTracker({ tripExpenses, updateTripExpenses }) {
             <ul className="mt-1 ml-4 list-disc text-yellow-800">
               <li>{t('expenses.tip1', 'Track expenses as they occur to stay on budget')}</li>
               <li>{t('expenses.tip2', 'Save receipts and take photos for reference')}</li>
-              <li>{t('expenses.tip3', 'Set daily spending limits for better control')}</li>
+              <li>{t('expenses.tip3', 'Set alerts to avoid exceeding your budget')}</li>
               <li>{t('expenses.tip4', 'Consider using local payment methods to avoid fees')}</li>
             </ul>
           </div>
