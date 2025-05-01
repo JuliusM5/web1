@@ -550,6 +550,7 @@ const enUS = {
     'expenses.tip1': 'Record expenses daily for better accuracy',
     'expenses.tip2': 'Keep receipts for future reference',
     'expenses.tip3': 'Set alerts to avoid exceeding your budget',
+    'expenses.tip4': 'Use categories consistently for more accurate reports',
     'expenses.editExpense': 'Edit Expense',
     'expenses.deleteExpense': 'Delete Expense',
     'expenses.summary': 'Expense Summary',

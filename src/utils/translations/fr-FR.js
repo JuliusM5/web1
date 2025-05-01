@@ -550,6 +550,7 @@ const frFR = {
     'expenses.tip1': 'Enregistrez les dépenses quotidiennement pour plus de précision',
     'expenses.tip2': 'Conservez les reçus pour référence future',
     'expenses.tip3': 'Définissez des alertes pour ne pas dépasser votre budget',
+    'expenses.tip4': 'Utilisez les catégories de manière cohérente pour des rapports plus précis',
     'expenses.editExpense': 'Modifier la Dépense',
     'expenses.deleteExpense': 'Supprimer la Dépense',
     'expenses.summary': 'Résumé des Dépenses',

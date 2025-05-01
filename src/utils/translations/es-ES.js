@@ -607,6 +607,7 @@ const esES = {
     'expenses.tip1': 'Registra los gastos diariamente para mayor precisión',
     'expenses.tip2': 'Conserva los recibos para referencia futura',
     'expenses.tip3': 'Establece alertas para no exceder tu presupuesto',
+    'expenses.tip4': 'Utiliza las categorías de forma coherente para obtener informes más precisos',
     'expenses.editExpense': 'Editar Gasto',
     'expenses.deleteExpense': 'Eliminar Gasto',
     'expenses.summary': 'Resumen de Gastos',
