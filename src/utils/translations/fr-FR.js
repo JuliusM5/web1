@@ -431,6 +431,84 @@ const frFR = {
     'packing.items.businessCards': 'Cartes de visite',
     'packing.items.notebook': 'Carnet de notes',
     'packing.items.presentationMaterials': 'Matériel de présentation',
+
+    // Notifications section
+    'settings.notifications.title': 'Paramètres de Notification',
+    'settings.notifications.tripReminders': 'Rappels de Voyage',
+    'settings.notifications.tripRemindersHelp': 'Recevez des rappels concernant les voyages à venir',
+    'settings.notifications.taskReminders': 'Rappels de Tâches',
+    'settings.notifications.taskRemindersHelp': 'Recevez des rappels concernant les tâches et échéances à venir',
+    'settings.notifications.budgetAlerts': 'Alertes de Budget',
+    'settings.notifications.budgetAlertsHelp': 'Recevez des alertes lorsque vous approchez de vos limites de budget',
+    'settings.notifications.emailNotifications': 'Notifications par Email',
+    'settings.notifications.emailNotificationsHelp': 'Recevez des notifications par email',
+    'settings.notifications.permissionsNote': 'Les notifications du navigateur nécessitent une autorisation. Si vous avez refusé l\'autorisation, vous devrez mettre à jour les paramètres de votre navigateur.',
+
+    // Privacy settings
+    'settings.privacy.title': 'Paramètres de Confidentialité',
+    'settings.privacy.shareLocation': 'Partager les Données de Localisation',
+    'settings.privacy.shareLocationHelp': 'Autoriser l\'accès à votre localisation pour de meilleures recommandations',
+    'settings.privacy.analytics': 'Analyse d\'Utilisation',
+    'settings.privacy.analyticsHelp': 'Autoriser la collecte anonyme des données d\'utilisation pour améliorer l\'application',
+    'settings.privacy.autoSave': 'Sauvegarde Automatique',
+    'settings.privacy.autoSaveHelp': 'Enregistrer automatiquement les voyages et les modifications',
+    'settings.privacy.dataRetention': 'Conservation des Données',
+    'settings.privacy.keepHistoryFor': 'Conserver l\'historique des voyages pendant',
+    'settings.privacy.1month': '1 mois',
+    'settings.privacy.3months': '3 mois',
+    'settings.privacy.6months': '6 mois',
+    'settings.privacy.1year': '1 an',
+    'settings.privacy.forever': 'Pour toujours',
+    'settings.privacy.dataRetentionHelp': 'Les voyages passés plus anciens que cela seront automatiquement supprimés.',
+
+    // Accessibility settings
+    'settings.accessibility.title': 'Paramètres d\'Accessibilité',
+    'settings.accessibility.highContrast': 'Mode Contraste Élevé',
+    'settings.accessibility.highContrastHelp': 'Augmente le contraste pour une meilleure lisibilité',
+    'settings.accessibility.reducedMotion': 'Réduire les Animations',
+    'settings.accessibility.reducedMotionHelp': 'Minimise les animations et les transitions',
+    'settings.accessibility.largerClickTargets': 'Cibles de Clic Plus Grandes',
+    'settings.accessibility.largerClickTargetsHelp': 'Rend les boutons et les éléments interactifs plus grands',
+    'settings.accessibility.textScaling': 'Mise à l\'Échelle du Texte',
+    'settings.accessibility.textScalingHelp': 'Ajuster la taille du texte indépendamment de la taille de l\'interface',
+    'settings.accessibility.current': 'Actuel',
+    'settings.accessibility.screenReader': 'Optimisation pour Lecteur d\'Écran',
+    'settings.accessibility.screenReaderHelp': 'Descriptions améliorées pour les lecteurs d\'écran',
+    'settings.accessibility.note': 'Ces paramètres aident à rendre l\'application plus accessible pour tous les utilisateurs.',
+
+    // Data management settings
+    'settings.data.title': 'Gestion des Données',
+    'settings.data.exportData': 'Exporter Vos Données',
+    'settings.data.exportHelp': 'Téléchargez toutes vos données de voyage et paramètres sous forme de fichier de sauvegarde. Vous pourrez importer ce fichier ultérieurement pour restaurer vos données.',
+    'settings.data.exportButton': 'Exporter Toutes les Données',
+    'settings.data.importData': 'Importer des Données',
+    'settings.data.importHelp': 'Restaurez vos données à partir d\'un fichier de sauvegarde précédemment exporté.',
+    'settings.data.importButton': 'Importer des Données',
+    'settings.data.clearData': 'Effacer Toutes les Données',
+    'settings.data.clearHelp': 'Cela supprimera définitivement tous vos voyages, modèles et paramètres. Cette action ne peut pas être annulée.',
+    'settings.data.clearButton': 'Effacer Toutes les Données',
+
+    
+
+    // Preferences section
+    'settings.preferences.title': 'Préférences Générales',
+    'settings.preferences.defaultCurrency': 'Devise par Défaut',
+    'settings.preferences.dateFormat': 'Format de Date',
+    'settings.preferences.distanceUnit': 'Unité de Distance',
+    'settings.preferences.temperatureUnit': 'Unité de Température',
+    'settings.preferences.language': 'Langue',
+    'settings.preferences.languageHelp': 'Sélectionnez votre langue préférée pour l\'application.',
+    'settings.preferences.miles': 'Miles',
+    'settings.preferences.kilometers': 'Kilomètres',
+    'settings.preferences.fahrenheit': 'Fahrenheit (°F)',
+    'settings.preferences.celsius': 'Celsius (°C)',
+    'settings.preferences.currencyHelp': 'Devise par défaut utilisée pour le budget et les dépenses.',
+
+    // Common settings elements
+    'settings.notes.note': 'Remarque',
+    'settings.notes.saveToApply': 'Cliquez sur "Enregistrer et Fermer" en bas de l\'écran pour appliquer vos paramètres d\'apparence.',
+    'settings.buttons.saveClose': 'Enregistrer et Fermer',
+    'settings.buttons.close': 'Fermer',
     
     // Beach items
     'packing.items.beachCoverUp': 'Paréo/Cover-up',
@@ -662,7 +740,18 @@ const frFR = {
     'settings.preview.sampleNumber': 'Exemple de nombre',
     'settings.preview.sampleCurrency': 'Exemple de devise',
     'settings.preview.sampleTime': 'Exemple d\'heure',
-    
+    'settings.preferences.title': 'Préférences Générales',
+    'settings.preferences.defaultCurrency': 'Devise par Défaut',
+    'settings.preferences.dateFormat': 'Format de Date',
+    'settings.preferences.distanceUnit': 'Unité de Distance',
+    'settings.preferences.temperatureUnit': 'Unité de Température',
+    'settings.preferences.language': 'Langue',
+    'settings.preferences.currencyHelp': 'Devise par défaut utilisée pour le budget et les dépenses.',
+    'settings.preferences.miles': 'Miles',
+    'settings.preferences.kilometers': 'Kilomètres',
+    'settings.preferences.fahrenheit': 'Fahrenheit (°F)',
+    'settings.preferences.celsius': 'Celsius (°C)',
+        
     // Examples for different formats
     'settings.preview.dateExample': 'Exemple de date',
     'settings.preview.numberExample': 'Exemple de nombre',
@@ -730,6 +819,76 @@ const frFR = {
     'date.dayShort.4': 'Jeu',
     'date.dayShort.5': 'Ven',
     'date.dayShort.6': 'Sam',
+    // Ajouts au fichier fr-FR.js pour traduire complètement les paramètres
+
+    // Traductions manquantes pour l'onglet Appearance
+    'settings.appearance.fontSize': 'Taille de Police',
+    'settings.appearance.small': 'Petite',
+    'settings.appearance.medium': 'Moyenne',
+    'settings.appearance.large': 'Grande',
+    'settings.appearance.colorScheme': 'Thème de Couleur',
+    'settings.appearance.colors.blue': 'Bleu',
+    'settings.appearance.colors.purple': 'Violet',
+    'settings.appearance.colors.green': 'Vert',
+    'settings.appearance.colors.red': 'Rouge',
+    'settings.appearance.colors.amber': 'Ambre',
+    'settings.appearance.colors.indigo': 'Indigo',
+    'settings.appearance.darkModeHelp': 'Basculer entre thème clair et sombre',
+
+    // Prévisualisations
+    'settings.preview.theme': 'Aperçu du thème',
+    'settings.preview.color': 'Couleur',
+    'settings.preview.fontSize': 'Taille de police',
+    'settings.preview.darkMode': 'Mode sombre',
+    'settings.preview.on': 'Activé',
+    'settings.preview.off': 'Désactivé',
+    'settings.preview.changesWillApply': 'Les changements s\'appliqueront lorsque vous enregistrerez les paramètres',
+    'settings.preview.darkModeTitle': 'Aperçu du mode sombre',
+    'settings.preview.dark': 'sombre',
+    'settings.preview.light': 'clair',
+    'settings.preview.cardsAppearance': 'Les cartes apparaîtront en mode {mode}',
+    'settings.preview.currencyTitle': 'Aperçu de la devise',
+    'settings.preview.currency': 'Devise',
+    'settings.preview.formatHelp': 'Ceci montre comment les dates et les nombres seront affichés',
+    'settings.preview.highContrast': 'Contraste élevé',
+    'settings.preview.largerTargets': 'Cibles plus grandes',
+    'settings.preview.textScale': 'Échelle du texte',
+    'settings.preview.accessibilityTitle': 'Aperçu d\'accessibilité',
+
+    // Traductions pour les devises
+    'settings.preferences.currencies.USD': 'Dollar américain',
+    'settings.preferences.currencies.EUR': 'Euro',
+    'settings.preferences.currencies.GBP': 'Livre sterling',
+    'settings.preferences.currencies.JPY': 'Yen japonais',
+    'settings.preferences.currencies.CAD': 'Dollar canadien',
+    'settings.preferences.currencies.AUD': 'Dollar australien',
+    'settings.preferences.currencies.CNY': 'Yuan chinois',
+    'settings.preferences.currencies.INR': 'Roupie indienne',
+
+    // Notifications
+    'settings.notifications.emailConfig': 'Configuration Email',
+    'settings.notifications.emailAddress': 'Adresse Email',
+    'settings.notifications.emailPlaceholder': 'Entrez votre adresse email',
+    'settings.notifications.frequency': 'Fréquence des Notifications',
+    'settings.notifications.instant': 'Instantanée',
+    'settings.notifications.daily': 'Résumé Quotidien',
+    'settings.notifications.weekly': 'Résumé Hebdomadaire',
+
+    // Format de date et température
+    'format.temperature.celsius': '{value}°C',
+    'format.temperature.fahrenheit': '{value}°F',
+    'format.distance.kilometers': '{value} km',
+    'format.distance.miles': '{value} mi',
+
+    // Importation et exportation de données
+    'settings.import.invalidDataFormat': 'Format de données invalide. Le fichier importé ne contient pas la structure attendue.',
+    'settings.import.parseError': 'Erreur lors de l\'analyse du fichier: {error}',
+    'settings.import.readError': 'Erreur lors de la lecture du fichier importé.',
+    'settings.privacy.confirmClearAllData': 'Êtes-vous sûr de vouloir effacer toutes vos données ? Cette action ne peut pas être annulée.',
+
+    // Éléments de formulaire génériques manquants
+    'form.button': 'Bouton',
+    'form.primary': 'Principal',
   };
   
   export default frFR;

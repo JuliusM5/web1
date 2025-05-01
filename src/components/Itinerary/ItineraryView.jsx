@@ -147,9 +147,10 @@ function ItineraryView({ trip, tripTasks = [] }) {
                         const priorityOrder = { high: 0, medium: 1, low: 2 };
                         return (priorityOrder[a.priority] || 1) - (priorityOrder[b.priority] || 1);
                       })
-                      .map(event => (
+                      .map((event, index) => (
                         <div 
-                          key={event.id} 
+                          // Use a stable unique key combining id, text, and index
+                          key={`event-${event.id || ''}-${selectedDate}-${index}`}
                           className={`p-3 rounded-lg ${
                             event.category === 'transportation' ? 'bg-green-50 border border-green-200' :
                             event.completed ? 'bg-gray-50 border border-gray-200' : 'bg-blue-50 border border-blue-200'
@@ -208,9 +209,9 @@ function ItineraryView({ trip, tripTasks = [] }) {
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           {allDates.length > 0 ? (
             <div className="divide-y divide-gray-200">
-              {allDates.map(date => (
+              {allDates.map((date, dateIndex) => (
                 <div 
-                  key={date} 
+                  key={`date-${date}-${dateIndex}`}
                   className={`${selectedDate === date ? 'bg-blue-50' : ''}`}
                 >
                   <div 
@@ -234,9 +235,9 @@ function ItineraryView({ trip, tripTasks = [] }) {
                           const priorityOrder = { high: 0, medium: 1, low: 2 };
                           return (priorityOrder[a.priority] || 1) - (priorityOrder[b.priority] || 1);
                         })
-                        .map(event => (
+                        .map((event, eventIndex) => (
                           <div 
-                            key={event.id} 
+                            key={`event-detail-${event.id || ''}-${date}-${eventIndex}`}
                             className={`p-2 text-sm rounded ${
                               event.category === 'transportation' ? 'bg-green-50' :
                               event.completed ? 'bg-gray-50' : 'bg-blue-50'
