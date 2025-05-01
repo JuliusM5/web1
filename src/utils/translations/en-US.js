@@ -633,8 +633,52 @@ const enUS = {
     'settings.preview.dateFormat': 'Sample Date: {date}',
     'settings.preview.currentFormat': 'Current Format: {format}',
     'settings.preview.example': 'Example',
+    'settings.preview.format': 'Format',
+    'settings.preview.formatHelp': 'This shows how dates and numbers will be displayed',
+    'settings.preview.todayDate': 'Today\'s Date',
+    'settings.preview.sampleNumber': 'Sample Number',
+    'settings.preview.sampleCurrency': 'Sample Currency',
+    'settings.preview.sampleTime': 'Sample Time',
+    'settings.preview.dateExample': 'Date Example',
+    'settings.preview.numberExample': 'Number Example',
+    'settings.preview.currencyExample': 'Currency Example',
+    'settings.preview.timeExample': 'Time Example',
     
-
+    // Full day names
+    'date.day.sunday': 'Sunday',
+    'date.day.monday': 'Monday',
+    'date.day.tuesday': 'Tuesday',
+    'date.day.wednesday': 'Wednesday',
+    'date.day.thursday': 'Thursday',
+    'date.day.friday': 'Friday',
+    'date.day.saturday': 'Saturday',
+    
+    // Day names by index (0-6, where 0 is Sunday)
+    'date.day.0': 'Sunday',
+    'date.day.1': 'Monday',
+    'date.day.2': 'Tuesday',
+    'date.day.3': 'Wednesday',
+    'date.day.4': 'Thursday',
+    'date.day.5': 'Friday',
+    'date.day.6': 'Saturday',
+    
+    // Short day names
+    'date.dayShort.sunday': 'Sun',
+    'date.dayShort.monday': 'Mon',
+    'date.dayShort.tuesday': 'Tue',
+    'date.dayShort.wednesday': 'Wed',
+    'date.dayShort.thursday': 'Thu',
+    'date.dayShort.friday': 'Fri',
+    'date.dayShort.saturday': 'Sat',
+    
+    // Short day names by index (0-6)
+    'date.dayShort.0': 'Sun',
+    'date.dayShort.1': 'Mon',
+    'date.dayShort.2': 'Tue',
+    'date.dayShort.3': 'Wed',
+    'date.dayShort.4': 'Thu',
+    'date.dayShort.5': 'Fri',
+    'date.dayShort.6': 'Sat',
     // Preview settings
     'settings.preview.theme': 'Theme Preview',
     'settings.preview.color': 'Color',
@@ -763,6 +807,20 @@ const enUS = {
     'settings.notes.saveToApply': 'Click "Save and Close" at the bottom of the screen to apply your appearance settings.',
     'settings.buttons.saveClose': 'Save and Close',
     'settings.buttons.close': 'Close',
+
+    'date.month': 'Month',
+    'date.month.0': 'January',
+    'date.month.1': 'February',
+    'date.month.2': 'March',
+    'date.month.3': 'April',
+    'date.month.4': 'May',
+    'date.month.5': 'June',
+    'date.month.6': 'July',
+    'date.month.7': 'August',
+    'date.month.8': 'September',
+    'date.month.9': 'October',
+    'date.month.10': 'November',
+
 
   };
   

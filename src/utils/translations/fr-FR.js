@@ -655,7 +655,18 @@ const frFR = {
     'settings.preview.dateFormat': 'Date d\'exemple: {date}',
     'settings.preview.currentFormat': 'Format actuel: {format}',
     'settings.preview.example': 'Exemple',
-
+    'settings.preview.format': 'Format',
+    'settings.preview.formatHelp': 'Ceci montre comment les dates et les nombres seront affichés',
+    'settings.preview.todayDate': 'Date d\'aujourd\'hui',
+    'settings.preview.sampleNumber': 'Exemple de nombre',
+    'settings.preview.sampleCurrency': 'Exemple de devise',
+    'settings.preview.sampleTime': 'Exemple d\'heure',
+    
+    // Examples for different formats
+    'settings.preview.dateExample': 'Exemple de date',
+    'settings.preview.numberExample': 'Exemple de nombre',
+    'settings.preview.currencyExample': 'Exemple de devise',
+    'settings.preview.timeExample': 'Exemple d\'heure',
     // Month translations
     'date.month.0': 'Janvier',
     'date.month.1': 'Février',
@@ -669,6 +680,55 @@ const frFR = {
     'date.month.9': 'Octobre',
     'date.month.10': 'Novembre',
     'date.month.11': 'Décembre',
+    'date.month': 'Mois',
+    'date.month.0': 'Janvier',
+    'date.month.1': 'Février',
+    'date.month.2': 'Mars',
+    'date.month.3': 'Avril',
+    'date.month.4': 'Mai',
+    'date.month.5': 'Juin',
+    'date.month.6': 'Juillet',
+    'date.month.7': 'Août',
+    'date.month.8': 'Septembre',
+    'date.month.9': 'Octobre',
+    'date.month.10': 'Novembre',
+    'date.month.11': 'Décembre',
+
+    // Full day names
+    'date.day.sunday': 'Dimanche',
+    'date.day.monday': 'Lundi',
+    'date.day.tuesday': 'Mardi',
+    'date.day.wednesday': 'Mercredi',
+    'date.day.thursday': 'Jeudi',
+    'date.day.friday': 'Vendredi',
+    'date.day.saturday': 'Samedi',
+    
+    // Day names by index (0-6, where 0 is Sunday)
+    'date.day.0': 'Dimanche',
+    'date.day.1': 'Lundi',
+    'date.day.2': 'Mardi',
+    'date.day.3': 'Mercredi',
+    'date.day.4': 'Jeudi',
+    'date.day.5': 'Vendredi',
+    'date.day.6': 'Samedi',
+    
+    // Short day names
+    'date.dayShort.sunday': 'Dim',
+    'date.dayShort.monday': 'Lun',
+    'date.dayShort.tuesday': 'Mar',
+    'date.dayShort.wednesday': 'Mer',
+    'date.dayShort.thursday': 'Jeu',
+    'date.dayShort.friday': 'Ven',
+    'date.dayShort.saturday': 'Sam',
+    
+    // Short day names by index (0-6)
+    'date.dayShort.0': 'Dim',
+    'date.dayShort.1': 'Lun',
+    'date.dayShort.2': 'Mar',
+    'date.dayShort.3': 'Mer',
+    'date.dayShort.4': 'Jeu',
+    'date.dayShort.5': 'Ven',
+    'date.dayShort.6': 'Sam',
   };
   
   export default frFR;

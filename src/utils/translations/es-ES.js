@@ -160,7 +160,18 @@ const esES = {
     'settings.colors.red': 'Rojo',
     'settings.colors.amber': 'Ámbar',
     'settings.colors.indigo': 'Índigo',
+    'settings.preview.format': 'Formato',
+    'settings.preview.formatHelp': 'Esto muestra cómo se mostrarán las fechas y los números',
+    'settings.preview.todayDate': 'Fecha de hoy',
+    'settings.preview.sampleNumber': 'Número de ejemplo',
+    'settings.preview.sampleCurrency': 'Moneda de ejemplo',
+    'settings.preview.sampleTime': 'Hora de ejemplo',
     
+    // Examples for different formats
+    'settings.preview.dateExample': 'Ejemplo de fecha',
+    'settings.preview.numberExample': 'Ejemplo de número',
+    'settings.preview.currencyExample': 'Ejemplo de moneda',
+    'settings.preview.timeExample': 'Ejemplo de hora',
     'settings.fontSizes.small': 'Pequeño',
     'settings.fontSizes.medium': 'Mediano',
     'settings.fontSizes.large': 'Grande',
@@ -671,6 +682,57 @@ const esES = {
     'date.month.9': 'Octubre',
     'date.month.10': 'Noviembre',
     'date.month.11': 'Diciembre',
+
+    'date.month': 'Mes',
+    'date.month.0': 'Enero',
+    'date.month.1': 'Febrero',
+    'date.month.2': 'Marzo',
+    'date.month.3': 'Abril',
+    'date.month.4': 'Mayo',
+    'date.month.5': 'Junio',
+    'date.month.6': 'Julio',
+    'date.month.7': 'Agosto',
+    'date.month.8': 'Septiembre',
+    'date.month.9': 'Octubre',
+    'date.month.10': 'Noviembre',
+    'date.month.11': 'Diciembre',
+
+     // Full day names
+    'date.day.sunday': 'Domingo',
+    'date.day.monday': 'Lunes',
+    'date.day.tuesday': 'Martes',
+    'date.day.wednesday': 'Miércoles',
+    'date.day.thursday': 'Jueves',
+    'date.day.friday': 'Viernes',
+    'date.day.saturday': 'Sábado',
+    
+    // Day names by index (0-6, where 0 is Sunday)
+    'date.day.0': 'Domingo',
+    'date.day.1': 'Lunes',
+    'date.day.2': 'Martes',
+    'date.day.3': 'Miércoles',
+    'date.day.4': 'Jueves',
+    'date.day.5': 'Viernes',
+    'date.day.6': 'Sábado',
+    
+    // Short day names
+    'date.dayShort.sunday': 'Dom',
+    'date.dayShort.monday': 'Lun',
+    'date.dayShort.tuesday': 'Mar',
+    'date.dayShort.wednesday': 'Mié',
+    'date.dayShort.thursday': 'Jue',
+    'date.dayShort.friday': 'Vie',
+    'date.dayShort.saturday': 'Sáb',
+    
+    // Short day names by index (0-6)
+    'date.dayShort.0': 'Dom',
+    'date.dayShort.1': 'Lun',
+    'date.dayShort.2': 'Mar',
+    'date.dayShort.3': 'Mié',
+    'date.dayShort.4': 'Jue',
+    'date.dayShort.5': 'Vie',
+    'date.dayShort.6': 'Sáb',
+
     };
   
   export default esES;
