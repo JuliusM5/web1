@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';                    // Base Tailwind styles
 import './styles/themes.css';            // Theme variables and overrides 
 import './styles/mobileResponsive.css';  // Responsive utilities
+import './styles/accessibility-darkmode.css';  // Accessibility and dark mode styles
 
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';

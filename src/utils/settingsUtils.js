@@ -43,6 +43,7 @@ export const applyThemeSettings = (settings) => {
   }
   
   const { fontSize, colorScheme, darkMode } = settings.appearance;
+  console.log("Applying theme settings:", { fontSize, colorScheme, darkMode });
   
   // Apply font size
   document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
@@ -70,9 +71,11 @@ export const applyThemeSettings = (settings) => {
   if (darkMode) {
     document.documentElement.classList.add('dark-mode');
     document.body.classList.add('dark-mode');
+    console.log("Dark mode classes applied");
   } else {
     document.documentElement.classList.remove('dark-mode');
     document.body.classList.remove('dark-mode');
+    console.log("Dark mode classes removed");
   }
   
   // Set a custom property to track current theme
