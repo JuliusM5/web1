@@ -1,4 +1,138 @@
 /* Dark Mode Styles */
+/* Enhanced Dark Mode Fixes - Add to accessibility-darkmode.css */
+
+/* Increase specificity and force important */
+html.dark-mode,
+body.dark-mode {
+  background-color: var(--dark-bg-primary) !important;
+  color: var(--dark-text-primary) !important;
+}
+
+/* Element selectors with increased specificity */
+html.dark-mode h1, 
+html.dark-mode h2, 
+html.dark-mode h3, 
+html.dark-mode h4, 
+html.dark-mode h5, 
+html.dark-mode h6,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: var(--dark-text-primary) !important;
+}
+
+html.dark-mode p, 
+html.dark-mode span, 
+html.dark-mode label, 
+html.dark-mode div, 
+html.dark-mode a,
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode label,
+body.dark-mode div,
+body.dark-mode a {
+  color: var(--dark-text-primary) !important;
+}
+
+/* Container backgrounds */
+html.dark-mode .container,
+body.dark-mode .container {
+  background-color: var(--dark-bg-primary) !important;
+}
+
+/* Overrides for common Tailwind classes */
+html.dark-mode .bg-white,
+body.dark-mode .bg-white {
+  background-color: var(--dark-bg-secondary) !important;
+}
+
+html.dark-mode .bg-gray-50, 
+html.dark-mode .bg-gray-100, 
+html.dark-mode .bg-gray-200,
+body.dark-mode .bg-gray-50,
+body.dark-mode .bg-gray-100,
+body.dark-mode .bg-gray-200 {
+  background-color: var(--dark-bg-tertiary) !important;
+}
+
+/* Card overrides */
+html.dark-mode .card,
+html.dark-mode .rounded-lg,
+html.dark-mode .shadow-lg,
+body.dark-mode .card,
+body.dark-mode .rounded-lg,
+body.dark-mode .shadow-lg {
+  background-color: var(--dark-bg-secondary) !important;
+  border-color: var(--dark-border-color) !important;
+}
+
+/* Input elements */
+html.dark-mode input, 
+html.dark-mode select, 
+html.dark-mode textarea,
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background-color: var(--dark-bg-tertiary) !important;
+  border-color: var(--dark-border-color) !important;
+  color: var(--dark-text-primary) !important;
+}
+
+/* Button overrides */
+html.dark-mode .bg-blue-500, 
+html.dark-mode .bg-blue-600,
+body.dark-mode .bg-blue-500,
+body.dark-mode .bg-blue-600 {
+  background-color: var(--dark-primary-color) !important;
+}
+
+/* Text color overrides */
+html.dark-mode .text-gray-500,
+html.dark-mode .text-gray-600,
+html.dark-mode .text-gray-700,
+html.dark-mode .text-gray-800,
+body.dark-mode .text-gray-500,
+body.dark-mode .text-gray-600,
+body.dark-mode .text-gray-700,
+body.dark-mode .text-gray-800 {
+  color: var(--dark-text-secondary) !important;
+}
+
+/* Border color overrides */
+html.dark-mode .border,
+html.dark-mode .border-gray-200,
+html.dark-mode .border-gray-300,
+body.dark-mode .border,
+body.dark-mode .border-gray-200,
+body.dark-mode .border-gray-300 {
+  border-color: var(--dark-border-color) !important;
+}
+
+/* Special component overrides */
+html.dark-mode header,
+body.dark-mode header {
+  background-color: var(--dark-bg-tertiary) !important;
+}
+
+html.dark-mode .dashboard-card,
+body.dark-mode .dashboard-card {
+  background-color: var(--dark-card-bg) !important;
+}
+
+/* Fix for any modal backdrops */
+html.dark-mode .modal-backdrop,
+body.dark-mode .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Fix for hover states */
+html.dark-mode .hover\:bg-gray-100:hover,
+body.dark-mode .hover\:bg-gray-100:hover {
+  background-color: var(--dark-hover-bg) !important;
+}
 :root {
     --dark-bg-primary: #121212;
     --dark-bg-secondary: #1e1e1e;
@@ -289,3 +423,4 @@
     text-align: center;
     pointer-events: none;
   }
+  

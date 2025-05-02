@@ -44,6 +44,8 @@ export const applyThemeSettings = (settings) => {
   
   const { fontSize, colorScheme, darkMode } = settings.appearance;
   console.log("Applying theme settings:", { fontSize, colorScheme, darkMode });
+
+  
   
   // Apply font size
   document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
