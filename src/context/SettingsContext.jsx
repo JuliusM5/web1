@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { getUserSettings, saveUserSettings, applyThemeSettings } from '../utils/settingsUtils';
-import { syncLanguageWithSettings } from '../utils/i18n'; // Import function to sync language
+import { getUserSettings, saveUserSettings } from '../utils/settingsUtils';
+import { syncLanguageWithSettings } from '../utils/i18n';
 
 // Updated default settings with new options
 export const DEFAULT_SETTINGS = {
@@ -61,9 +61,9 @@ export const SettingsProvider = ({ children }) => {
     const loadSettings = async () => {
       const userSettings = getUserSettings();
       const mergedSettings = mergeWithDefaultSettings(userSettings);
+      
+      // Set state with merged settings
       setSettings(mergedSettings);
-      applyThemeSettings(mergedSettings);
-      applyAccessibilitySettings(mergedSettings);
       
       // Sync language with i18n system
       syncLanguageWithSettings(mergedSettings);
@@ -115,17 +115,11 @@ export const SettingsProvider = ({ children }) => {
 
   // Update settings
   const updateSettings = (newSettings) => {
-    // Apply the new settings immediately
+    // Update state
     setSettings(newSettings);
     
     // Save to localStorage
     saveUserSettings(newSettings);
-    
-    // Apply theme changes
-    applyThemeSettings(newSettings);
-    
-    // Apply accessibility settings
-    applyAccessibilitySettings(newSettings);
     
     // Sync language with i18n system
     syncLanguageWithSettings(newSettings);
@@ -135,58 +129,16 @@ export const SettingsProvider = ({ children }) => {
 
   // Reset settings to defaults
   const resetSettings = () => {
+    // Update state
     setSettings(DEFAULT_SETTINGS);
+    
+    // Save to localStorage
     saveUserSettings(DEFAULT_SETTINGS);
-    applyThemeSettings(DEFAULT_SETTINGS);
-    applyAccessibilitySettings(DEFAULT_SETTINGS);
     
     // Sync language with i18n system
     syncLanguageWithSettings(DEFAULT_SETTINGS);
     
     return true;
-  };
-
-  // Apply accessibility settings
-  const applyAccessibilitySettings = (settings) => {
-    if (!settings || !settings.accessibility) return;
-
-    const { highContrast, reducedMotion, largerClickTargets, textScaling, screenReaderOptimized } = settings.accessibility;
-
-    // Apply high contrast mode
-    if (highContrast) {
-      document.documentElement.classList.add('high-contrast');
-    } else {
-      document.documentElement.classList.remove('high-contrast');
-    }
-
-    // Apply reduced motion
-    if (reducedMotion) {
-      document.documentElement.classList.add('reduced-motion');
-    } else {
-      document.documentElement.classList.remove('reduced-motion');
-    }
-
-    // Apply larger click targets
-    if (largerClickTargets) {
-      document.documentElement.classList.add('larger-targets');
-    } else {
-      document.documentElement.classList.remove('larger-targets');
-    }
-
-    // Apply text scaling
-    if (textScaling && textScaling !== 100) {
-      document.documentElement.style.setProperty('--text-scale-ratio', `${textScaling / 100}`);
-      document.documentElement.classList.add('custom-text-scaling');
-    } else {
-      document.documentElement.classList.remove('custom-text-scaling');
-    }
-
-    // Apply screen reader optimizations
-    if (screenReaderOptimized) {
-      document.documentElement.setAttribute('data-screen-reader-optimized', 'true');
-    } else {
-      document.documentElement.removeAttribute('data-screen-reader-optimized');
-    }
   };
 
   // Context value

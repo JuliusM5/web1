@@ -423,4 +423,196 @@ body.dark-mode .hover\:bg-gray-100:hover {
     text-align: center;
     pointer-events: none;
   }
-  
+  /* Enhanced Header Dark Mode Fix - Add to your accessibility-darkmode.css file */
+
+/* Target the header specifically with high specificity */
+html.dark-mode header.bg-blue-600,
+body.dark-mode header.bg-blue-600,
+.dark-mode header.bg-blue-600,
+html.dark-mode header,
+body.dark-mode header,
+.dark-mode header {
+  background-color: var(--dark-bg-primary) !important;
+  color: var(--dark-text-primary) !important;
+  border-bottom: 1px solid var(--dark-border-color) !important;
+}
+
+/* Ensure header buttons/links are properly styled */
+html.dark-mode header button,
+body.dark-mode header button,
+.dark-mode header button,
+html.dark-mode header a,
+body.dark-mode header a,
+.dark-mode header a {
+  color: var(--dark-text-primary) !important;
+}
+
+/* Style the header buttons hover state */
+html.dark-mode header button:hover,
+body.dark-mode header button:hover,
+.dark-mode header button:hover,
+html.dark-mode header a:hover,
+body.dark-mode header a:hover,
+.dark-mode header a:hover {
+  background-color: var(--dark-hover-bg) !important;
+}
+
+/* Fix for the hover states in header */
+html.dark-mode header .hover\:bg-blue-700:hover,
+body.dark-mode header .hover\:bg-blue-700:hover,
+.dark-mode header .hover\:bg-blue-700:hover {
+  background-color: var(--dark-hover-bg) !important;
+}
+
+/* Fix for any blue specific elements in header that might not be targeted */
+html.dark-mode header .bg-blue-600,
+body.dark-mode header .bg-blue-600,
+.dark-mode header .bg-blue-600,
+html.dark-mode header .bg-blue-500,
+body.dark-mode header .bg-blue-500,
+.dark-mode header .bg-blue-500 {
+  background-color: var(--dark-bg-tertiary) !important;
+}
+
+/* Ensure active/selected navigation items are properly styled */
+html.dark-mode header .border-white,
+body.dark-mode header .border-white,
+.dark-mode header .border-white {
+  border-color: var(--dark-text-primary) !important;
+}
+
+/* Fix for mobile navigation in dark mode */
+html.dark-mode .bottom-action-bar,
+body.dark-mode .bottom-action-bar,
+.dark-mode .bottom-action-bar {
+  background-color: var(--dark-bg-primary) !important;
+  border-top-color: var(--dark-border-color) !important;
+}
+/* Footer dark mode fixes */
+html.dark-mode footer,
+body.dark-mode footer,
+.dark-mode footer {
+  background-color: var(--dark-bg-primary) !important;
+  color: var(--dark-text-primary) !important;
+  border-top-color: var(--dark-border-color) !important;
+}
+
+html.dark-mode footer p,
+html.dark-mode footer span,
+html.dark-mode footer a,
+html.dark-mode footer div,
+body.dark-mode footer p,
+body.dark-mode footer span,
+body.dark-mode footer a,
+body.dark-mode footer div,
+.dark-mode footer p,
+.dark-mode footer span,
+.dark-mode footer a,
+.dark-mode footer div {
+  color: var(--dark-text-primary) !important;
+}
+
+/* Handle any specific footer classes you might be using */
+html.dark-mode .footer-link,
+body.dark-mode .footer-link,
+.dark-mode .footer-link {
+  color: var(--dark-primary-color) !important;
+}
+
+html.dark-mode .footer-social-icon,
+body.dark-mode .footer-social-icon,
+.dark-mode .footer-social-icon {
+  color: var(--dark-text-primary) !important;
+  fill: var(--dark-text-primary) !important;
+}
+/* Footer dark mode fixes - comprehensive solution */
+html.dark-mode footer,
+body.dark-mode footer,
+.dark-mode footer,
+html.dark-mode .footer,
+body.dark-mode .footer,
+.dark-mode .footer,
+html.dark-mode .site-footer,
+body.dark-mode .site-footer,
+.dark-mode .site-footer,
+html.dark-mode .app-footer,
+body.dark-mode .app-footer,
+.dark-mode .app-footer,
+html.dark-mode [role="contentinfo"],
+body.dark-mode [role="contentinfo"],
+.dark-mode [role="contentinfo"] {
+  background-color: var(--dark-bg-primary) !important;
+  color: var(--dark-text-primary) !important;
+  border-top: 1px solid var(--dark-border-color) !important;
+}
+
+/* Target all direct children of footer to ensure complete coverage */
+html.dark-mode footer *,
+body.dark-mode footer *,
+.dark-mode footer *,
+html.dark-mode .footer *,
+body.dark-mode .footer *,
+.dark-mode .footer *,
+html.dark-mode .site-footer *,
+body.dark-mode .site-footer *,
+.dark-mode .site-footer *,
+html.dark-mode .app-footer *,
+body.dark-mode .app-footer *,
+.dark-mode .app-footer * {
+  color: var(--dark-text-primary) !important;
+}
+
+/* Target links specifically to ensure they stand out */
+html.dark-mode footer a,
+body.dark-mode footer a,
+.dark-mode footer a,
+html.dark-mode .footer a,
+body.dark-mode .footer a,
+.dark-mode .footer a,
+html.dark-mode .site-footer a,
+body.dark-mode .site-footer a,
+.dark-mode .site-footer a {
+  color: var(--dark-primary-color) !important;
+  text-decoration: underline;
+}
+
+/* Target social media icons or other SVGs in footer */
+html.dark-mode footer svg,
+body.dark-mode footer svg,
+.dark-mode footer svg,
+html.dark-mode .footer svg,
+body.dark-mode .footer svg,
+.dark-mode .footer svg {
+  fill: var(--dark-text-primary) !important;
+}
+
+/* Fix specific background colors that might be used in footers */
+html.dark-mode footer .bg-white,
+html.dark-mode footer .bg-gray-50,
+html.dark-mode footer .bg-gray-100,
+body.dark-mode footer .bg-white,
+body.dark-mode footer .bg-gray-50,
+body.dark-mode footer .bg-gray-100,
+.dark-mode footer .bg-white,
+.dark-mode footer .bg-gray-50,
+.dark-mode footer .bg-gray-100 {
+  background-color: var(--dark-bg-primary) !important;
+}
+
+/* Handle copyright text specifically */
+html.dark-mode .copyright,
+body.dark-mode .copyright,
+.dark-mode .copyright,
+html.dark-mode footer .text-sm,
+body.dark-mode footer .text-sm,
+.dark-mode footer .text-sm {
+  color: var(--dark-text-secondary) !important;
+}
+
+/* Bottom fixed footer specific styles */
+html.dark-mode .fixed-bottom,
+body.dark-mode .fixed-bottom,
+.dark-mode .fixed-bottom {
+  background-color: var(--dark-bg-primary) !important;
+  border-top: 1px solid var(--dark-border-color) !important;
+}

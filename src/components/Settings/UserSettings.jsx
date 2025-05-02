@@ -24,12 +24,18 @@ function UserSettings({ onClose }) {
   // Initialize preview when appearance tab is active
   useEffect(() => {
     if (activeTab === 'appearance' && settingsChanged) {
-      const previewId = 'appearance-preview';
-      createSettingsPreview(previewId, localSettings, 'appearance');
+      // Use a timeout to debounce preview creation
+      const timeoutId = setTimeout(() => {
+        const previewId = 'appearance-preview';
+        createSettingsPreview(previewId, localSettings, 'appearance');
+      }, 100);
       
-      return () => hideSettingsPreview(previewId);
+      return () => {
+        clearTimeout(timeoutId);
+        hideSettingsPreview('appearance-preview');
+      };
     }
-  }, [activeTab, localSettings.appearance, settingsChanged]);
+  }, [activeTab, localSettings, settingsChanged]);
 
   // Initialize currency preview when preferences tab is active
   useEffect(() => {
@@ -39,7 +45,7 @@ function UserSettings({ onClose }) {
       
       return () => hideSettingsPreview(previewId);
     }
-  }, [activeTab, localSettings.preferences.defaultCurrency, settingsChanged]);
+  }, [activeTab, localSettings, settingsChanged]);
 
   // Initialize date preview when preferences tab is active
   useEffect(() => {
@@ -49,25 +55,32 @@ function UserSettings({ onClose }) {
       
       return () => hideSettingsPreview(previewId);
     }
-  }, [activeTab, localSettings.preferences.dateFormat, settingsChanged]);
+  }, [activeTab, localSettings, settingsChanged]);
   
-  // Handle input changes
+  // Handle input changes with debouncing
   const handleChange = (section, setting, value) => {
-    const newSettings = {
-      ...localSettings,
-      [section]: {
-        ...localSettings[section],
-        [setting]: value
-      }
-    };
-    setLocalSettings(newSettings);
+    // Use a function to ensure we're updating based on the latest state
+    setLocalSettings(prevSettings => {
+      const newSettings = {
+        ...prevSettings,
+        [section]: {
+          ...prevSettings[section],
+          [setting]: value
+        }
+      };
+      return newSettings;
+    });
+    
     setSettingsChanged(true);
   };
   
   // Save settings and close
   const saveAndClose = () => {
     if (settingsChanged) {
-      updateSettings(localSettings);
+      // Debounce the settings update
+      setTimeout(() => {
+        updateSettings(localSettings);
+      }, 50);
     }
     onClose();
   };

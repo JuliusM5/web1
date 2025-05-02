@@ -35,7 +35,14 @@ export const saveUserSettings = (settings) => {
   }
 };
 
-// Apply theme settings to the document
+// Keep track of the last applied settings to prevent redundant application
+let lastAppliedSettings = null;
+
+// Track the last settings application timestamp to limit frequency
+let lastSettingsApplicationTime = 0;
+const SETTINGS_DEBOUNCE_TIME = 300; // milliseconds
+
+// Apply theme settings to the document with debouncing
 export const applyThemeSettings = (settings) => {
   if (!settings || !settings.appearance) {
     console.error("Invalid settings object provided to applyThemeSettings");
@@ -43,9 +50,36 @@ export const applyThemeSettings = (settings) => {
   }
   
   const { fontSize, colorScheme, darkMode } = settings.appearance;
-  console.log("Applying theme settings:", { fontSize, colorScheme, darkMode });
-
   
+  // Check if these settings are already applied
+  const settingsKey = `${fontSize}-${colorScheme}-${darkMode}`;
+  if (lastAppliedSettings === settingsKey) {
+    return true; // Settings already applied, skip
+  }
+  
+  // Debounce settings application
+  const now = Date.now();
+  if (now - lastSettingsApplicationTime < SETTINGS_DEBOUNCE_TIME) {
+    // Schedule a delayed application instead of applying immediately
+    setTimeout(() => {
+      // Check again if settings have changed
+      if (lastAppliedSettings !== settingsKey) {
+        actuallyApplyThemeSettings(settings);
+      }
+    }, SETTINGS_DEBOUNCE_TIME);
+    return true;
+  }
+  
+  return actuallyApplyThemeSettings(settings);
+};
+
+// The actual theme application function
+const actuallyApplyThemeSettings = (settings) => {
+  const { fontSize, colorScheme, darkMode } = settings.appearance;
+  const settingsKey = `${fontSize}-${colorScheme}-${darkMode}`;
+  
+  // Log only when actually changing settings
+  console.log("Applying theme settings:", { fontSize, colorScheme, darkMode });
   
   // Apply font size
   document.documentElement.classList.remove('text-sm', 'text-base', 'text-lg');
@@ -84,16 +118,29 @@ export const applyThemeSettings = (settings) => {
   document.documentElement.style.setProperty('--current-theme', colorScheme);
   document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
   
+  // Update tracking variables
+  lastAppliedSettings = settingsKey;
+  lastSettingsApplicationTime = Date.now();
+  
   console.log(`Applied theme: ${colorScheme}, font size: ${fontSize}, dark mode: ${darkMode}`);
   
   return true;
 };
+
+// Keep track of the last applied accessibility settings to prevent redundant application
+let lastAppliedAccessibility = null;
 
 // Apply accessibility settings
 export const applyAccessibilitySettings = (settings) => {
   if (!settings || !settings.accessibility) return false;
 
   const { highContrast, reducedMotion, largerClickTargets, textScaling, screenReaderOptimized } = settings.accessibility;
+
+  // Check if these settings are already applied
+  const accessibilityKey = `${highContrast}-${reducedMotion}-${largerClickTargets}-${textScaling}-${screenReaderOptimized}`;
+  if (lastAppliedAccessibility === accessibilityKey) {
+    return true; // Settings already applied, skip
+  }
 
   // Apply high contrast mode
   if (highContrast) {
@@ -130,6 +177,9 @@ export const applyAccessibilitySettings = (settings) => {
   } else {
     document.documentElement.removeAttribute('data-screen-reader-optimized');
   }
+
+  // Update last applied accessibility settings
+  lastAppliedAccessibility = accessibilityKey;
 
   return true;
 };
