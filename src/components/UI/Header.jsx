@@ -42,6 +42,14 @@ function Header({ view, setView, onNewTrip, onOpenSettings, onOpenTemplates }) {
                 {t('nav.trips')}
               </button>
             </li>
+            <li>
+              <button 
+                className={view === 'flights' ? 'font-bold border-b-2 border-white' : 'hover:text-blue-100'}
+                onClick={() => setView('flights')}
+              >
+                {t('nav.flights')}
+              </button>
+            </li>
           </ul>
         </nav>
         <div className="flex items-center space-x-3">

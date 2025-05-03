@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../UI/Header';
+// Remove this import: import Header from '../UI/Header';
 import Dashboard from '../Dashboard/Dashboard';
 import TripPlanner from './TripPlanner';
 import TripsList from './TripsList';
@@ -14,9 +14,9 @@ import InteractiveCalendar from '../Calendar/InteractiveCalendar';
 import MobileOptimizedDashboard from '../Dashboard/MobileOptimizedDashboard';
 import MobileOptimizedTripDetails from './MobileOptimizedTripDetails';
 import { useDeviceDetection } from '../../utils/deviceDetection';
-import { useI18n } from '../../utils/i18n'; // Import the i18n hook
+import { useI18n } from '../../utils/i18n';
 
-function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings }) {
+function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, currentView }) {
   // Get device info for responsive design
   const deviceInfo = useDeviceDetection();
   const isMobile = deviceInfo.isMobile;
@@ -27,8 +27,16 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings }) 
   // Get settings from context
   const { settings } = useSettings();
   
-  // View state
-  const [view, setView] = useState('dashboard');
+  // Use the currentView prop passed from App.jsx instead of managing view state internally
+  const [view, setView] = useState(currentView || 'dashboard');
+  
+  // Update local view state when the prop changes
+  useEffect(() => {
+    if (currentView) {
+      setView(currentView);
+    }
+  }, [currentView]);
+  
   const [tab, setTab] = useState('basic');
   const [editMode, setEditMode] = useState(false);
   const [currentTripId, setCurrentTripId] = useState(null);
@@ -251,15 +259,9 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings }) 
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
-      <Header 
-        view={view} 
-        setView={setView} 
-        onNewTrip={handleNewTrip}
-        onOpenSettings={onOpenSettings}
-        onOpenTemplates={() => setShowTemplateManager(true)}
-      />
+      {/* Remove the Header component from here */}
       
-      <main className="container mx-auto p-4 mt-6">
+      <main className="container mx-auto p-4">
         {showComparison && (
           <EnhancedTripComparison 
             trips={trips}
