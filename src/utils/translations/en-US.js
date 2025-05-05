@@ -45,6 +45,7 @@ const enUS = {
     'nav.trips': 'My Trips',
     'nav.settings': 'Settings',
     'nav.templates': 'Templates',
+    'nav.flights': 'Flights',
     
     // Dashboard
     'dashboard.title': 'Dashboard',

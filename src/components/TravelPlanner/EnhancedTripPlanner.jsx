@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-// Remove this import: import Header from '../UI/Header';
+import Header from '../UI/Header';
 import Dashboard from '../Dashboard/Dashboard';
 import TripPlanner from './TripPlanner';
 import TripsList from './TripsList';
 import TripDetails from './TripDetails';
 import EnhancedTripComparison from '../TripComparison/EnhancedTripComparison';
 import destinations from '../../data/destinations';
-import UserSettings from '../Settings/UserSettings';
 import TemplateManager from '../TripTemplates/TemplateManager';
 import TemplateSelector from '../TripTemplates/TemplateSelector';
 import { useSettings } from '../../context/SettingsContext';
@@ -14,9 +13,9 @@ import InteractiveCalendar from '../Calendar/InteractiveCalendar';
 import MobileOptimizedDashboard from '../Dashboard/MobileOptimizedDashboard';
 import MobileOptimizedTripDetails from './MobileOptimizedTripDetails';
 import { useDeviceDetection } from '../../utils/deviceDetection';
-import { useI18n } from '../../utils/i18n';
+import { useI18n } from '../../utils/i18n'; // Import the i18n hook
 
-function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, currentView }) {
+function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, showHeader = true, view: externalView, setView: setExternalView }) {
   // Get device info for responsive design
   const deviceInfo = useDeviceDetection();
   const isMobile = deviceInfo.isMobile;
@@ -27,15 +26,12 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, cu
   // Get settings from context
   const { settings } = useSettings();
   
-  // Use the currentView prop passed from App.jsx instead of managing view state internally
-  const [view, setView] = useState(currentView || 'dashboard');
+  // View state - use internal view state as fallback
+  const [internalView, setInternalView] = useState('dashboard');
   
-  // Update local view state when the prop changes
-  useEffect(() => {
-    if (currentView) {
-      setView(currentView);
-    }
-  }, [currentView]);
+  // Use either the external view state or the internal one
+  const view = externalView !== undefined ? externalView : internalView;
+  const setView = setExternalView !== undefined ? setExternalView : setInternalView;
   
   const [tab, setTab] = useState('basic');
   const [editMode, setEditMode] = useState(false);
@@ -259,9 +255,17 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, cu
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
-      {/* Remove the Header component from here */}
+      {showHeader && (
+        <Header 
+          view={view} 
+          setView={setView} 
+          onNewTrip={handleNewTrip}
+          onOpenSettings={onOpenSettings}
+          onOpenTemplates={() => setShowTemplateManager(true)}
+        />
+      )}
       
-      <main className="container mx-auto p-4">
+      <main className="container mx-auto p-4 mt-6">
         {showComparison && (
           <EnhancedTripComparison 
             trips={trips}

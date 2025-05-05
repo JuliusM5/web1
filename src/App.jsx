@@ -2,22 +2,40 @@ import React, { useState } from 'react';
 import './App.css';
 import EnhancedTripPlanner from './components/TravelPlanner/EnhancedTripPlanner';
 import EnhancedOfflineIndicator from './components/Offline/EnhancedOfflineIndicator';
+import Header from './components/UI/Header';
+// Import the CheapFlightsDashboard component
+import CheapFlightsDashboard from './components/CheapFlights/CheapFlightsDashboard';
 import { SettingsProvider } from './context/SettingsContext';
 import { I18nProvider } from './utils/i18n';
 import AppSettingsWrapper from './components/UI/AppSettingsWrapper';
 import UserSettings from './components/Settings/UserSettings';
 import MobileNavigation from './components/UI/MobileNavigation';
 import { useDeviceDetection } from './utils/deviceDetection';
-import FlightSearch from './components/FlightSearch/FlightSearch';
-import Header from './components/UI/Header';
 
 function App() {
+  // Add the state variable for the current view
+  const [view, setView] = useState('dashboard');
   const [showSettings, setShowSettings] = useState(false);
-  const [currentView, setCurrentView] = useState('dashboard');
   const deviceInfo = useDeviceDetection();
 
+  // Handler for creating a new trip
   const handleNewTrip = () => {
-    setCurrentView('planner');
+    setView('planner');
+  };
+
+  // Handler for opening settings
+  const handleOpenSettings = () => {
+    setShowSettings(true);
+  };
+
+  // Handler for closing settings
+  const handleCloseSettings = () => {
+    setShowSettings(false);
+  };
+
+  // Handler for opening templates
+  const handleOpenTemplates = () => {
+    // Handle templates functionality here
   };
 
   return (
@@ -25,30 +43,35 @@ function App() {
       <I18nProvider>
         <AppSettingsWrapper>
           <div className="App">
-            {/* Single Header with navigation */}
-            <Header
-              view={currentView}
-              setView={setCurrentView}
+            {/* Pass the view state and setView function to Header */}
+            <Header 
+              view={view} 
+              setView={setView} 
               onNewTrip={handleNewTrip}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenTemplates={() => {/* Handle templates */}}
+              onOpenSettings={handleOpenSettings}
+              onOpenTemplates={handleOpenTemplates}
             />
             
-            {/* Main Content based on current view */}
-            {currentView === 'flights' ? (
-              <FlightSearch />
-            ) : (
+            {/* Always render EnhancedTripPlanner but only make it visible for relevant views */}
+            {(view === 'dashboard' || view === 'planner' || view === 'trips' || view === 'tripDetails') && (
               <EnhancedTripPlanner 
                 showSettings={showSettings}
-                onOpenSettings={() => setShowSettings(true)}
-                onCloseSettings={() => setShowSettings(false)}
-                currentView={currentView}
+                onOpenSettings={handleOpenSettings}
+                onCloseSettings={handleCloseSettings}
+                showHeader={false}
+                view={view}
+                setView={setView}
               />
+            )}
+            
+            {/* Show CheapFlightsDashboard when view is 'flights' or 'cheapFlights' */}
+            {(view === 'flights' || view === 'cheapFlights') && (
+              <CheapFlightsDashboard />
             )}
             
             {/* Settings Modal */}
             {showSettings && (
-              <UserSettings onClose={() => setShowSettings(false)} />
+              <UserSettings onClose={handleCloseSettings} />
             )}
             
             {/* Offline Indicator */}
@@ -57,11 +80,11 @@ function App() {
             {/* Mobile Navigation for small screens */}
             {deviceInfo.isMobile && (
               <MobileNavigation 
-                view={currentView}
-                setView={setCurrentView}
+                view={view}
+                setView={setView}
                 onNewTrip={handleNewTrip}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenTemplates={() => {/* Handle templates */}}
+                onOpenSettings={handleOpenSettings}
+                onOpenTemplates={handleOpenTemplates}
               />
             )}
           </div>
