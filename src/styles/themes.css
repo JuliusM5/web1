@@ -1,179 +1,246 @@
 /* Theme color variables */
 :root {
-    /* Default theme (blue) */
-    --primary-color: #3b82f6;
-    --primary-light: #93c5fd;
-    --primary-dark: #2563eb;
-    --accent-color: #f59e0b;
-    --success-color: #10b981;
-    --danger-color: #ef4444;
-    --warning-color: #f59e0b;
-    --info-color: #6366f1;
-    --text-on-primary: #ffffff;
-  }
+  /* Default theme (blue) */
+  --primary-color: #3b82f6;
+  --primary-light: #93c5fd;
+  --primary-dark: #2563eb;
+  --accent-color: #f59e0b;
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #6366f1;
+  --text-on-primary: #ffffff;
   
-  /* Theme-specific variables */
+  /* Opacity variables */
+  --opacity-light: 0.3;
+  --opacity-medium: 0.5;
+  --opacity-high: 0.8;
+}
+
+/* Dark mode base variables */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-on-primary: #ffffff;
+    /* Add other dark mode base variables if needed */
+  }
+}
+
+/* Theme-specific variables */
+.theme-blue {
+  --primary-color: #3b82f6;
+  --primary-light: #93c5fd;
+  --primary-dark: #2563eb;
+  --accent-color: #f59e0b;
+}
+
+.theme-purple {
+  --primary-color: #8b5cf6;
+  --primary-light: #c4b5fd;
+  --primary-dark: #6d28d9;
+  --accent-color: #10b981;
+}
+
+.theme-green {
+  --primary-color: #10b981;
+  --primary-light: #6ee7b7;
+  --primary-dark: #059669;
+  --accent-color: #6366f1;
+}
+
+.theme-red {
+  --primary-color: #ef4444;
+  --primary-light: #fca5a5;
+  --primary-dark: #dc2626;
+  --accent-color: #10b981;
+}
+
+.theme-amber {
+  --primary-color: #f59e0b;
+  --primary-light: #fcd34d;
+  --primary-dark: #d97706;
+  --accent-color: #3b82f6;
+}
+
+.theme-indigo {
+  --primary-color: #6366f1;
+  --primary-light: #a5b4fc;
+  --primary-dark: #4f46e5;
+  --accent-color: #f59e0b;
+}
+
+/* Dark mode theme variations */
+@media (prefers-color-scheme: dark) {
   .theme-blue {
-    --primary-color: #3b82f6;
+    --primary-color: #60a5fa;
     --primary-light: #93c5fd;
-    --primary-dark: #2563eb;
-    --accent-color: #f59e0b;
+    --primary-dark: #3b82f6;
   }
   
   .theme-purple {
-    --primary-color: #8b5cf6;
+    --primary-color: #a78bfa;
     --primary-light: #c4b5fd;
-    --primary-dark: #6d28d9;
-    --accent-color: #10b981;
+    --primary-dark: #8b5cf6;
   }
   
   .theme-green {
-    --primary-color: #10b981;
+    --primary-color: #34d399;
     --primary-light: #6ee7b7;
-    --primary-dark: #059669;
-    --accent-color: #6366f1;
+    --primary-dark: #10b981;
   }
   
   .theme-red {
-    --primary-color: #ef4444;
+    --primary-color: #f87171;
     --primary-light: #fca5a5;
-    --primary-dark: #dc2626;
-    --accent-color: #10b981;
+    --primary-dark: #ef4444;
   }
   
   .theme-amber {
-    --primary-color: #f59e0b;
+    --primary-color: #fbbf24;
     --primary-light: #fcd34d;
-    --primary-dark: #d97706;
-    --accent-color: #3b82f6;
+    --primary-dark: #f59e0b;
   }
   
   .theme-indigo {
-    --primary-color: #6366f1;
+    --primary-color: #818cf8;
     --primary-light: #a5b4fc;
-    --primary-dark: #4f46e5;
-    --accent-color: #f59e0b;
+    --primary-dark: #6366f1;
   }
-  
-  /* Apply theme colors to UI elements */
-  .bg-primary {
-    background-color: var(--primary-color) !important;
-  }
-  
-  .bg-primary-light {
-    background-color: var(--primary-light) !important;
-  }
-  
-  .bg-primary-dark {
-    background-color: var(--primary-dark) !important;
-  }
-  
-  .text-primary {
-    color: var(--primary-color) !important;
-  }
-  
-  .border-primary {
-    border-color: var(--primary-color) !important;
-  }
-  
-  .ring-primary {
-    --tw-ring-color: var(--primary-color) !important;
-  }
-  
-  /* Button with theme color */
-  .btn-primary {
-    background-color: var(--primary-color);
-    color: var(--text-on-primary);
-  }
-  
-  .btn-primary:hover {
-    background-color: var(--primary-dark);
-  }
-  
-  /* Update header with theme color */
-  header.bg-blue-600 {
-    background-color: var(--primary-color) !important;
-  }
-  
-  /* Font size utility classes */
-  html.text-sm {
-    font-size: 14px;
-  }
-  
-  html.text-base {
-    font-size: 16px;
-  }
-  
-  html.text-lg {
-    font-size: 18px;
-  }
-  
-  /* Add selectors that target the actual Tailwind classes in use */
-  /* Blue colors */
-  .bg-blue-500 {
-    background-color: var(--primary-color) !important;
-  }
-  
-  .bg-blue-600 {
-    background-color: var(--primary-color) !important;
-  }
-  
-  .bg-blue-700 {
-    background-color: var(--primary-dark) !important;
-  }
-  
-  .bg-blue-50 {
-    background-color: var(--primary-light) !important;
-    opacity: 0.3;
-  }
-  
-  .bg-blue-100 {
-    background-color: var(--primary-light) !important;
-    opacity: 0.5;
-  }
-  
-  .text-blue-500, .text-blue-600, .text-blue-700 {
-    color: var(--primary-color) !important;
-  }
-  
-  .text-blue-800 {
-    color: var(--primary-dark) !important;
-  }
-  
-  .border-blue-500, .border-blue-600, .border-blue-700 {
-    border-color: var(--primary-color) !important;
-  }
-  
-  .border-blue-200, .border-blue-300 {
-    border-color: var(--primary-light) !important;
-  }
-  
-  /* Override hover styles */
-  .hover\:bg-blue-600:hover {
-    background-color: var(--primary-color) !important;
-  }
-  
-  .hover\:bg-blue-700:hover {
-    background-color: var(--primary-dark) !important;
-  }
-  
-  .hover\:text-blue-600:hover {
-    color: var(--primary-color) !important;
-  }
-  
-  .hover\:text-blue-700:hover, .hover\:text-blue-800:hover {
-    color: var(--primary-dark) !important;
-  }
-  
-  .hover\:border-blue-600:hover {
-    border-color: var(--primary-color) !important;
-  }
-  
-  /* Focus styles */
-  .focus\:ring-blue-500:focus {
-    --tw-ring-color: var(--primary-color) !important;
-  }
-  
-  .focus\:border-blue-500:focus {
-    border-color: var(--primary-color) !important;
-  }
+}
+
+/* Apply theme colors to UI elements */
+/* Using higher specificity selectors to avoid !important */
+html body .bg-primary {
+  background-color: var(--primary-color);
+}
+
+html body .bg-primary-light {
+  background-color: var(--primary-light);
+}
+
+html body .bg-primary-dark {
+  background-color: var(--primary-dark);
+}
+
+html body .text-primary {
+  color: var(--primary-color);
+}
+
+html body .border-primary {
+  border-color: var(--primary-color);
+}
+
+html body .ring-primary {
+  --tw-ring-color: var(--primary-color);
+}
+
+/* Button with theme color */
+html body .btn-primary {
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+}
+
+html body .btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Update header with theme color */
+html body header.bg-blue-600 {
+  background-color: var(--primary-color);
+}
+
+/* Font size utility classes */
+html.text-sm {
+  font-size: 14px;
+}
+
+html.text-base {
+  font-size: 16px;
+}
+
+html.text-lg {
+  font-size: 18px;
+}
+
+/* Tailwind class overrides with higher specificity */
+/* Using an attribute selector pattern to increase specificity */
+/* Blue colors */
+html[class] .bg-blue-500 {
+  background-color: var(--primary-color);
+}
+
+html[class] .bg-blue-600 {
+  background-color: var(--primary-color);
+}
+
+html[class] .bg-blue-700 {
+  background-color: var(--primary-dark);
+}
+
+html[class] .bg-blue-50 {
+  background-color: var(--primary-light);
+  opacity: var(--opacity-light);
+}
+
+html[class] .bg-blue-100 {
+  background-color: var(--primary-light);
+  opacity: var(--opacity-medium);
+}
+
+html[class] .text-blue-500,
+html[class] .text-blue-600,
+html[class] .text-blue-700 {
+  color: var(--primary-color);
+}
+
+html[class] .text-blue-800 {
+  color: var(--primary-dark);
+}
+
+html[class] .border-blue-500,
+html[class] .border-blue-600,
+html[class] .border-blue-700 {
+  border-color: var(--primary-color);
+}
+
+html[class] .border-blue-200,
+html[class] .border-blue-300 {
+  border-color: var(--primary-light);
+}
+
+/* Override hover styles */
+html[class] .hover\:bg-blue-600:hover {
+  background-color: var(--primary-color);
+}
+
+html[class] .hover\:bg-blue-700:hover {
+  background-color: var(--primary-dark);
+}
+
+html[class] .hover\:text-blue-600:hover {
+  color: var(--primary-color);
+}
+
+html[class] .hover\:text-blue-700:hover,
+html[class] .hover\:text-blue-800:hover {
+  color: var(--primary-dark);
+}
+
+html[class] .hover\:border-blue-600:hover {
+  border-color: var(--primary-color);
+}
+
+/* Focus styles */
+html[class] .focus\:ring-blue-500:focus {
+  --tw-ring-color: var(--primary-color);
+}
+
+html[class] .focus\:border-blue-500:focus {
+  border-color: var(--primary-color);
+}
+
+/* Force theme classes to have higher priority than Tailwind utilities */
+[class*="theme-"] [class*="bg-blue"],
+[class*="theme-"] [class*="text-blue"],
+[class*="theme-"] [class*="border-blue"] {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}

@@ -1,618 +1,382 @@
-/* Dark Mode Styles */
-/* Enhanced Dark Mode Fixes - Add to accessibility-darkmode.css */
+/* ============================================
+   ACCESSIBILITY & DARK MODE CSS
+   ============================================ */
 
-/* Increase specificity and force important */
-html.dark-mode,
-body.dark-mode {
-  background-color: var(--dark-bg-primary) !important;
-  color: var(--dark-text-primary) !important;
-}
-
-/* Element selectors with increased specificity */
-html.dark-mode h1, 
-html.dark-mode h2, 
-html.dark-mode h3, 
-html.dark-mode h4, 
-html.dark-mode h5, 
-html.dark-mode h6,
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode h4,
-body.dark-mode h5,
-body.dark-mode h6 {
-  color: var(--dark-text-primary) !important;
-}
-
-html.dark-mode p, 
-html.dark-mode span, 
-html.dark-mode label, 
-html.dark-mode div, 
-html.dark-mode a,
-body.dark-mode p,
-body.dark-mode span,
-body.dark-mode label,
-body.dark-mode div,
-body.dark-mode a {
-  color: var(--dark-text-primary) !important;
-}
-
-/* Container backgrounds */
-html.dark-mode .container,
-body.dark-mode .container {
-  background-color: var(--dark-bg-primary) !important;
-}
-
-/* Overrides for common Tailwind classes */
-html.dark-mode .bg-white,
-body.dark-mode .bg-white {
-  background-color: var(--dark-bg-secondary) !important;
-}
-
-html.dark-mode .bg-gray-50, 
-html.dark-mode .bg-gray-100, 
-html.dark-mode .bg-gray-200,
-body.dark-mode .bg-gray-50,
-body.dark-mode .bg-gray-100,
-body.dark-mode .bg-gray-200 {
-  background-color: var(--dark-bg-tertiary) !important;
-}
-
-/* Card overrides */
-html.dark-mode .card,
-html.dark-mode .rounded-lg,
-html.dark-mode .shadow-lg,
-body.dark-mode .card,
-body.dark-mode .rounded-lg,
-body.dark-mode .shadow-lg {
-  background-color: var(--dark-bg-secondary) !important;
-  border-color: var(--dark-border-color) !important;
-}
-
-/* Input elements */
-html.dark-mode input, 
-html.dark-mode select, 
-html.dark-mode textarea,
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode textarea {
-  background-color: var(--dark-bg-tertiary) !important;
-  border-color: var(--dark-border-color) !important;
-  color: var(--dark-text-primary) !important;
-}
-
-/* Button overrides */
-html.dark-mode .bg-blue-500, 
-html.dark-mode .bg-blue-600,
-body.dark-mode .bg-blue-500,
-body.dark-mode .bg-blue-600 {
-  background-color: var(--dark-primary-color) !important;
-}
-
-/* Text color overrides */
-html.dark-mode .text-gray-500,
-html.dark-mode .text-gray-600,
-html.dark-mode .text-gray-700,
-html.dark-mode .text-gray-800,
-body.dark-mode .text-gray-500,
-body.dark-mode .text-gray-600,
-body.dark-mode .text-gray-700,
-body.dark-mode .text-gray-800 {
-  color: var(--dark-text-secondary) !important;
-}
-
-/* Border color overrides */
-html.dark-mode .border,
-html.dark-mode .border-gray-200,
-html.dark-mode .border-gray-300,
-body.dark-mode .border,
-body.dark-mode .border-gray-200,
-body.dark-mode .border-gray-300 {
-  border-color: var(--dark-border-color) !important;
-}
-
-/* Special component overrides */
-html.dark-mode header,
-body.dark-mode header {
-  background-color: var(--dark-bg-tertiary) !important;
-}
-
-html.dark-mode .dashboard-card,
-body.dark-mode .dashboard-card {
-  background-color: var(--dark-card-bg) !important;
-}
-
-/* Fix for any modal backdrops */
-html.dark-mode .modal-backdrop,
-body.dark-mode .modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.7) !important;
-}
-
-/* Fix for hover states */
-html.dark-mode .hover\:bg-gray-100:hover,
-body.dark-mode .hover\:bg-gray-100:hover {
-  background-color: var(--dark-hover-bg) !important;
-}
+/* ---------- Dark Mode Variables ---------- */
 :root {
-    --dark-bg-primary: #121212;
-    --dark-bg-secondary: #1e1e1e;
-    --dark-bg-tertiary: #2d2d2d;
-    --dark-text-primary: #e0e0e0;
-    --dark-text-secondary: #a0a0a0;
-    --dark-border-color: #444;
-    --dark-card-bg: #262626;
-    --dark-hover-bg: #333;
-    --dark-primary-color: #5b96f7; /* Brighter blue for dark mode */
-    --dark-success-color: #2ecc71;
-    --dark-danger-color: #e74c3c;
-    --dark-warning-color: #f39c12;
-    --dark-info-color: #3498db;
-  }
-  
-  /* Apply dark mode styles */
-  .dark-mode {
-    background-color: var(--dark-bg-primary);
-    color: var(--dark-text-primary);
-  }
-  
-  /* Basic elements in dark mode */
-  .dark-mode h1, .dark-mode h2, .dark-mode h3, 
-  .dark-mode h4, .dark-mode h5, .dark-mode h6 {
-    color: var(--dark-text-primary);
-  }
-  
-  .dark-mode p, .dark-mode span, .dark-mode label, 
-  .dark-mode div, .dark-mode a {
-    color: var(--dark-text-primary);
-  }
-  
-  /* Override backgrounds for various containers */
-  .dark-mode .bg-white {
-    background-color: var(--dark-bg-secondary) !important;
-  }
-  
-  .dark-mode .bg-gray-50, .dark-mode .bg-gray-100, .dark-mode .bg-gray-200 {
-    background-color: var(--dark-bg-tertiary) !important;
-  }
-  
-  /* Form elements */
-  .dark-mode input, .dark-mode select, .dark-mode textarea {
-    background-color: var(--dark-bg-tertiary);
-    border-color: var(--dark-border-color);
-    color: var(--dark-text-primary);
-  }
-  
-  .dark-mode input::placeholder, .dark-mode textarea::placeholder {
-    color: var(--dark-text-secondary);
-  }
-  
-  /* Cards and containers */
-  .dark-mode .card, 
-  .dark-mode .bg-white.rounded-lg,
-  .dark-mode .dashboard-card {
-    background-color: var(--dark-bg-secondary);
-    border-color: var(--dark-border-color);
-  }
-  
-  /* Button overrides */
-  .dark-mode .btn-primary {
-    background-color: var(--dark-primary-color);
-  }
-  
-  .dark-mode .bg-blue-500, 
-  .dark-mode .bg-blue-600 {
-    background-color: var(--dark-primary-color) !important;
-  }
-  
-  .dark-mode .text-blue-500,
-  .dark-mode .text-blue-600,
-  .dark-mode .text-blue-700 {
-    color: var(--dark-primary-color) !important;
-  }
-  
-  .dark-mode .border-blue-500,
-  .dark-mode .border-blue-600 {
-    border-color: var(--dark-primary-color) !important;
-  }
-  
-  /* Color adjustments for info panels */
-  .dark-mode .bg-blue-50 {
-    background-color: rgba(59, 130, 246, 0.2) !important;
-  }
-  
-  .dark-mode .bg-green-50 {
-    background-color: rgba(16, 185, 129, 0.2) !important;
-  }
-  
-  .dark-mode .bg-yellow-50 {
-    background-color: rgba(245, 158, 11, 0.2) !important;
-  }
-  
-  .dark-mode .bg-red-50 {
-    background-color: rgba(239, 68, 68, 0.2) !important;
-  }
-  
-  .dark-mode .text-gray-500,
-  .dark-mode .text-gray-600,
-  .dark-mode .text-gray-700 {
-    color: var(--dark-text-secondary) !important;
-  }
-  
-  .dark-mode .border-gray-200,
-  .dark-mode .border-gray-300 {
-    border-color: var(--dark-border-color) !important;
-  }
-  
-  /* Header and navigation */
-  .dark-mode header {
-    background-color: var(--dark-bg-tertiary) !important;
-  }
-  
-  .dark-mode .bottom-action-bar,
-  .dark-mode nav.fixed {
-    background-color: var(--dark-bg-tertiary) !important;
-    border-color: var(--dark-border-color) !important;
-  }
-  
-  /* Modal adjustments */
-  .dark-mode .modal-content {
-    background-color: var(--dark-bg-secondary);
-    border-color: var(--dark-border-color);
-  }
-  
-  /* Table adjustments */
-  .dark-mode table,
-  .dark-mode th,
-  .dark-mode td {
-    border-color: var(--dark-border-color);
-  }
-  
-  .dark-mode tbody tr:nth-child(even) {
-    background-color: rgba(45, 45, 45, 0.6);
-  }
-  
-  .dark-mode tbody tr:hover {
-    background-color: rgba(60, 60, 60, 0.6);
-  }
-  
-  /* Accessibility - High Contrast Mode */
-  .high-contrast {
-    --contrast-text: #ffffff;
-    --contrast-bg: #000000;
-    --contrast-primary: #ffff00; /* Yellow for high visibility */
-    --contrast-secondary: #00ffff; /* Cyan for high visibility */
-    --contrast-border: #ffffff;
-  }
-  
-  .high-contrast.dark-mode,
-  .high-contrast.dark-mode body {
-    background-color: var(--contrast-bg) !important;
-    color: var(--contrast-text) !important;
-  }
-  
-  .high-contrast.dark-mode a,
-  .high-contrast.dark-mode button {
-    color: var(--contrast-primary);
-  }
-  
-  .high-contrast.dark-mode input,
-  .high-contrast.dark-mode select,
-  .high-contrast.dark-mode textarea {
-    background-color: var(--contrast-bg);
-    color: var(--contrast-text);
-    border: 2px solid var(--contrast-border);
-  }
-  
-  .high-contrast.dark-mode .border,
-  .high-contrast.dark-mode .border-t,
-  .high-contrast.dark-mode .border-b,
-  .high-contrast.dark-mode .border-l,
-  .high-contrast.dark-mode .border-r {
-    border-color: var(--contrast-border) !important;
-  }
-  
-  /* Reduced Motion */
-  .reduced-motion * {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-  
-  /* Larger Click Targets */
-  .larger-targets button,
-  .larger-targets a,
-  .larger-targets input[type="checkbox"],
-  .larger-targets input[type="radio"],
-  .larger-targets select,
-  .larger-targets .clickable {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 0.75rem !important;
-  }
-  
-  .larger-targets label {
-    font-size: 1.1em;
-  }
-  
-  .larger-targets input[type="text"],
-  .larger-targets input[type="email"],
-  .larger-targets input[type="password"],
-  .larger-targets input[type="number"],
-  .larger-targets input[type="date"],
-  .larger-targets input[type="time"],
-  .larger-targets select,
-  .larger-targets textarea {
-    padding: 0.75rem !important;
-    font-size: 1.1em;
-  }
-  
-  /* Custom Text Scaling */
-  .custom-text-scaling {
-    --base-font-size: 16px;
-  }
-  
-  .custom-text-scaling p,
-  .custom-text-scaling span,
-  .custom-text-scaling div,
-  .custom-text-scaling label,
-  .custom-text-scaling input,
-  .custom-text-scaling textarea,
-  .custom-text-scaling select,
-  .custom-text-scaling button {
-    font-size: calc(var(--base-font-size) * var(--text-scale-ratio)) !important;
-  }
-  
-  .custom-text-scaling h1 {
-    font-size: calc(2em * var(--text-scale-ratio)) !important;
-  }
-  
-  .custom-text-scaling h2 {
-    font-size: calc(1.75em * var(--text-scale-ratio)) !important;
-  }
-  
-  .custom-text-scaling h3 {
-    font-size: calc(1.5em * var(--text-scale-ratio)) !important;
-  }
-  
-  .custom-text-scaling h4 {
-    font-size: calc(1.25em * var(--text-scale-ratio)) !important;
-  }
-  
-  .custom-text-scaling h5,
-  .custom-text-scaling h6 {
-    font-size: calc(1.1em * var(--text-scale-ratio)) !important;
-  }
-  
-  /* Screen Reader Optimizations */
-  [data-screen-reader-optimized="true"] .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-  }
-  
-  [data-screen-reader-optimized="true"] [aria-hidden="true"] {
-    display: none;
-  }
-  
-  [data-screen-reader-optimized="true"] img:not([alt]),
-  [data-screen-reader-optimized="true"] svg:not([aria-labelledby]):not([aria-label]) {
-    position: relative;
-  }
-  
-  [data-screen-reader-optimized="true"] img:not([alt])::after,
-  [data-screen-reader-optimized="true"] svg:not([aria-labelledby]):not([aria-label])::after {
-    content: "Missing alt text";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #ffdd00;
-    color: #000000;
-    font-size: 0.8rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    pointer-events: none;
-  }
-  /* Enhanced Header Dark Mode Fix - Add to your accessibility-darkmode.css file */
-
-/* Target the header specifically with high specificity */
-html.dark-mode header.bg-blue-600,
-body.dark-mode header.bg-blue-600,
-.dark-mode header.bg-blue-600,
-html.dark-mode header,
-body.dark-mode header,
-.dark-mode header {
-  background-color: var(--dark-bg-primary) !important;
-  color: var(--dark-text-primary) !important;
-  border-bottom: 1px solid var(--dark-border-color) !important;
+  --dark-bg-primary: #121212;
+  --dark-bg-secondary: #1e1e1e;
+  --dark-bg-tertiary: #2d2d2d;
+  --dark-text-primary: #e0e0e0;
+  --dark-text-secondary: #a0a0a0;
+  --dark-border-color: #444;
+  --dark-card-bg: #262626;
+  --dark-hover-bg: #333;
+  --dark-primary-color: #5b96f7; /* Brighter blue for dark mode */
+  --dark-success-color: #2ecc71;
+  --dark-danger-color: #e74c3c;
+  --dark-warning-color: #f39c12;
+  --dark-info-color: #3498db;
 }
 
-/* Ensure header buttons/links are properly styled */
-html.dark-mode header button,
-body.dark-mode header button,
-.dark-mode header button,
-html.dark-mode header a,
-body.dark-mode header a,
-.dark-mode header a {
-  color: var(--dark-text-primary) !important;
+/* --------- High Contrast Variables --------- */
+:root {
+  --contrast-text: #ffffff;
+  --contrast-bg: #000000;
+  --contrast-primary: #ffff00; /* Yellow for high visibility */
+  --contrast-secondary: #00ffff; /* Cyan for high visibility */
+  --contrast-border: #ffffff;
 }
 
-/* Style the header buttons hover state */
-html.dark-mode header button:hover,
-body.dark-mode header button:hover,
-.dark-mode header button:hover,
-html.dark-mode header a:hover,
-body.dark-mode header a:hover,
-.dark-mode header a:hover {
-  background-color: var(--dark-hover-bg) !important;
+/* ============= DARK MODE STYLES ============= */
+/* Using a single selector pattern with high specificity */
+/* Base dark mode styles apply to both html.dark-mode and .dark-mode */
+html.dark-mode,
+body.dark-mode,
+.dark-mode {
+  background-color: var(--dark-bg-primary);
+  color: var(--dark-text-primary);
 }
 
-/* Fix for the hover states in header */
-html.dark-mode header .hover\:bg-blue-700:hover,
-body.dark-mode header .hover\:bg-blue-700:hover,
-.dark-mode header .hover\:bg-blue-700:hover {
-  background-color: var(--dark-hover-bg) !important;
+/* --------- Typography in Dark Mode --------- */
+/* Single selector with comma separation for all heading types */
+.dark-mode h1, 
+.dark-mode h2, 
+.dark-mode h3, 
+.dark-mode h4, 
+.dark-mode h5, 
+.dark-mode h6 {
+  color: var(--dark-text-primary);
 }
 
-/* Fix for any blue specific elements in header that might not be targeted */
-html.dark-mode header .bg-blue-600,
-body.dark-mode header .bg-blue-600,
-.dark-mode header .bg-blue-600,
-html.dark-mode header .bg-blue-500,
-body.dark-mode header .bg-blue-500,
-.dark-mode header .bg-blue-500 {
-  background-color: var(--dark-bg-tertiary) !important;
+/* Group text elements together */
+.dark-mode p, 
+.dark-mode span, 
+.dark-mode label, 
+.dark-mode div {
+  color: var(--dark-text-primary);
 }
 
-/* Ensure active/selected navigation items are properly styled */
-html.dark-mode header .border-white,
-body.dark-mode header .border-white,
-.dark-mode header .border-white {
-  border-color: var(--dark-text-primary) !important;
+/* Links deserve special treatment */
+.dark-mode a:not(.btn-primary):not(.btn-secondary) {
+  color: var(--dark-primary-color);
 }
 
-/* Fix for mobile navigation in dark mode */
-html.dark-mode .bottom-action-bar,
-body.dark-mode .bottom-action-bar,
-.dark-mode .bottom-action-bar {
-  background-color: var(--dark-bg-primary) !important;
-  border-top-color: var(--dark-border-color) !important;
-}
-/* Footer dark mode fixes */
-html.dark-mode footer,
-body.dark-mode footer,
-.dark-mode footer {
-  background-color: var(--dark-bg-primary) !important;
-  color: var(--dark-text-primary) !important;
-  border-top-color: var(--dark-border-color) !important;
+/* --------- Containers & Backgrounds --------- */
+/* Using attribute selector for increased specificity */
+.dark-mode[class] .container,
+.dark-mode[class] .bg-white {
+  background-color: var(--dark-bg-secondary);
 }
 
-html.dark-mode footer p,
-html.dark-mode footer span,
-html.dark-mode footer a,
-html.dark-mode footer div,
-body.dark-mode footer p,
-body.dark-mode footer span,
-body.dark-mode footer a,
-body.dark-mode footer div,
-.dark-mode footer p,
-.dark-mode footer span,
-.dark-mode footer a,
-.dark-mode footer div {
-  color: var(--dark-text-primary) !important;
+.dark-mode[class] .bg-gray-50, 
+.dark-mode[class] .bg-gray-100, 
+.dark-mode[class] .bg-gray-200 {
+  background-color: var(--dark-bg-tertiary);
 }
 
-/* Handle any specific footer classes you might be using */
-html.dark-mode .footer-link,
-body.dark-mode .footer-link,
-.dark-mode .footer-link {
-  color: var(--dark-primary-color) !important;
+/* --------- Cards & UI Components --------- */
+.dark-mode[class] .card,
+.dark-mode[class] .rounded-lg.shadow-lg,
+.dark-mode[class] .dashboard-card {
+  background-color: var(--dark-bg-secondary);
+  border-color: var(--dark-border-color);
 }
 
-html.dark-mode .footer-social-icon,
-body.dark-mode .footer-social-icon,
-.dark-mode .footer-social-icon {
-  color: var(--dark-text-primary) !important;
-  fill: var(--dark-text-primary) !important;
-}
-/* Footer dark mode fixes - comprehensive solution */
-html.dark-mode footer,
-body.dark-mode footer,
-.dark-mode footer,
-html.dark-mode .footer,
-body.dark-mode .footer,
-.dark-mode .footer,
-html.dark-mode .site-footer,
-body.dark-mode .site-footer,
-.dark-mode .site-footer,
-html.dark-mode .app-footer,
-body.dark-mode .app-footer,
-.dark-mode .app-footer,
-html.dark-mode [role="contentinfo"],
-body.dark-mode [role="contentinfo"],
-.dark-mode [role="contentinfo"] {
-  background-color: var(--dark-bg-primary) !important;
-  color: var(--dark-text-primary) !important;
-  border-top: 1px solid var(--dark-border-color) !important;
+/* --------- Form Elements --------- */
+.dark-mode[class] input, 
+.dark-mode[class] select, 
+.dark-mode[class] textarea {
+  background-color: var(--dark-bg-tertiary);
+  border-color: var(--dark-border-color);
+  color: var(--dark-text-primary);
 }
 
-/* Target all direct children of footer to ensure complete coverage */
-html.dark-mode footer *,
-body.dark-mode footer *,
-.dark-mode footer *,
-html.dark-mode .footer *,
-body.dark-mode .footer *,
-.dark-mode .footer *,
-html.dark-mode .site-footer *,
-body.dark-mode .site-footer *,
-.dark-mode .site-footer *,
-html.dark-mode .app-footer *,
-body.dark-mode .app-footer *,
-.dark-mode .app-footer * {
-  color: var(--dark-text-primary) !important;
+.dark-mode[class] input::placeholder, 
+.dark-mode[class] textarea::placeholder {
+  color: var(--dark-text-secondary);
 }
 
-/* Target links specifically to ensure they stand out */
-html.dark-mode footer a,
-body.dark-mode footer a,
-.dark-mode footer a,
-html.dark-mode .footer a,
-body.dark-mode .footer a,
-.dark-mode .footer a,
-html.dark-mode .site-footer a,
-body.dark-mode .site-footer a,
-.dark-mode .site-footer a {
-  color: var(--dark-primary-color) !important;
-  text-decoration: underline;
+/* --------- Primary UI Colors --------- */
+/* Button styles consolidated */
+.dark-mode[class] .btn-primary,
+.dark-mode[class] .bg-blue-500, 
+.dark-mode[class] .bg-blue-600,
+.dark-mode[class] .bg-blue-700 {
+  background-color: var(--dark-primary-color);
 }
 
-/* Target social media icons or other SVGs in footer */
-html.dark-mode footer svg,
-body.dark-mode footer svg,
-.dark-mode footer svg,
-html.dark-mode .footer svg,
-body.dark-mode .footer svg,
-.dark-mode .footer svg {
-  fill: var(--dark-text-primary) !important;
+/* Text color classes consolidated */
+.dark-mode[class] .text-blue-500,
+.dark-mode[class] .text-blue-600,
+.dark-mode[class] .text-blue-700 {
+  color: var(--dark-primary-color);
 }
 
-/* Fix specific background colors that might be used in footers */
-html.dark-mode footer .bg-white,
-html.dark-mode footer .bg-gray-50,
-html.dark-mode footer .bg-gray-100,
-body.dark-mode footer .bg-white,
-body.dark-mode footer .bg-gray-50,
-body.dark-mode footer .bg-gray-100,
-.dark-mode footer .bg-white,
-.dark-mode footer .bg-gray-50,
-.dark-mode footer .bg-gray-100 {
-  background-color: var(--dark-bg-primary) !important;
+.dark-mode[class] .text-gray-500,
+.dark-mode[class] .text-gray-600,
+.dark-mode[class] .text-gray-700,
+.dark-mode[class] .text-gray-800 {
+  color: var(--dark-text-secondary);
 }
 
-/* Handle copyright text specifically */
-html.dark-mode .copyright,
-body.dark-mode .copyright,
-.dark-mode .copyright,
-html.dark-mode footer .text-sm,
-body.dark-mode footer .text-sm,
-.dark-mode footer .text-sm {
-  color: var(--dark-text-secondary) !important;
+/* Border classes consolidated */
+.dark-mode[class] .border,
+.dark-mode[class] .border-gray-200,
+.dark-mode[class] .border-gray-300,
+.dark-mode[class] .border-blue-500,
+.dark-mode[class] .border-blue-600 {
+  border-color: var(--dark-border-color);
 }
 
-/* Bottom fixed footer specific styles */
-html.dark-mode .fixed-bottom,
-body.dark-mode .fixed-bottom,
-.dark-mode .fixed-bottom {
-  background-color: var(--dark-bg-primary) !important;
-  border-top: 1px solid var(--dark-border-color) !important;
+/* --------- Background Color Variations --------- */
+.dark-mode[class] .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.dark-mode[class] .bg-green-50 {
+  background-color: rgba(16, 185, 129, 0.2);
+}
+
+.dark-mode[class] .bg-yellow-50 {
+  background-color: rgba(245, 158, 11, 0.2);
+}
+
+.dark-mode[class] .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+/* --------- Hover States --------- */
+.dark-mode[class] .hover\:bg-gray-100:hover,
+.dark-mode[class] .hover\:bg-blue-600:hover,
+.dark-mode[class] .hover\:bg-blue-700:hover {
+  background-color: var(--dark-hover-bg);
+}
+
+.dark-mode[class] .hover\:text-blue-600:hover,
+.dark-mode[class] .hover\:text-blue-700:hover,
+.dark-mode[class] .hover\:text-blue-800:hover {
+  color: var(--dark-primary-color);
+}
+
+.dark-mode[class] .hover\:border-blue-600:hover {
+  border-color: var(--dark-primary-color);
+}
+
+/* --------- Focus States --------- */
+.dark-mode[class] .focus\:ring-blue-500:focus {
+  --tw-ring-color: var(--dark-primary-color);
+}
+
+.dark-mode[class] .focus\:border-blue-500:focus {
+  border-color: var(--dark-primary-color);
+}
+
+/* ============ HEADER & FOOTER SPECIFICS ============ */
+/* Consolidated header rules */
+.dark-mode[class] header,
+.dark-mode[class] header.bg-blue-600,
+.dark-mode[class] header.bg-blue-500 {
+  background-color: var(--dark-bg-primary);
+  color: var(--dark-text-primary);
+  border-bottom: 1px solid var(--dark-border-color);
+}
+
+.dark-mode[class] header button,
+.dark-mode[class] header a {
+  color: var(--dark-text-primary);
+}
+
+.dark-mode[class] header button:hover,
+.dark-mode[class] header a:hover,
+.dark-mode[class] header .hover\:bg-blue-700:hover {
+  background-color: var(--dark-hover-bg);
+}
+
+/* Consolidated footer rules */
+.dark-mode[class] footer,
+.dark-mode[class] .footer,
+.dark-mode[class] .site-footer,
+.dark-mode[class] .app-footer,
+.dark-mode[class] [role="contentinfo"] {
+  background-color: var(--dark-bg-primary);
+  color: var(--dark-text-primary);
+  border-top: 1px solid var(--dark-border-color);
+}
+
+.dark-mode[class] footer a,
+.dark-mode[class] .footer a,
+.dark-mode[class] .site-footer a {
+  color: var(--dark-primary-color);
+}
+
+.dark-mode[class] footer svg,
+.dark-mode[class] .footer svg,
+.dark-mode[class] .site-footer svg {
+  fill: var(--dark-text-primary);
+}
+
+.dark-mode[class] .copyright,
+.dark-mode[class] footer .text-sm {
+  color: var(--dark-text-secondary);
+}
+
+/* Mobile navigation and bottom bars */
+.dark-mode[class] .bottom-action-bar,
+.dark-mode[class] .fixed-bottom {
+  background-color: var(--dark-bg-primary);
+  border-top: 1px solid var(--dark-border-color);
+}
+
+/* =========== ADVANCED ACCESSIBILITY FEATURES =========== */
+/* High Contrast Mode */
+.high-contrast.dark-mode,
+.high-contrast.dark-mode body {
+  background-color: var(--contrast-bg);
+  color: var(--contrast-text);
+}
+
+.high-contrast.dark-mode a,
+.high-contrast.dark-mode button {
+  color: var(--contrast-primary);
+}
+
+.high-contrast.dark-mode input,
+.high-contrast.dark-mode select,
+.high-contrast.dark-mode textarea {
+  background-color: var(--contrast-bg);
+  color: var(--contrast-text);
+  border: 2px solid var(--contrast-border);
+}
+
+.high-contrast.dark-mode .border,
+.high-contrast.dark-mode .border-t,
+.high-contrast.dark-mode .border-b,
+.high-contrast.dark-mode .border-l,
+.high-contrast.dark-mode .border-r {
+  border-color: var(--contrast-border);
+}
+
+/* Reduced Motion for Animation Sensitivity */
+.reduced-motion * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Larger Click Targets */
+.larger-targets button,
+.larger-targets a,
+.larger-targets input[type="checkbox"],
+.larger-targets input[type="radio"],
+.larger-targets select,
+.larger-targets .clickable {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.75rem;
+}
+
+.larger-targets label {
+  font-size: 1.1em;
+}
+
+.larger-targets input[type="text"],
+.larger-targets input[type="email"],
+.larger-targets input[type="password"],
+.larger-targets input[type="number"],
+.larger-targets input[type="date"],
+.larger-targets input[type="time"],
+.larger-targets select,
+.larger-targets textarea {
+  padding: 0.75rem;
+  font-size: 1.1em;
+}
+
+/* Custom Text Scaling */
+.custom-text-scaling {
+  --base-font-size: 16px;
+}
+
+.custom-text-scaling p,
+.custom-text-scaling span,
+.custom-text-scaling div,
+.custom-text-scaling label,
+.custom-text-scaling input,
+.custom-text-scaling textarea,
+.custom-text-scaling select,
+.custom-text-scaling button {
+  font-size: calc(var(--base-font-size) * var(--text-scale-ratio));
+}
+
+.custom-text-scaling h1 {
+  font-size: calc(2em * var(--text-scale-ratio));
+}
+
+.custom-text-scaling h2 {
+  font-size: calc(1.75em * var(--text-scale-ratio));
+}
+
+.custom-text-scaling h3 {
+  font-size: calc(1.5em * var(--text-scale-ratio));
+}
+
+.custom-text-scaling h4 {
+  font-size: calc(1.25em * var(--text-scale-ratio));
+}
+
+.custom-text-scaling h5,
+.custom-text-scaling h6 {
+  font-size: calc(1.1em * var(--text-scale-ratio));
+}
+
+/* Screen Reader Optimizations */
+[data-screen-reader-optimized="true"] .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+[data-screen-reader-optimized="true"] [aria-hidden="true"] {
+  display: none;
+}
+
+/* Missing alt text warnings */
+[data-screen-reader-optimized="true"] img:not([alt]),
+[data-screen-reader-optimized="true"] svg:not([aria-labelledby]):not([aria-label]) {
+  position: relative;
+}
+
+[data-screen-reader-optimized="true"] img:not([alt])::after,
+[data-screen-reader-optimized="true"] svg:not([aria-labelledby]):not([aria-label])::after {
+  content: "Missing alt text";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #ffdd00;
+  color: #000000;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Transitions for theme changes */
+.dark-mode * {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+/* Reduced transitions if reduced motion is enabled */
+.reduced-motion .dark-mode * {
+  transition: none !important;
 }

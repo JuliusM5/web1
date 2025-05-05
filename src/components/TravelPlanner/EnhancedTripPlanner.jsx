@@ -394,24 +394,55 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
           />
         )}
         
-        {!showComparison && !showTemplateManager && !showTemplateSelector && view === 'tripDetails' && selectedTrip && (
+        {!showComparison && !showTemplateManager && !showTemplateSelector && view === 'tripDetails' && (
           isMobile ? (
-            <MobileOptimizedTripDetails
-              trip={selectedTrip}
-              editTrip={editTrip}
-              closeTrip={closeTrip}
-              shareEmail={shareEmail}
-              setShareEmail={setShareEmail}
-            />
+            selectedTrip ? (
+              <MobileOptimizedTripDetails
+                trip={selectedTrip}
+                editTrip={editTrip}
+                closeTrip={closeTrip}
+                shareEmail={shareEmail}
+                setShareEmail={setShareEmail}
+                userSettings={settings}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center p-8">
+                <div className="bg-yellow-50 p-4 rounded-lg shadow text-center">
+                  <h2 className="text-xl font-semibold text-yellow-800 mb-2">No Trip Selected</h2>
+                  <p className="text-gray-600 mb-4">Please select a trip to view its details</p>
+                  <button
+                    onClick={() => setView('trips')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                  >
+                    View All Trips
+                  </button>
+                </div>
+              </div>
+            )
           ) : (
-            <TripDetails 
-              trip={selectedTrip}
-              editTrip={editTrip}
-              closeTrip={closeTrip}
-              shareEmail={shareEmail}
-              setShareEmail={setShareEmail}
-              userSettings={settings}
-            />
+            selectedTrip ? (
+              <TripDetails 
+                trip={selectedTrip}
+                editTrip={editTrip}
+                closeTrip={closeTrip}
+                shareEmail={shareEmail}
+                setShareEmail={setShareEmail}
+                userSettings={settings}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center p-8">
+                <div className="bg-yellow-50 p-4 rounded-lg shadow text-center">
+                  <h2 className="text-xl font-semibold text-yellow-800 mb-2">No Trip Selected</h2>
+                  <p className="text-gray-600 mb-4">Please select a trip to view its details</p>
+                  <button
+                    onClick={() => setView('trips')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                  >
+                    View All Trips
+                  </button>
+                </div>
+              </div>
+            )
           )
         )}
       </main>

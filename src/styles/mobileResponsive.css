@@ -1,330 +1,375 @@
-/* Mobile-first approach with responsive breakpoints */
+/* 
+ * MOBILE-FIRST RESPONSIVE STYLES
+ * Using a progressive enhancement approach
+ */
 
-/* Base styles for mobile devices */
+/* ========== VARIABLES ========== */
+:root {
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.25rem;
+  --space-xl: 1.5rem;
+  
+  /* Shadow */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Touch target minimum size (WCAG guidelines) */
+  --min-touch-target: 44px;
+}
+
+/* ========== BASE MOBILE STYLES ========== */
+/* Container */
 .container {
-    width: 100%;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    margin-left: auto;
-    margin-right: auto;
+  width: 100%;
+  padding-left: var(--space-md);
+  padding-right: var(--space-md);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Visibility utilities */
+.hidden-xs {
+  display: none;
+}
+
+.show-xs {
+  display: block;
+}
+
+/* ========== COMPONENT STYLES - MOBILE FIRST ========== */
+/* Trip cards */
+.trip-card {
+  margin-bottom: var(--space-md);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trip-card-header {
+  padding: var(--space-sm);
+}
+
+.trip-card-body {
+  padding: var(--space-md);
+}
+
+/* Dashboard stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-xs);
+}
+
+.stat-card {
+  padding: var(--space-sm);
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.stat-card-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Form layouts */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+/* Calendar components */
+.calendar-cell {
+  height: 3rem;
+  font-size: 0.75rem;
+}
+
+.calendar-day-number {
+  font-size: 0.875rem;
+}
+
+.calendar-event {
+  font-size: 0.625rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Task lists */
+.task-item {
+  padding: var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+/* Tab navigation */
+.tab-nav {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.tab-nav::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.tab-button {
+  padding: var(--space-xs) var(--space-sm);
+  flex-shrink: 0;
+}
+
+/* Modal components */
+.modal-content {
+  width: 100%;
+  max-width: 100%;
+  margin: var(--space-xs);
+  max-height: 85vh;
+  border-radius: 0.5rem;
+}
+
+/* Bottom action bar */
+.bottom-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  padding: var(--space-sm) var(--space-md);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 40;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ========== RESPONSIVE BREAKPOINTS ========== */
+/* Small tablet (sm) */
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
   }
   
-  /* General responsive utilities */
-  .hidden-xs {
+  /* Visibility */
+  .hidden-sm {
     display: none;
   }
   
-  .show-xs {
+  .show-sm {
     display: block;
   }
   
-  /* Trip card styles for mobile */
-  .trip-card {
-    margin-bottom: 1rem;
-    border-radius: 0.5rem;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  .hidden-xs {
+    display: block;
+  }
+  
+  .show-xs {
+    display: none;
+  }
+  
+  /* Layout adjustments */
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+  }
+  
+  /* Component adjustments */
+  .calendar-cell {
+    height: 5rem;
   }
   
   .trip-card-header {
-    padding: 0.75rem;
+    padding: var(--space-md);
   }
   
   .trip-card-body {
-    padding: 1rem;
+    padding: var(--space-lg);
   }
   
-  /* Dashboard stats for mobile */
+  .modal-content {
+    width: 85%;
+    margin: var(--space-md) auto;
+  }
+}
+
+/* Medium tablet (md) */
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+  
+  /* Visibility */
+  .hidden-md {
+    display: none;
+  }
+  
+  .show-md {
+    display: block;
+  }
+  
+  /* Layout adjustments */
   .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
+    grid-template-columns: repeat(4, 1fr);
   }
   
-  .stat-card {
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    text-align: center;
+  /* Component adjustments */
+  .bottom-action-bar {
+    position: static;
+    box-shadow: none;
+    padding: var(--space-md) 0;
   }
   
-  .stat-card-value {
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-  
-  /* Form layouts for mobile */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  /* Calendar adjustments for mobile */
   .calendar-cell {
-    height: 3rem;
-    font-size: 0.75rem;
-  }
-  
-  .calendar-day-number {
+    height: 6rem;
     font-size: 0.875rem;
   }
   
+  .calendar-day-number {
+    font-size: 1rem;
+  }
+  
   .calendar-event {
-    font-size: 0.625rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.75rem;
   }
   
-  /* Task list for mobile */
-  .task-item {
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* Tab navigation for mobile */
   .tab-nav {
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Firefox */
+    overflow-x: visible;
+    flex-wrap: wrap;
   }
   
-  .tab-nav::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
-  
-  .tab-button {
-    padding: 0.5rem 0.75rem;
-    flex-shrink: 0;
-  }
-  
-  /* Modal adjustments for mobile */
   .modal-content {
-    width: 100%;
+    width: 70%;
+    max-width: 600px;
+  }
+}
+
+/* Desktop (lg) */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+  
+  /* Visibility */
+  .hidden-lg {
+    display: none;
+  }
+  
+  .show-lg {
+    display: block;
+  }
+  
+  /* Layout adjustments */
+  .form-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .calendar-cell {
+    height: 7rem;
+  }
+  
+  .modal-content {
+    width: 60%;
+    max-width: 800px;
+  }
+}
+
+/* Large desktop (xl) */
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+  
+  .form-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ========== SPECIAL MEDIA FEATURES ========== */
+/* Touch-specific adjustments */
+@media (hover: none) {
+  /* Larger touch targets for better accessibility */
+  .btn, 
+  .tab-button, 
+  .nav-link,
+  .form-control,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: var(--min-touch-target);
+  }
+  
+  /* Disable hover effects on touch devices */
+  .hover-effect {
+    transition: none;
+  }
+  
+  .hover-effect:hover {
+    transform: none;
+  }
+}
+
+/* Prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .page-break {
+    page-break-before: always;
+  }
+  
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+  
+  a {
+    text-decoration: none;
+    color: #000;
+  }
+  
+  .container {
     max-width: 100%;
-    margin: 0.5rem;
-    max-height: 85vh;
+    width: 100%;
+    padding: 0;
   }
   
-  /* Bottom action bar for mobile */
-  .bottom-action-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: white;
-    padding: 0.75rem 1rem;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 40;
-    display: flex;
-    justify-content: space-between;
+  .trip-card,
+  .stat-card,
+  .task-item {
+    break-inside: avoid;
   }
-  
-  /* Small tablet breakpoint (sm) */
-  @media (min-width: 640px) {
-    .container {
-      max-width: 640px;
-    }
-    
-    .hidden-sm {
-      display: none;
-    }
-    
-    .show-sm {
-      display: block;
-    }
-    
-    .hidden-xs {
-      display: block;
-    }
-    
-    .show-xs {
-      display: none;
-    }
-    
-    .form-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-    }
-    
-    .calendar-cell {
-      height: 5rem;
-    }
-    
-    .trip-card-header {
-      padding: 1rem;
-    }
-    
-    .trip-card-body {
-      padding: 1.25rem;
-    }
-    
-    .modal-content {
-      width: 85%;
-      margin: 1rem auto;
-    }
+}
+
+/* Dark mode detection - moved to theme system */
+@media (prefers-color-scheme: dark) {
+  /* This is just a compatibility hook.
+     Actual dark mode styles should be in themes.css */
+  html:not(.theme-override) .dark-mode-compatible {
+    background-color: var(--dark-bg-primary, #121212);
+    color: var(--dark-text-primary, #e0e0e0);
   }
-  
-  /* Medium tablet breakpoint (md) */
-  @media (min-width: 768px) {
-    .container {
-      max-width: 768px;
-    }
-    
-    .hidden-md {
-      display: none;
-    }
-    
-    .show-md {
-      display: block;
-    }
-    
-    .stats-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .form-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .bottom-action-bar {
-      position: static;
-      box-shadow: none;
-      padding: 1rem 0;
-    }
-    
-    .calendar-cell {
-      height: 6rem;
-      font-size: 0.875rem;
-    }
-    
-    .calendar-day-number {
-      font-size: 1rem;
-    }
-    
-    .calendar-event {
-      font-size: 0.75rem;
-    }
-    
-    .tab-nav {
-      overflow-x: visible;
-      flex-wrap: wrap;
-    }
-    
-    .modal-content {
-      width: 70%;
-      max-width: 600px;
-    }
-  }
-  
-  /* Desktop breakpoint (lg) */
-  @media (min-width: 1024px) {
-    .container {
-      max-width: 1024px;
-    }
-    
-    .hidden-lg {
-      display: none;
-    }
-    
-    .show-lg {
-      display: block;
-    }
-    
-    .form-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .calendar-cell {
-      height: 7rem;
-    }
-    
-    .modal-content {
-      width: 60%;
-      max-width: 800px;
-    }
-  }
-  
-  /* Large desktop breakpoint (xl) */
-  @media (min-width: 1280px) {
-    .container {
-      max-width: 1280px;
-    }
-    
-    .form-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-  
-  /* Touch-specific adjustments */
-  @media (hover: none) {
-    /* Larger touch targets for better touch interaction */
-    .btn, 
-    .tab-button, 
-    .nav-link,
-    .form-control,
-    input[type="checkbox"],
-    input[type="radio"] {
-      min-height: 44px; /* Apple's recommended minimum touch target size */
-    }
-    
-    /* Disable hover effects that might cause issues on touch devices */
-    .hover-effect {
-      transition: none;
-    }
-    
-    .hover-effect:hover {
-      transform: none;
-    }
-  }
-  
-  /* Print styles */
-  @media print {
-    .no-print {
-      display: none !important;
-    }
-    
-    .page-break {
-      page-break-before: always;
-    }
-    
-    body {
-      font-size: 12pt;
-      line-height: 1.5;
-    }
-    
-    a {
-      text-decoration: none;
-      color: #000;
-    }
-    
-    .container {
-      max-width: 100%;
-      width: 100%;
-    }
-  }
-  
-  /* Dark mode */
-  @media (prefers-color-scheme: dark) {
-    .dark-mode-compatible {
-      background-color: #121212;
-      color: #e0e0e0;
-    }
-    
-    .dark-mode-compatible .card {
-      background-color: #1e1e1e;
-      border-color: #333;
-    }
-    
-    .dark-mode-compatible .btn-light {
-      background-color: #2d2d2d;
-      color: #e0e0e0;
-      border-color: #444;
-    }
-  }
+}

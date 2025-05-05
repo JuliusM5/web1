@@ -53,12 +53,23 @@ function CheapFlightsDashboard() {
       });
     }
   };
+
+  // Fix: Handle location change for the LocationSelector component
+  const handleLocationChange = (locationData) => {
+    console.log("Location changed:", locationData);
+    // You could do something with both origin and destination here
+    // For now, we'll just use the origin as the user location
+    if (locationData && locationData.origin) {
+      handleLocationSelected(locationData.origin);
+    }
+  };
   
   return (
     <div className="container mx-auto py-8 px-4">
       {!setupComplete && (
         <div className="mb-8">
-          <LocationSelector onLocationSelected={handleLocationSelected} />
+          {/* Fix: Pass the handleLocationChange function to LocationSelector */}
+          <LocationSelector onLocationChange={handleLocationChange} />
         </div>
       )}
       
