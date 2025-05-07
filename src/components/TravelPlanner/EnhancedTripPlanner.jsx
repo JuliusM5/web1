@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../UI/Header';
 import Dashboard from '../Dashboard/Dashboard';
 import TripPlanner from './TripPlanner';
@@ -14,6 +14,8 @@ import MobileOptimizedDashboard from '../Dashboard/MobileOptimizedDashboard';
 import MobileOptimizedTripDetails from './MobileOptimizedTripDetails';
 import { useDeviceDetection } from '../../utils/deviceDetection';
 import { useI18n } from '../../utils/i18n'; // Import the i18n hook
+import Notification from '../UI/Notification'; // Import the Notification component
+import LoadingIndicator from '../UI/LoadingIndicator'; // Import the LoadingIndicator component
 
 function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, showHeader = true, view: externalView, setView: setExternalView }) {
   // Get device info for responsive design
@@ -86,34 +88,73 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
   
   // Selected trip for viewing/editing
   const [selectedTrip, setSelectedTrip] = useState(null);
+  
+  // Notification state
+  const [notification, setNotification] = useState({
+    visible: false,
+    message: '',
+    type: 'success'
+  });
+  
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Loading...');
+
+  // Helper to show notifications
+  const showNotification = useCallback((message, type = 'success') => {
+    setNotification({
+      visible: true,
+      message,
+      type
+    });
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      setNotification(prev => ({...prev, visible: false}));
+    }, 3000);
+  }, []);
 
   // Load trips from localStorage on component mount
   useEffect(() => {
+    console.log("EnhancedTripPlanner - Loading trips from localStorage");
     const savedTrips = localStorage.getItem('travelPlannerTrips');
     if (savedTrips) {
-      setTrips(JSON.parse(savedTrips));
+      try {
+        const parsedTrips = JSON.parse(savedTrips);
+        console.log("Loaded trips:", parsedTrips);
+        setTrips(parsedTrips);
+      } catch (error) {
+        console.error("Error parsing trips from localStorage:", error);
+      }
     }
   }, []);
 
   // Save trips to localStorage when trips state changes
   useEffect(() => {
+    console.log("EnhancedTripPlanner - Saving trips to localStorage:", trips);
     localStorage.setItem('travelPlannerTrips', JSON.stringify(trips));
   }, [trips]);
+  
+  // Log view changes for debugging
+  useEffect(() => {
+    console.log("View changed to:", view);
+  }, [view]);
   
   // Helper function to get destination info
   function getDestinationInfo() {
     return destinations[destination] || null;
   }
   
-  // View trip details
-  function viewTrip(trip) {
+  // View trip details - defined as a memoized callback to avoid unnecessary re-renders
+  const viewTrip = useCallback((trip) => {
     console.log("viewTrip called in EnhancedTripPlanner for:", trip.destination);
     setSelectedTrip(trip);
     setView('tripDetails');
-  }
+  }, [setView]);
   
-  // Edit trip
-  function editTrip(trip) {
+  // Edit trip - defined as a memoized callback
+  const editTrip = useCallback((trip) => {
+    console.log("editTrip called for:", trip.destination);
     // Load trip data into form
     setDestination(trip.destination);
     setStartDate(trip.startDate);
@@ -132,25 +173,27 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
     setEditMode(true);
     setView('planner');
     setTab('basic');
-  }
+  }, [setView, setTab]);
   
   // Close trip details
-  function closeTrip() {
+  const closeTrip = useCallback(() => {
     setSelectedTrip(null);
     setView('trips');
-  }
+  }, [setView]);
   
   // Delete a trip
-  function deleteTrip(id) {
-    setTrips(trips.filter(trip => trip.id !== id));
+  const deleteTrip = useCallback((id) => {
+    console.log("Deleting trip with ID:", id);
+    setTrips(prevTrips => prevTrips.filter(trip => trip.id !== id));
     if (selectedTrip && selectedTrip.id === id) {
       setSelectedTrip(null);
       setView('trips');
     }
-  }
+  }, [selectedTrip, setView]);
   
   // Handle creating a new trip
-  function handleNewTrip() {
+  const handleNewTrip = useCallback(() => {
+    console.log("handleNewTrip called");
     // Reset form state
     setDestination('');
     setStartDate('');
@@ -181,7 +224,13 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
       setView('planner');
       setTab('basic');
     }
-  }
+  }, [setView, setTab]);
+
+  // Compare trips
+  const compareTrips = useCallback(() => {
+    console.log("compareTrips called");
+    setShowComparison(true);
+  }, []);
   
   // Handle using a template
   function handleUseTemplate(template) {
@@ -254,8 +303,54 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
     setTripTasks(tripTasks.filter(task => task.id !== eventId));
   }
   
+  // Method to handle successful trip saving
+  const handleTripSaved = useCallback((trip, isEdit) => {
+    // Show loading indicator
+    setIsLoading(true);
+    setLoadingMessage(`${isEdit ? 'Updating' : 'Saving'} trip to ${trip.destination}...`);
+    
+    // Short timeout to allow UI to update
+    setTimeout(() => {
+      // Ensure trips are updated in localStorage
+      const savedTrips = localStorage.getItem('travelPlannerTrips');
+      if (savedTrips) {
+        try {
+          const parsedTrips = JSON.parse(savedTrips);
+          console.log("Refreshing trips from localStorage after save:", parsedTrips);
+          setTrips(parsedTrips);
+        } catch (error) {
+          console.error("Error parsing trips from localStorage after save:", error);
+        }
+      }
+      
+      // Navigate to trips view first
+      setView('trips');
+      
+      // Hide loading after navigation
+      setIsLoading(false);
+      
+      // Show success notification after a slight delay
+      setTimeout(() => {
+        const actionType = isEdit ? 'updated' : 'created';
+        showNotification(`Trip to ${trip.destination} successfully ${actionType}!`, 'success');
+      }, 300);
+    }, 800); // Short delay for better UX
+  }, [showNotification, setView, setIsLoading, setLoadingMessage]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+      {/* Show loading indicator if isLoading is true */}
+      {isLoading && <LoadingIndicator message={loadingMessage} />}
+      
+      {/* Show notification if visible */}
+      {notification.visible && (
+        <Notification 
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(prev => ({...prev, visible: false}))}
+        />
+      )}
+      
       {showHeader && (
         <Header 
           view={view} 
@@ -378,6 +473,7 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
             trips={trips}
             setTrips={setTrips}
             setView={setView}
+            onTripSaved={handleTripSaved}
             userSettings={settings}
           />
         )}
@@ -389,7 +485,7 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
             editTrip={editTrip}
             deleteTrip={deleteTrip}
             setView={setView}
-            compareTrips={() => setShowComparison(true)}
+            compareTrips={compareTrips}
             onNewTrip={handleNewTrip}
             userSettings={settings}
           />

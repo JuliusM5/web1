@@ -1,5 +1,5 @@
 // src/components/TravelPlanner/TripsList.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { calculateDuration } from '../../utils/helpers';
 import { useI18n } from '../../utils/i18n';
@@ -7,6 +7,11 @@ import { useI18n } from '../../utils/i18n';
 function TripsList({ trips, viewTrip, editTrip, deleteTrip, compareTrips, setView, onNewTrip }) {
   const { t } = useI18n();
   const navigate = useNavigate();
+  
+  // Debugging - log trips when component mounts and when trips change
+  useEffect(() => {
+    console.log("TripsList rendered with trips:", trips);
+  }, [trips]);
   
   // Ensure the action handlers work properly with proper debugging
   const handleViewTrip = (trip) => {
@@ -79,6 +84,24 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, compareTrips, setVie
     }
   };
   
+  // If trips is undefined or not an array, handle gracefully
+  if (!trips || !Array.isArray(trips)) {
+    console.error("Trips is not an array:", trips);
+    return (
+      <div className="max-w-6xl mx-auto pb-20">
+        <div className="bg-yellow-50 p-4 rounded-lg text-center my-8">
+          <p className="text-yellow-800">No trips data available. Would you like to create your first trip?</p>
+          <button
+            onClick={handleNewTrip}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Create New Trip
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="max-w-6xl mx-auto pb-20">
       <div className="flex justify-between items-center mb-6">
@@ -93,10 +116,26 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, compareTrips, setVie
             </button>
           )}
           
+          <button
+            onClick={handleNewTrip}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center"
+          >
+            <span className="mr-2">+</span> {t('trips.newTrip', 'New Trip')}
+          </button>
         </div>
       </div>
       
-      
+      {trips.length === 0 ? (
+        <div className="bg-gray-50 p-8 rounded-lg text-center">
+          <p className="text-gray-600 mb-4">{t('trips.noTripsYet', 'You haven\'t created any trips yet.')}</p>
+          <button
+            onClick={handleNewTrip}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+          >
+            {t('trips.createFirstTrip', 'Create Your First Trip')}
+          </button>
+        </div>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {trips.map(trip => (
             <div key={trip.id} className="bg-white rounded-lg shadow overflow-hidden transition-shadow hover:shadow-lg">
@@ -150,7 +189,7 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, compareTrips, setVie
             </div>
           ))}
         </div>
-      
+      )}
       
       {/* Mobile-friendly action button */}
       <div className="md:hidden fixed bottom-16 right-4">

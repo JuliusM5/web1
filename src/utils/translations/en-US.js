@@ -464,6 +464,7 @@ const enUS = {
     'tripDetails.noTasksAdded': 'No tasks have been added to this trip.',
     'tripDetails.addTasks': 'Add Tasks',
     'tripDetails.overallProgress': 'Overall Progress',
+    'tripDetails': 'Trip Details of',
     'tripDetails.tasksComplete': 'tasks complete',
     'tripDetails.priority': 'Priority',
     'tripDetails.completed': 'Completed',

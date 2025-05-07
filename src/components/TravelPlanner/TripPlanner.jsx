@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import BasicInfoTab from '../PlannerTabs/BasicInfoTab';
 import BudgetTab from '../PlannerTabs/BudgetTab';
 import TransportTab from '../PlannerTabs/TransportTab';
@@ -20,11 +20,16 @@ function TripPlanner({
   setTransportType, transportFrom, setTransportFrom, transportTo, setTransportTo,
   transportPrice, setTransportPrice, photoUrl, setPhotoUrl, photoCaption, 
   setPhotoCaption, serviceType, setServiceType, serviceUrl, setServiceUrl, 
-  serviceNote, setServiceNote, trips, setTrips, setView,
+  serviceNote, setServiceNote, trips, setTrips, setView, onTripSaved,
   tripTasks, setTripTasks
 }) {
   // Use the i18n hook for translations
   const { t } = useI18n();
+  
+  // Verify trips array is properly initialized
+  useEffect(() => {
+    console.log("TripPlanner mounted. Trips:", trips);
+  }, [trips]);
   
   // Add a new note
   function addNote() {
@@ -112,17 +117,49 @@ function TripPlanner({
         lastUpdated: new Date().toISOString()
       };
       
+      // First update the trips state
+      let updatedTrips;
       if (editMode) {
         // Update existing trip
-        setTrips(trips.map(trip => trip.id === currentTripId ? tripData : trip));
-        setEditMode(false);
-        setCurrentTripId(null);
+        updatedTrips = trips.map(trip => trip.id === currentTripId ? tripData : trip);
+        console.log("Updating existing trip:", tripData);
       } else {
         // Add new trip
-        setTrips([...trips, tripData]);
+        updatedTrips = [...trips, tripData];
+        console.log("Adding new trip:", tripData);
+      }
+      
+      // Set the updated trips
+      setTrips(updatedTrips);
+      
+      // Save trips to localStorage directly to ensure they're saved before navigating
+      try {
+        localStorage.setItem('travelPlannerTrips', JSON.stringify(updatedTrips));
+        console.log("Trips saved to localStorage:", updatedTrips);
+        
+        // Use the callback if provided
+        if (typeof onTripSaved === 'function') {
+          console.log("Calling onTripSaved callback");
+          onTripSaved(tripData, editMode);
+        } else {
+          // Fallback to direct view change with delay
+          console.log("No onTripSaved callback, using fallback view change");
+          setTimeout(() => {
+            console.log("Switching to trips view");
+            setView('trips');
+          }, 50);
+        }
+      } catch (error) {
+        console.error("Error saving trips to localStorage:", error);
+        // Still try to navigate even if localStorage fails
+        if (typeof setView === 'function') {
+          setTimeout(() => setView('trips'), 50);
+        }
       }
       
       // Reset all state
+      setEditMode(false);
+      setCurrentTripId(null);
       setDestination('');
       setStartDate('');
       setEndDate('');
@@ -139,9 +176,6 @@ function TripPlanner({
       setTransports([]);
       setPhotos([]);
       setExternalServices([]);
-      
-      // Switch to trips view
-      setView('trips');
     }
   }
   
@@ -161,6 +195,7 @@ function TripPlanner({
       other: 0
     });
     setTripNotes([]);
+    setTripTasks([]);
     setTransports([]);
     setPhotos([]);
     setExternalServices([]);
