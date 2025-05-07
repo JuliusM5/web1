@@ -21,7 +21,7 @@ function TripPlanner({
   transportPrice, setTransportPrice, photoUrl, setPhotoUrl, photoCaption, 
   setPhotoCaption, serviceType, setServiceType, serviceUrl, setServiceUrl, 
   serviceNote, setServiceNote, trips, setTrips, setView, onTripSaved,
-  tripTasks, setTripTasks
+  tripTasks, setTripTasks, loadTrips
 }) {
   // Use the i18n hook for translations
   const { t } = useI18n();
@@ -98,7 +98,7 @@ function TripPlanner({
     });
   }
   
-  // Save the trip
+  // Improved saveTrip function with better data consistency
   function saveTrip() {
     if (destination && startDate && endDate) {
       const tripData = {
@@ -117,19 +117,31 @@ function TripPlanner({
         lastUpdated: new Date().toISOString()
       };
       
-      // First update the trips state
+      // First read the current trips from localStorage to ensure we're working with the latest data
+      let currentTrips = [];
+      try {
+        const savedTrips = localStorage.getItem('travelPlannerTrips');
+        if (savedTrips) {
+          currentTrips = JSON.parse(savedTrips);
+          console.log("Retrieved current trips from localStorage:", currentTrips);
+        }
+      } catch (error) {
+        console.error("Error reading current trips from localStorage:", error);
+      }
+      
+      // Now update with our new trip
       let updatedTrips;
       if (editMode) {
         // Update existing trip
-        updatedTrips = trips.map(trip => trip.id === currentTripId ? tripData : trip);
+        updatedTrips = currentTrips.map(trip => trip.id === currentTripId ? tripData : trip);
         console.log("Updating existing trip:", tripData);
       } else {
         // Add new trip
-        updatedTrips = [...trips, tripData];
+        updatedTrips = [...currentTrips, tripData];
         console.log("Adding new trip:", tripData);
       }
       
-      // Set the updated trips
+      // Set the updated trips in state
       setTrips(updatedTrips);
       
       // Save trips to localStorage directly to ensure they're saved before navigating
@@ -145,6 +157,10 @@ function TripPlanner({
           // Fallback to direct view change with delay
           console.log("No onTripSaved callback, using fallback view change");
           setTimeout(() => {
+            // Load trips before navigation to ensure data consistency
+            if (typeof loadTrips === 'function') {
+              loadTrips();
+            }
             console.log("Switching to trips view");
             setView('trips');
           }, 50);

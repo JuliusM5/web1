@@ -1,17 +1,23 @@
-// Updated Header.jsx with login/logout button optimized for mobile
+// Updated Header.jsx with fixed navigation
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useI18n } from '../../utils/i18n';
-import { useAuth } from '../../hooks/useAuth'; // Add this import
+import { useAuth } from '../../hooks/useAuth';
 
 function Header() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, logout } = useAuth(); // Add this line to get auth state
+  const { isAuthenticated, logout } = useAuth();
   
-  // Navigation handlers
+  // Navigation handlers with improved view state synchronization
+  const handleNavigate = (path, viewName) => {
+    console.log(`Navigation: path=${path}, viewName=${viewName}`);
+    navigate(path);
+  };
+  
   const handleNewTrip = () => {
+    console.log("Creating new trip");
     navigate('/planner');
   };
   
@@ -33,7 +39,7 @@ function Header() {
     navigate('/');
   };
 
-  // Helper to determine active view based on path
+  // Improved active route detection
   const isActive = (path) => {
     return location.pathname === path;
   };
@@ -48,14 +54,14 @@ function Header() {
             <path d="M12 22V11" stroke="#3B82F6" strokeWidth="2" />
             <path d="M17 8.5L12 11L7 8.5" stroke="#3B82F6" strokeWidth="1" />
           </svg>
-          <h1 className="text-2xl font-bold">{t('app.name')}</h1>
+          <h1 className="text-2xl font-bold" onClick={() => handleNavigate('/', 'dashboard')} style={{cursor: 'pointer'}}>{t('app.name')}</h1>
         </div>
         <nav className="hidden md:block">
           <ul className="flex space-x-6">
             <li>
               <button 
                 className={isActive('/') ? 'font-bold border-b-2 border-white' : 'hover:text-blue-100'}
-                onClick={() => navigate('/')}
+                onClick={() => handleNavigate('/', 'dashboard')}
               >
                 {t('nav.dashboard')}
               </button>
@@ -63,7 +69,7 @@ function Header() {
             <li>
               <button 
                 className={isActive('/planner') ? 'font-bold border-b-2 border-white' : 'hover:text-blue-100'}
-                onClick={handleNewTrip}
+                onClick={() => handleNavigate('/planner', 'planner')}
               >
                 {t('nav.planner')}
               </button>
@@ -71,7 +77,7 @@ function Header() {
             <li>
               <button 
                 className={isActive('/trips') ? 'font-bold border-b-2 border-white' : 'hover:text-blue-100'}
-                onClick={() => navigate('/trips')}
+                onClick={() => handleNavigate('/trips', 'trips')}
               >
                 {t('nav.trips')}
               </button>
@@ -79,7 +85,7 @@ function Header() {
             <li>
               <button 
                 className={isActive('/flights') ? 'font-bold border-b-2 border-white' : 'hover:text-blue-100'}
-                onClick={() => navigate('/flights')}
+                onClick={() => handleNavigate('/flights', 'flights')}
               >
                 {t('nav.flights')}
               </button>

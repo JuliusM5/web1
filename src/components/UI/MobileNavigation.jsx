@@ -1,14 +1,28 @@
-// src/components/UI/MobileNavigation.jsx
+// Fixed MobileNavigation.jsx with improved navigation handlers
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useI18n } from '../../utils/i18n';
 import { useAuth } from '../../hooks/useAuth';
 
-function MobileNavigation({ view, setView, onNewTrip, onOpenSettings }) {
+function MobileNavigation({ onNewTrip, onOpenSettings }) {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated } = useAuth();
   const [showLabel, setShowLabel] = useState(true);
+  
+  // Determine current view based on location
+  const getCurrentView = () => {
+    const path = location.pathname;
+    if (path === '/') return 'dashboard';
+    if (path === '/trips') return 'trips';
+    if (path === '/planner') return 'planner';
+    if (path === '/flights') return 'flights';
+    // Default to dashboard if no match
+    return 'dashboard';
+  };
+  
+  const view = getCurrentView();
   
   // Hide labels when scrolling down
   useEffect(() => {
@@ -28,11 +42,9 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
-  // Navigate to specific view
-  const handleNavigate = (newView, path) => {
-    if (setView) {
-      setView(newView);
-    }
+  // Improved navigation handler with logging
+  const handleNavigate = (path, viewName) => {
+    console.log(`Mobile Navigation: path=${path}, viewName=${viewName}`);
     navigate(path);
   };
   
@@ -45,11 +57,21 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings }) {
     }
   };
   
+  // Handle new trip with proper navigation
+  const handleNewTrip = () => {
+    console.log("Mobile: Creating new trip");
+    if (typeof onNewTrip === 'function') {
+      onNewTrip();
+    } else {
+      navigate('/planner');
+    }
+  };
+  
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
       <div className="grid grid-cols-5 h-16">
         <button
-          onClick={() => handleNavigate('dashboard', '/')}
+          onClick={() => handleNavigate('/', 'dashboard')}
           className={`flex flex-col items-center justify-center ${
             view === 'dashboard' ? 'text-blue-600' : 'text-gray-600'
           }`}
@@ -61,7 +83,7 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings }) {
         </button>
         
         <button
-          onClick={() => handleNavigate('trips', '/trips')}
+          onClick={() => handleNavigate('/trips', 'trips')}
           className={`flex flex-col items-center justify-center ${
             view === 'trips' ? 'text-blue-600' : 'text-gray-600'
           }`}
@@ -73,13 +95,7 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings }) {
         </button>
         
         <button
-          onClick={() => {
-            if (onNewTrip) {
-              onNewTrip();
-            } else {
-              handleNavigate('planner', '/planner');
-            }
-          }}
+          onClick={handleNewTrip}
           className="relative flex flex-col items-center justify-center"
         >
           <div className="absolute -top-5 bg-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg">
@@ -91,7 +107,7 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings }) {
         </button>
         
         <button
-          onClick={() => handleNavigate('flights', '/flights')}
+          onClick={() => handleNavigate('/flights', 'flights')}
           className={`flex flex-col items-center justify-center ${
             view === 'flights' ? 'text-blue-600' : 'text-gray-600'
           }`}

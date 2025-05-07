@@ -1,6 +1,6 @@
-// src/App.jsx
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// Updated App.jsx with improved routing and view state synchronization
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 import EnhancedTripPlanner from './components/TravelPlanner/EnhancedTripPlanner';
 import EnhancedOfflineIndicator from './components/Offline/EnhancedOfflineIndicator';
@@ -28,6 +28,31 @@ import ManageSubscription from './components/Accessibility/Subscription/ManageSu
 // Import the TripTemplates component
 import TemplateManager from './components/TripTemplates/TemplateManager';
 
+// Internal route-based hook for syncing view state
+function useViewStateSync(setView) {
+  const location = useLocation();
+  
+  useEffect(() => {
+    // Update view state based on current route
+    const path = location.pathname;
+    if (path === '/') {
+      console.log('Setting view to dashboard based on route');
+      setView('dashboard');
+    } else if (path === '/planner') {
+      console.log('Setting view to planner based on route');
+      setView('planner');
+    } else if (path === '/trips') {
+      console.log('Setting view to trips based on route');
+      setView('trips');
+    } else if (path === '/flights') {
+      console.log('Setting view to flights based on route');
+      // No need to setView here since flights is handled by a separate component
+    }
+  }, [location.pathname, setView]);
+  
+  return location;
+}
+
 // App Routes component with state for trip planning
 function AppRoutes() {
   const deviceInfo = useDeviceDetection();
@@ -35,6 +60,14 @@ function AppRoutes() {
   
   // State for managing views
   const [view, setView] = useState('dashboard');
+  
+  // Sync view state with current route
+  const location = useViewStateSync(setView);
+  
+  // Log view state changes for debugging
+  useEffect(() => {
+    console.log("View state changed to:", view);
+  }, [view]);
   
   // Handle settings functions
   const handleOpenSettings = () => {
@@ -47,6 +80,7 @@ function AppRoutes() {
   
   // Trip planner specific functions
   const handleNewTrip = () => {
+    console.log("App: Creating new trip");
     setView('planner');
   };
   

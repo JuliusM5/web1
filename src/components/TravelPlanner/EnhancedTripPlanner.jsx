@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Header from '../UI/Header';
 import Dashboard from '../Dashboard/Dashboard';
 import TripPlanner from './TripPlanner';
@@ -100,6 +100,11 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Loading...');
 
+  // Refs to break infinite loops
+  const loadCountRef = useRef(0);
+  const isInitialSaveRef = useRef(true);
+  const initialLoadDoneRef = useRef(false);
+
   // Helper to show notifications
   const showNotification = useCallback((message, type = 'success') => {
     setNotification({
@@ -114,25 +119,86 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
     }, 3000);
   }, []);
 
-  // Load trips from localStorage on component mount
+  // Initialize trips data on component mount - runs only once
   useEffect(() => {
-    console.log("EnhancedTripPlanner - Loading trips from localStorage");
+    if (initialLoadDoneRef.current) return;
+    
+    console.log("EnhancedTripPlanner - Initial loading of trips");
     const savedTrips = localStorage.getItem('travelPlannerTrips');
     if (savedTrips) {
       try {
         const parsedTrips = JSON.parse(savedTrips);
-        console.log("Loaded trips:", parsedTrips);
-        setTrips(parsedTrips);
+        if (parsedTrips && parsedTrips.length > 0) {
+          console.log("EnhancedTripPlanner - Initial load found trips:", parsedTrips);
+          setTrips(parsedTrips);
+        }
       } catch (error) {
-        console.error("Error parsing trips from localStorage:", error);
+        console.error("Error parsing trips from localStorage on initialization:", error);
       }
+    }
+    
+    initialLoadDoneRef.current = true;
+  }, []); // Empty dependency array means this runs only once on mount
+
+  // Improved loadTrips function with protection against infinite loops
+  const loadTrips = useCallback(() => {
+    // Prevent excessive loading - only allow a reasonable number of load attempts
+    if (loadCountRef.current > 3) {
+      console.log("EnhancedTripPlanner - Too many load attempts, skipping");
+      return false;
+    }
+    
+    loadCountRef.current += 1;
+    console.log("EnhancedTripPlanner - Loading trips from localStorage (attempt", loadCountRef.current, ")");
+    
+    try {
+      const savedTrips = localStorage.getItem('travelPlannerTrips');
+      if (savedTrips) {
+        const parsedTrips = JSON.parse(savedTrips);
+        console.log("Loaded trips:", parsedTrips);
+        
+        // Only update state if we actually have trips
+        if (parsedTrips && parsedTrips.length > 0) {
+          setTrips(parsedTrips);
+          return true; // Signal success
+        }
+      }
+      return false; // Signal no trips found
+    } catch (error) {
+      console.error("Error parsing trips from localStorage:", error);
+      return false;
     }
   }, []);
 
-  // Save trips to localStorage when trips state changes
+  // Reset the load counter when view changes
   useEffect(() => {
-    console.log("EnhancedTripPlanner - Saving trips to localStorage:", trips);
-    localStorage.setItem('travelPlannerTrips', JSON.stringify(trips));
+    loadCountRef.current = 0;
+  }, [view]);
+
+  // Load trips when view changes to 'trips', but with protection against infinite loops
+  useEffect(() => {
+    if (view === 'trips' && loadCountRef.current < 2) {
+      loadTrips();
+    }
+  }, [view, loadTrips]);
+
+  // Fixed save trips to localStorage to prevent empty arrays from overwriting data
+  useEffect(() => {
+    // Skip the first save operation to prevent initial loop
+    if (isInitialSaveRef.current) {
+      console.log("EnhancedTripPlanner - Skipping initial save to prevent loop");
+      isInitialSaveRef.current = false;
+      return;
+    }
+    
+    // Only save trips to localStorage if the trips array actually contains items
+    if (trips && trips.length > 0) {
+      console.log("EnhancedTripPlanner - Saving trips to localStorage:", trips);
+      localStorage.setItem('travelPlannerTrips', JSON.stringify(trips));
+    } else {
+      // Don't save empty arrays unless we explicitly want to clear data
+      console.log("EnhancedTripPlanner - Empty trips array, not saving to localStorage");
+    }
   }, [trips]);
   
   // Log view changes for debugging
@@ -184,7 +250,15 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
   // Delete a trip
   const deleteTrip = useCallback((id) => {
     console.log("Deleting trip with ID:", id);
-    setTrips(prevTrips => prevTrips.filter(trip => trip.id !== id));
+    setTrips(prevTrips => {
+      const updated = prevTrips.filter(trip => trip.id !== id);
+      // Immediately update localStorage to ensure consistency
+      if (updated.length > 0) {
+        localStorage.setItem('travelPlannerTrips', JSON.stringify(updated));
+      }
+      return updated;
+    });
+    
     if (selectedTrip && selectedTrip.id === id) {
       setSelectedTrip(null);
       setView('trips');
@@ -303,7 +377,7 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
     setTripTasks(tripTasks.filter(task => task.id !== eventId));
   }
   
-  // Method to handle successful trip saving
+  // Method to handle successful trip saving - improved to ensure data consistency
   const handleTripSaved = useCallback((trip, isEdit) => {
     // Show loading indicator
     setIsLoading(true);
@@ -311,17 +385,11 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
     
     // Short timeout to allow UI to update
     setTimeout(() => {
-      // Ensure trips are updated in localStorage
-      const savedTrips = localStorage.getItem('travelPlannerTrips');
-      if (savedTrips) {
-        try {
-          const parsedTrips = JSON.parse(savedTrips);
-          console.log("Refreshing trips from localStorage after save:", parsedTrips);
-          setTrips(parsedTrips);
-        } catch (error) {
-          console.error("Error parsing trips from localStorage after save:", error);
-        }
-      }
+      // Reset load counter before loading trips
+      loadCountRef.current = 0;
+      
+      // Ensure trips are updated from localStorage
+      loadTrips();
       
       // Navigate to trips view first
       setView('trips');
@@ -335,7 +403,7 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
         showNotification(`Trip to ${trip.destination} successfully ${actionType}!`, 'success');
       }, 300);
     }, 800); // Short delay for better UX
-  }, [showNotification, setView, setIsLoading, setLoadingMessage]);
+  }, [loadTrips, setView, setIsLoading, setLoadingMessage, showNotification]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -475,6 +543,7 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
             setView={setView}
             onTripSaved={handleTripSaved}
             userSettings={settings}
+            loadTrips={loadTrips} // Pass the loadTrips function to TripPlanner
           />
         )}
         
@@ -488,6 +557,7 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
             compareTrips={compareTrips}
             onNewTrip={handleNewTrip}
             userSettings={settings}
+            loadTrips={loadTrips} // Pass the loadTrips function to TripsList
           />
         )}
         
