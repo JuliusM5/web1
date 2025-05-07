@@ -249,21 +249,34 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
   
   // Delete a trip
   const deleteTrip = useCallback((id) => {
-    console.log("Deleting trip with ID:", id);
-    setTrips(prevTrips => {
-      const updated = prevTrips.filter(trip => trip.id !== id);
-      // Immediately update localStorage to ensure consistency
-      if (updated.length > 0) {
-        localStorage.setItem('travelPlannerTrips', JSON.stringify(updated));
-      }
-      return updated;
-    });
-    
-    if (selectedTrip && selectedTrip.id === id) {
-      setSelectedTrip(null);
-      setView('trips');
+    console.log("Deleting trip with ID:", id, typeof id);
+    // First directly update localStorage to ensure complete deletion
+  try {
+    const savedTrips = localStorage.getItem('travelPlannerTrips');
+    if (savedTrips) {
+      const parsedTrips = JSON.parse(savedTrips);
+      console.log("Current trips in localStorage:", parsedTrips);
+      
+      // Convert IDs to strings for comparison if needed
+      const updatedTrips = parsedTrips.filter(trip => String(trip.id) !== String(id));
+      console.log("After filtering, remaining trips:", updatedTrips);
+      
+      // Update localStorage immediately
+      localStorage.setItem('travelPlannerTrips', JSON.stringify(updatedTrips));
+      console.log("Updated localStorage directly, remaining trips:", updatedTrips.length);
+      
+      // Update state to match localStorage exactly
+      setTrips(updatedTrips);
     }
-  }, [selectedTrip, setView]);
+  } catch (error) {
+    console.error("Error updating localStorage during delete:", error);
+  }
+  
+  if (selectedTrip && selectedTrip.id === id) {
+    setSelectedTrip(null);
+    setView('trips');
+  }
+}, [selectedTrip, setView]);
   
   // Handle creating a new trip
   const handleNewTrip = useCallback(() => {

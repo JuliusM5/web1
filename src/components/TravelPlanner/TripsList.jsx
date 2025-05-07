@@ -119,21 +119,39 @@ function TripsList({ trips, viewTrip, editTrip, deleteTrip, compareTrips, setVie
     }
   };
   
-  const handleDeleteTrip = (tripId) => {
-    console.log("Delete trip button clicked for ID:", tripId);
-    
-    if (typeof deleteTrip === 'function') {
-      // Add confirmation dialog to prevent accidental deletions
-      if (window.confirm(t('trips.confirmDelete', 'Are you sure you want to delete this trip?'))) {
-        // Update local state immediately for a responsive UI
-        setLocalTrips(prevTrips => prevTrips.filter(trip => trip.id !== tripId));
-        // Then call the parent's delete function
-        deleteTrip(tripId);
-      }
-    } else {
-      console.error("deleteTrip function is not defined");
+ // Add to handleDeleteTrip in TripsList.jsx
+const handleDeleteTrip = (tripId) => {
+  console.log("Delete trip button clicked for ID:", tripId);
+  
+  if (typeof deleteTrip === 'function') {
+    // Add confirmation dialog to prevent accidental deletions
+    if (window.confirm(t('trips.confirmDelete', 'Are you sure you want to delete this trip?'))) {
+      // Directly update local state
+      setLocalTrips(prevTrips => prevTrips.filter(trip => trip.id !== tripId));
+      
+      // Call parent's delete function
+      deleteTrip(tripId);
+      
+      // Force reload from localStorage after a short delay
+      setTimeout(() => {
+        const savedTrips = localStorage.getItem('travelPlannerTrips');
+        if (savedTrips) {
+          try {
+            const parsedTrips = JSON.parse(savedTrips);
+            setLocalTrips(parsedTrips);
+          } catch (error) {
+            console.error("Error parsing trips after delete:", error);
+          }
+        } else {
+          // If nothing in localStorage, ensure local state is empty
+          setLocalTrips([]);
+        }
+      }, 100);
     }
-  };
+  } else {
+    console.error("deleteTrip function is not defined");
+  }
+};
   
   // Handle Compare Trips button
   const handleCompareTrips = () => {
