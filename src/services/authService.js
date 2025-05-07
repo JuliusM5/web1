@@ -2,7 +2,7 @@
 
 class AuthService {
     constructor() {
-      this.apiUrl = '/api/auth';
+      this.apiUrl = 'http://localhost:5000/api/auth';
       this.tokenKey = 'auth_token';
       this.refreshTokenKey = 'refresh_token';
       this.userKey = 'user_data';
