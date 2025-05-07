@@ -1,5 +1,4 @@
 // src/App.jsx
-
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
@@ -26,9 +25,7 @@ import PlanCards from './components/Accessibility/Subscription/PlanCards';
 import Checkout from './components/Accessibility/Subscription/Checkout';
 import ManageSubscription from './components/Accessibility/Subscription/ManageSubscription';
 
-// Import the TravelPlanner components
-import TripPlanner from './components/TravelPlanner/TripPlanner';
-import TripsList from './components/TravelPlanner/TripsList';
+// Import the TripTemplates component
 import TemplateManager from './components/TripTemplates/TemplateManager';
 
 // App Routes component with state for trip planning
@@ -152,7 +149,14 @@ function AppRoutes() {
       <PremiumFeaturesNotice />
       
       {/* Mobile Navigation for small screens */}
-      {deviceInfo.isMobile && <MobileNavigation />}
+      {deviceInfo.isMobile && (
+        <MobileNavigation 
+          view={view}
+          setView={setView}
+          onNewTrip={handleNewTrip}
+          onOpenSettings={handleOpenSettings}
+        />
+      )}
     </div>
   );
 }

@@ -352,8 +352,8 @@ function EnhancedPackingList({ tripTasks, setTripTasks, destination, startDate, 
       
       {/* Tips */}
       <div className="mt-6 p-3 bg-blue-50 rounded-lg text-sm">
-        <h3 className="font-medium text-blue-800 mb-1">{t('packing.tips.title')}</h3>
-        <ul className="space-y-1 text-blue-700">
+        <h3 className="font-medium text-black-800 mb-1">{t('packing.tips.title')}</h3>
+        <ul className="space-y-1 text-black-700">
           <li>• {t('packing.tips.weather')}</li>
           <li>• {t('packing.tips.rolling')}</li>
           <li>• {t('packing.tips.essentials')}</li>

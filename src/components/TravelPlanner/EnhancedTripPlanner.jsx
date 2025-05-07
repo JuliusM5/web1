@@ -107,6 +107,7 @@ function EnhancedTripPlanner({ showSettings, onOpenSettings, onCloseSettings, sh
   
   // View trip details
   function viewTrip(trip) {
+    console.log("viewTrip called in EnhancedTripPlanner for:", trip.destination);
     setSelectedTrip(trip);
     setView('tripDetails');
   }

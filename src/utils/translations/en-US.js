@@ -46,6 +46,21 @@ const enUS = {
     'nav.settings': 'Settings',
     'nav.templates': 'Templates',
     'nav.flights': 'Flights',
+    'nav.login': 'Login',
+    'nav.account': 'Account',
+    'nav.newTrip': 'New Trip',
+    'nav.newTripHint': 'Plan a new trip',
+    'nav.flightsHint': 'Search for cheap flights',
+    'nav.settingsHint': 'Manage your account settings',
+    'nav.templatesHint': 'Use templates for quick trip planning',
+    'nav.tripsHint': 'View and manage your trips',
+    'nav.dashboardHint': 'View your travel dashboard',
+    'nav.accountHint': 'Manage your account',
+    'nav.logout': 'Logout',
+    'nav.logoutHint': 'Logout from your account',
+    'nav.close': 'Close',
+    'nav.open': 'Open',
+  
     
     // Dashboard
     'dashboard.title': 'Dashboard',

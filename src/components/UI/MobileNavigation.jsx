@@ -1,23 +1,14 @@
-// Updated MobileNavigation.jsx with login/account button
+// src/components/UI/MobileNavigation.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../../utils/i18n';
-import { useAuth } from '../../hooks/useAuth'; // Add this import
+import { useAuth } from '../../hooks/useAuth';
 
-function MobileNavigation({ view, setView, onNewTrip, onOpenSettings, onOpenTemplates }) {
+function MobileNavigation({ view, setView, onNewTrip, onOpenSettings }) {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [showLabel, setShowLabel] = useState(true);
-  const { isAuthenticated } = useAuth(); // Get authentication state
-  
-  // Navigate to account or login based on auth state
-  const handleAccountOrLogin = () => {
-    if (isAuthenticated) {
-      navigate('/settings'); // Go to account settings if logged in
-    } else {
-      navigate('/login'); // Go to login page if not logged in
-    }
-  };
   
   // Hide labels when scrolling down
   useEffect(() => {
@@ -37,14 +28,28 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings, onOpenTemp
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
+  // Navigate to specific view
+  const handleNavigate = (newView, path) => {
+    if (setView) {
+      setView(newView);
+    }
+    navigate(path);
+  };
+  
+  // Handle account/login
+  const handleAccountOrLogin = () => {
+    if (isAuthenticated) {
+      navigate('/settings');
+    } else {
+      navigate('/login');
+    }
+  };
+  
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
       <div className="grid grid-cols-5 h-16">
         <button
-          onClick={() => {
-            if (setView) setView('dashboard');
-            navigate('/');
-          }}
+          onClick={() => handleNavigate('dashboard', '/')}
           className={`flex flex-col items-center justify-center ${
             view === 'dashboard' ? 'text-blue-600' : 'text-gray-600'
           }`}
@@ -56,10 +61,7 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings, onOpenTemp
         </button>
         
         <button
-          onClick={() => {
-            if (setView) setView('trips');
-            navigate('/trips');
-          }}
+          onClick={() => handleNavigate('trips', '/trips')}
           className={`flex flex-col items-center justify-center ${
             view === 'trips' ? 'text-blue-600' : 'text-gray-600'
           }`}
@@ -72,8 +74,11 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings, onOpenTemp
         
         <button
           onClick={() => {
-            if (onNewTrip) onNewTrip();
-            navigate('/planner');
+            if (onNewTrip) {
+              onNewTrip();
+            } else {
+              handleNavigate('planner', '/planner');
+            }
           }}
           className="relative flex flex-col items-center justify-center"
         >
@@ -86,10 +91,7 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings, onOpenTemp
         </button>
         
         <button
-          onClick={() => {
-            if (setView) setView('flights');
-            navigate('/flights');
-          }}
+          onClick={() => handleNavigate('flights', '/flights')}
           className={`flex flex-col items-center justify-center ${
             view === 'flights' ? 'text-blue-600' : 'text-gray-600'
           }`}
@@ -100,7 +102,6 @@ function MobileNavigation({ view, setView, onNewTrip, onOpenSettings, onOpenTemp
           {showLabel && <span className="text-xs mt-1">{t('nav.flights', 'Flights')}</span>}
         </button>
         
-        {/* Replace settings button with account/login button */}
         <button
           onClick={handleAccountOrLogin}
           className="flex flex-col items-center justify-center text-gray-600"
