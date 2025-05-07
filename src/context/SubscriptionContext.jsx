@@ -1,123 +1,139 @@
 // src/context/SubscriptionContext.jsx
 
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import subscriptionService from '../services/SubscriptionService';
+import AuthContext from './AuthContext';
 
-// Create the context
+// Create context
 export const SubscriptionContext = createContext(null);
 
 export const SubscriptionProvider = ({ children }) => {
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [subscriptionPlan, setSubscriptionPlan] = useState(null);
-  const [freeAlertCount, setFreeAlertCount] = useState(0);
-  const [expiryDate, setExpiryDate] = useState(null);
+  const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [plans, setPlans] = useState([]);
+  const [freeAlertsRemaining, setFreeAlertsRemaining] = useState(3);
   
-  // Load subscription state on mount
+  const { user, isAuthenticated } = useContext(AuthContext);
+  
+  // Load subscription status when user is authenticated
   useEffect(() => {
     const loadSubscription = async () => {
+      if (!isAuthenticated) {
+        setSubscription(null);
+        setLoading(false);
+        return;
+      }
+      
+      setLoading(true);
+      
       try {
-        const savedState = localStorage.getItem('user_subscription');
-        if (savedState) {
-          const state = JSON.parse(savedState);
-          setIsSubscribed(state.isSubscribed);
-          setSubscriptionPlan(state.plan);
-          setFreeAlertCount(state.freeAlertsUsed || 0);
-          setExpiryDate(state.expiryDate ? new Date(state.expiryDate) : null);
+        // Get current subscription
+        const status = await subscriptionService.getSubscriptionStatus();
+        setSubscription(status);
+        
+        // Get remaining free alerts
+        if (!status.isActive) {
+          const remainingAlerts = await subscriptionService.getRemainingFreeAlerts();
+          setFreeAlertsRemaining(remainingAlerts);
         }
+        
+        // Get available plans
+        setPlans(subscriptionService.getPlans());
       } catch (error) {
         console.error('Error loading subscription:', error);
+        setError('Failed to load subscription details');
       } finally {
         setLoading(false);
       }
     };
     
     loadSubscription();
-  }, []);
+  }, [isAuthenticated, user]);
   
-  const incrementFreeAlertCount = () => {
-    if (!isSubscribed && freeAlertCount < 3) {
-      const newCount = freeAlertCount + 1;
-      setFreeAlertCount(newCount);
-      
-      // Update localStorage
-      try {
-        const savedState = localStorage.getItem('user_subscription');
-        const state = savedState ? JSON.parse(savedState) : {};
-        state.freeAlertsUsed = newCount;
-        localStorage.setItem('user_subscription', JSON.stringify(state));
-      } catch (error) {
-        console.error('Error saving free alert count:', error);
-      }
-      
-      return true;
-    }
-    return false;
-  };
-  
-  const startSubscription = async (plan) => {
+  // Subscribe to a plan
+  const subscribe = async (planId, paymentMethod) => {
     setLoading(true);
+    setError(null);
+    
     try {
-      // Mock subscription process
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 30); // 30 day subscription
-      
-      setIsSubscribed(true);
-      setSubscriptionPlan(plan);
-      setExpiryDate(expiryDate);
-      
-      // Update localStorage
-      const state = {
-        isSubscribed: true,
-        plan: plan,
-        expiryDate: expiryDate.toISOString(),
-        freeAlertsUsed: freeAlertCount
-      };
-      localStorage.setItem('user_subscription', JSON.stringify(state));
-      
-      return { success: true };
+      const result = await subscriptionService.subscribe(planId, paymentMethod);
+      setSubscription(result);
+      return { success: true, subscription: result };
     } catch (error) {
+      console.error('Subscription error:', error);
+      setError(error.message || 'Failed to create subscription');
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
     }
   };
   
+  // Cancel subscription
   const cancelSubscription = async () => {
     setLoading(true);
+    setError(null);
+    
     try {
-      setIsSubscribed(false);
-      setSubscriptionPlan(null);
-      setExpiryDate(null);
-      
-      // Update localStorage
-      const state = {
-        isSubscribed: false,
-        plan: null,
-        expiryDate: null,
-        freeAlertsUsed: freeAlertCount
-      };
-      localStorage.setItem('user_subscription', JSON.stringify(state));
-      
-      return { success: true };
+      const result = await subscriptionService.cancelSubscription();
+      setSubscription(prev => ({ ...prev, isActive: false }));
+      return { success: true, result };
     } catch (error) {
+      console.error('Cancellation error:', error);
+      setError(error.message || 'Failed to cancel subscription');
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
     }
+  };
+  
+  // Use a free alert
+  const useFreeAlert = async () => {
+    if (subscription?.isActive) {
+      return { success: true, unlimited: true };
+    }
+    
+    if (freeAlertsRemaining <= 0) {
+      return { success: false, reason: 'no-alerts-remaining' };
+    }
+    
+    try {
+      const result = await subscriptionService.useFreeAlert();
+      setFreeAlertsRemaining(prev => Math.max(0, prev - 1));
+      return { success: true, remaining: freeAlertsRemaining - 1 };
+    } catch (error) {
+      console.error('Error using free alert:', error);
+      return { success: false, error: error.message };
+    }
+  };
+  
+  // Check if a user can create an alert (either subscribed or has free alerts)
+  const canCreateAlert = () => {
+    if (subscription?.isActive) {
+      return true;
+    }
+    
+    return freeAlertsRemaining > 0;
   };
   
   return (
-    <SubscriptionContext.Provider value={{
-      isSubscribed,
-      subscriptionPlan,
-      freeAlertCount,
-      expiryDate,
-      loading,
-      incrementFreeAlertCount,
-      startSubscription,
-      cancelSubscription
-    }}>
+    <SubscriptionContext.Provider
+      value={{
+        subscription,
+        loading,
+        error,
+        plans,
+        freeAlertsRemaining,
+        subscribe,
+        cancelSubscription,
+        useFreeAlert,
+        canCreateAlert,
+        isSubscribed: subscription?.isActive || false
+      }}
+    >
       {children}
     </SubscriptionContext.Provider>
   );
 };
+
+export default SubscriptionContext;

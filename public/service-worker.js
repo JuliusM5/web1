@@ -1,179 +1,346 @@
-// Cache Names
-const STATIC_CACHE_NAME = 'travelease-static-v1';
-const DYNAMIC_CACHE_NAME = 'travelease-dynamic-v1';
-const DATA_CACHE_NAME = 'travelease-data-v1';
+// public/service-worker.js
 
-// Resources to cache on install
+const CACHE_NAME = 'travel-planner-cache-v1';
+const DATA_CACHE_NAME = 'travel-planner-data-cache-v1';
+const FLIGHT_CACHE_NAME = 'flight-deals-cache-v1';
+
+// Assets to cache immediately when the service worker installs
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/static/js/main.chunk.js',
-  '/static/js/0.chunk.js',
-  '/static/js/bundle.js',
+  '/static/js/main.bundle.js',
+  '/static/css/main.css',
   '/manifest.json',
-  '/favicon.ico',
-  '/logo192.png',
-  '/logo512.png'
+  // Add other static assets like icons, fonts, etc.
 ];
 
-// Install event: Pre-cache static assets
-self.addEventListener('install', event => {
+// Install event - cache static assets
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE_NAME)
-      .then(cache => {
-        console.log('Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      })
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Opened cache');
+      return cache.addAll(STATIC_ASSETS);
+    })
   );
+  // Activate immediately
+  self.skipWaiting();
 });
 
-// Activate event: Clean up old caches
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME, DATA_CACHE_NAME];
-  
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            console.log('Deleting old cache:', cacheName);
+        cacheNames
+          .filter((cacheName) => {
+            return (
+              cacheName !== CACHE_NAME &&
+              cacheName !== DATA_CACHE_NAME &&
+              cacheName !== FLIGHT_CACHE_NAME
+            );
+          })
+          .map((cacheName) => {
+            console.log('Deleting outdated cache:', cacheName);
             return caches.delete(cacheName);
-          }
-        })
+          })
       );
-    }).then(() => self.clients.claim())
+    })
   );
+  // Claim clients immediately
+  return self.clients.claim();
 });
 
-// Helper function to check if a request is for an API
-const isApiRequest = (url) => {
-  return url.includes('/api/') || 
-         url.includes('openmeteo') || 
-         url.includes('nominatim') || 
-         url.includes('restcountries');
-};
+// Strategic fetch event handling
+self.addEventListener('fetch', (event) => {
+  // Skip cross-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
 
-// Helper function to check if a request is for a static asset
-const isStaticAsset = (url) => {
-  return url.includes('/static/') || 
-         url.includes('.png') || 
-         url.includes('.ico') || 
-         url.includes('.js') || 
-         url.includes('.css') || 
-         url.includes('.html');
-};
-
-// Fetch event: Network first for API, cache first for static assets
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  
-  // Handle API requests (network first with cache fallback)
-  if (isApiRequest(url.href)) {
+  // Handle API requests
+  if (event.request.url.includes('/api/')) {
     event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          // Clone the response before storing it in the cache
-          const responseToCache = response.clone();
+      caches.open(DATA_CACHE_NAME).then(async (cache) => {
+        try {
+          // Try network first
+          const response = await fetch(event.request);
+          // Cache successful responses
+          if (response.status === 200) {
+            cache.put(event.request, response.clone());
+          }
+          return response;
+        } catch (err) {
+          // Network failed, try cache
+          const cachedResponse = await cache.match(event.request);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
           
-          caches.open(DATA_CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
+          // For API requests that aren't in cache, return offline fallback
+          if (event.request.headers.get('accept').includes('application/json')) {
+            return new Response(
+              JSON.stringify({ 
+                offline: true, 
+                message: 'No internet connection. Data unavailable offline.' 
+              }),
+              {
+                headers: { 'Content-Type': 'application/json' }
+              }
+            );
+          }
+        }
+      })
+    );
+    return;
+  }
+
+  // Handle flight deal API requests specially
+  if (event.request.url.includes('skyscanner') || event.request.url.includes('/flights/')) {
+    event.respondWith(
+      caches.open(FLIGHT_CACHE_NAME).then(async (cache) => {
+        try {
+          // Check cache first for flight data to minimize API calls
+          const cachedResponse = await cache.match(event.request);
+          
+          // Return cached response if available and not expired
+          if (cachedResponse) {
+            // Parse the cached response to check timestamp
+            const data = await cachedResponse.clone().json();
+            const cacheTime = data._timestamp || 0;
+            
+            // If cache is less than 3 hours old, use it
+            if (Date.now() - cacheTime < 3 * 60 * 60 * 1000) {
+              return cachedResponse;
+            }
+          }
+          
+          // Fetch from network
+          const response = await fetch(event.request);
+          if (response.ok) {
+            // Add timestamp to cached data
+            const data = await response.clone().json();
+            data._timestamp = Date.now();
+            
+            // Create new response with timestamp
+            const timestampedResponse = new Response(
+              JSON.stringify(data),
+              {
+                headers: response.headers,
+                status: response.status,
+                statusText: response.statusText
+              }
+            );
+            
+            // Cache the timestamped response
+            cache.put(event.request, timestampedResponse.clone());
+            return timestampedResponse;
+          }
           
           return response;
-        })
-        .catch(() => {
-          // If network fails, try to get from cache
-          return caches.match(event.request);
-        })
-    );
-    return;
-  }
-  
-  // Handle static assets (cache first with network fallback)
-  if (isStaticAsset(url.href)) {
-    event.respondWith(
-      caches.match(event.request)
-        .then(response => {
-          return response || fetch(event.request)
-            .then(fetchResponse => {
-              // Add the new response to the dynamic cache
-              return caches.open(DYNAMIC_CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, fetchResponse.clone());
-                  return fetchResponse;
-                });
-            });
-        })
-    );
-    return;
-  }
-  
-  // Default strategy: Cache first, then network
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request)
-          .then(fetchResponse => {
-            // Add the new response to the dynamic cache
-            return caches.open(DYNAMIC_CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, fetchResponse.clone());
-                return fetchResponse;
-              });
-          });
+        } catch (err) {
+          // Network failed, use cache regardless of age
+          const cachedResponse = await cache.match(event.request);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          // Return a fallback for flight data
+          return new Response(
+            JSON.stringify({ 
+              offline: true, 
+              message: 'Flight data unavailable offline.' 
+            }),
+            {
+              headers: { 'Content-Type': 'application/json' }
+            }
+          );
+        }
       })
+    );
+    return;
+  }
+
+  // Handle static assets with cache-first strategy
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      if (response) {
+        return response;
+      }
+      
+      return fetch(event.request).then((response) => {
+        // Don't cache non-success responses
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+        
+        // Clone the response - one to return, one to cache
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
+        
+        return response;
+      }).catch(() => {
+        // For navigation requests, return the offline HTML page
+        if (event.request.mode === 'navigate') {
+          return caches.match('/offline.html');
+        }
+      });
+    })
   );
 });
 
-// Sync event for background synchronization
-self.addEventListener('sync', event => {
+// Background sync for saved changes while offline
+self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-trips') {
     event.waitUntil(syncTrips());
+  } else if (event.tag === 'sync-bookmarks') {
+    event.waitUntil(syncBookmarks());
   }
 });
 
-// Function to sync trip data with server (mock implementation)
-async function syncTrips() {
-  try {
-    // Get unsynchronized data from IndexedDB or localStorage
-    const unsynced = JSON.parse(localStorage.getItem('unsyncedChanges') || '[]');
-    
-    if (unsynced.length === 0) {
-      console.log('No unsynced changes to process');
-      return;
-    }
-    
-    console.log(`Syncing ${unsynced.length} unsynced changes`);
-    
-    // In a real implementation, this would send the data to a server
-    // For now, just mark as synced by clearing the unsynced changes
-    localStorage.setItem('unsyncedChanges', '[]');
-    
-    // Update the last sync time
-    localStorage.setItem('lastSyncTime', new Date().toISOString());
-    
-    // Notify clients if needed
-    self.clients.matchAll().then(clients => {
-      clients.forEach(client => {
-        client.postMessage({
-          type: 'SYNC_COMPLETED',
-          timestamp: new Date().toISOString()
+// Handle messages from clients
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'CLEAR_FLIGHT_CACHE') {
+    caches.open(FLIGHT_CACHE_NAME).then((cache) => {
+      cache.keys().then((keys) => {
+        keys.forEach((request) => {
+          cache.delete(request);
         });
       });
     });
-    
-    console.log('Sync completed successfully');
-  } catch (error) {
-    console.error('Sync failed:', error);
-    throw error; // This will cause the sync to retry later
+  } else if (event.data && event.data.type === 'CONFIGURE_CACHING') {
+    // Store configuration
+    self.cacheConfig = event.data.cacheConfig;
+  }
+});
+
+// Sync trips that were modified offline
+async function syncTrips() {
+  const db = await openIndexedDB();
+  const pendingChanges = await db.getAll('pendingChanges');
+  
+  for (const change of pendingChanges) {
+    try {
+      // Attempt to sync with server
+      const response = await fetch('/api/trips/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(change)
+      });
+      
+      if (response.ok) {
+        // Remove from pending changes if successful
+        await db.delete('pendingChanges', change.id);
+      }
+    } catch (error) {
+      // Keep pending changes if sync fails
+      console.error('Sync failed for change:', change);
+    }
   }
 }
 
-// Listen for messages from the client
-self.addEventListener('message', event => {
-  if (event.data.action === 'skipWaiting') {
-    self.skipWaiting();
+// Helper function to access IndexedDB
+function openIndexedDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('travelPlannerDB', 1);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains('trips')) {
+        db.createObjectStore('trips', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('pendingChanges')) {
+        db.createObjectStore('pendingChanges', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('flightBookmarks')) {
+        db.createObjectStore('flightBookmarks', { keyPath: 'id' });
+      }
+    };
+    
+    request.onsuccess = (event) => {
+      const db = event.target.result;
+      resolve({
+        getAll: (storeName) => {
+          return new Promise((resolve, reject) => {
+            const transaction = db.transaction(storeName, 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.getAll();
+            
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+          });
+        },
+        delete: (storeName, id) => {
+          return new Promise((resolve, reject) => {
+            const transaction = db.transaction(storeName, 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.delete(id);
+            
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+          });
+        }
+      });
+    };
+    
+    request.onerror = (event) => {
+      reject(event.target.error);
+    };
+  });
+}
+
+// Handle push notifications for flight deals
+self.addEventListener('push', (event) => {
+  if (event.data) {
+    const data = event.data.json();
+    
+    const options = {
+      body: data.body,
+      icon: '/logo192.png',
+      badge: '/badge.png',
+      data: data.url,
+      actions: [
+        {
+          action: 'view-deal',
+          title: 'View Deal'
+        },
+        {
+          action: 'dismiss',
+          title: 'Dismiss'
+        }
+      ]
+    };
+    
+    event.waitUntil(
+      self.registration.showNotification(data.title, options)
+    );
+  }
+});
+
+// Handle notification clicks
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  if (event.action === 'view-deal') {
+    event.waitUntil(
+      clients.matchAll({ type: 'window' }).then((clientList) => {
+        const url = event.notification.data;
+        
+        // If a window is already open, focus it and navigate
+        for (const client of clientList) {
+          if (client.url === url && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        
+        // Otherwise open a new window
+        if (clients.openWindow) {
+          return clients.openWindow(url);
+        }
+      })
+    );
   }
 });

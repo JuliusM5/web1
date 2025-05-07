@@ -1,251 +1,317 @@
-// src/services/SubscriptionService.js
+// src/services/subscriptionService.js
 
-import { storageKeys } from '../constants/storageKeys';
-import { deviceDetection } from '../utils/deviceDetection';
+import authService from './authService';
 
 class SubscriptionService {
   constructor() {
-    // Read subscription status from storage
-    this.loadSubscriptionState();
-    
-    // Platform-specific payment handlers
-    this.paymentHandlers = {
-      android: this.handleGooglePayment,
-      ios: this.handleApplePayment,
-      web: this.handleWebPayment
+    this.apiUrl = '/api/subscriptions';
+    this.plans = {
+      MONTHLY: {
+        id: 'monthly',
+        name: 'Monthly Plan',
+        price: 4.99,
+        interval: 'month',
+        features: [
+          'Unlimited flight alerts',
+          'No ads',
+          'Priority notifications',
+          'Price history graphs'
+        ]
+      },
+      YEARLY: {
+        id: 'yearly',
+        name: 'Annual Plan',
+        price: 39.99,
+        interval: 'year',
+        features: [
+          'Unlimited flight alerts',
+          'No ads',
+          'Priority notifications',
+          'Price history graphs',
+          'Personalized deal recommendations',
+          '2 months free'
+        ]
+      }
     };
   }
   
-  loadSubscriptionState() {
+  // Get available subscription plans
+  getPlans() {
+    return Object.values(this.plans);
+  }
+  
+  // Get current subscription status
+  async getSubscriptionStatus() {
     try {
-      const savedState = localStorage.getItem(storageKeys.USER_SUBSCRIPTION);
-      if (savedState) {
-        this.subscriptionState = JSON.parse(savedState);
-      } else {
-        this.subscriptionState = {
-          isSubscribed: false,
-          plan: null,
-          expiryDate: null,
-          paymentMethod: null,
-          subscriptionId: null
-        };
+      const response = await fetch(this.apiUrl, {
+        headers: authService.getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get subscription status');
       }
+      
+      return await response.json();
     } catch (error) {
-      console.error('Error loading subscription state:', error);
-      // Default state if error
-      this.subscriptionState = {
-        isSubscribed: false,
+      console.error('Error getting subscription status:', error);
+      
+      // Check if stored locally
+      const storedStatus = localStorage.getItem('subscription_status');
+      if (storedStatus) {
+        try {
+          return JSON.parse(storedStatus);
+        } catch (e) {
+          console.error('Error parsing stored subscription status:', e);
+        }
+      }
+      
+      // Default status if nothing available
+      return {
+        isActive: false,
         plan: null,
-        expiryDate: null,
-        paymentMethod: null,
-        subscriptionId: null
+        expiresAt: null,
+        freeAlertsUsed: 0,
+        freeAlertsLimit: 3
       };
     }
   }
   
-  saveSubscriptionState() {
+  // Start a new subscription
+  async subscribe(planId, paymentMethod) {
     try {
-      localStorage.setItem(storageKeys.USER_SUBSCRIPTION, JSON.stringify(this.subscriptionState));
-    } catch (error) {
-      console.error('Error saving subscription state:', error);
-    }
-  }
-  
-  getSubscriptionState() {
-    return { ...this.subscriptionState };
-  }
-  
-  // Check if a user still has free signals available (3 total)
-  checkFreeSignalAvailability(userId) {
-    try {
-      const userSignals = localStorage.getItem(`user_signals_${userId}`);
-      if (!userSignals) {
-        return { available: true, remaining: 3 };
-      }
-      
-      const signalData = JSON.parse(userSignals);
-      const remaining = Math.max(0, 3 - signalData.count);
-      
-      return { 
-        available: remaining > 0, 
-        remaining,
-        used: signalData.count 
-      };
-    } catch (error) {
-      console.error('Error checking free signal availability:', error);
-      return { available: false, remaining: 0, error: true };
-    }
-  }
-  
-  // Record usage of a free signal (increment count)
-  useFreeSignal(userId) {
-    if (this.subscriptionState.isSubscribed) {
-      return { success: true, unlimited: true }; // Subscribed users don't count
-    }
-    
-    try {
-      const userSignals = localStorage.getItem(`user_signals_${userId}`);
-      const signalData = userSignals ? JSON.parse(userSignals) : { 
-        count: 0, 
-        firstUsed: Date.now() 
-      };
-      
-      if (signalData.count >= 3) {
-        return { success: false, reason: 'No free signals remaining' };
-      }
-      
-      signalData.count++;
-      signalData.lastUsed = Date.now();
-      
-      localStorage.setItem(`user_signals_${userId}`, JSON.stringify(signalData));
-      
-      return { 
-        success: true, 
-        remaining: 3 - signalData.count,
-        used: signalData.count
-      };
-    } catch (error) {
-      console.error('Error using free signal:', error);
-      return { success: false, reason: 'Error processing request' };
-    }
-  }
-  
-  // Reset a user's free signals (when they subscribe)
-  resetFreeSignals(userId) {
-    try {
-      // When a user subscribes, we can reset their signal count
-      localStorage.removeItem(`user_signals_${userId}`);
-      return { success: true };
-    } catch (error) {
-      console.error('Error resetting free signals:', error);
-      return { success: false, error: error.message };
-    }
-  }
-  
-  async startSubscription(plan, userId) {
-    try {
-      // Detect platform for payment method
-      const deviceInfo = deviceDetection();
-      const platform = deviceInfo.isIOS ? 'ios' : 
-                      deviceInfo.isAndroid ? 'android' : 'web';
-                      
-      // Select payment handler based on platform
-      const handler = this.paymentHandlers[platform] || this.paymentHandlers.web;
-      const result = await handler(plan);
-      
-      if (result.success) {
-        // Reset free signals when user subscribes
-        this.resetFreeSignals(userId);
-        
-        // Update subscription state
-        this.subscriptionState.isSubscribed = true;
-        this.subscriptionState.plan = plan;
-        this.subscriptionState.expiryDate = result.expiryDate;
-        this.subscriptionState.paymentMethod = result.paymentMethod;
-        this.subscriptionState.subscriptionId = result.subscriptionId;
-        this.saveSubscriptionState();
-        
-        return { success: true, subscription: this.subscriptionState };
-      }
-      
-      return { success: false, error: result.error };
-    } catch (error) {
-      console.error('Error starting subscription:', error);
-      return { success: false, error: error.message };
-    }
-  }
-  
-  async cancelSubscription() {
-    // Logic to cancel subscription
-    try {
-      // API call to cancel subscription with payment provider
-      const result = await fetch('/api/subscription/cancel', {
+      const response = await fetch(`${this.apiUrl}/create`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: authService.getAuthHeaders(),
         body: JSON.stringify({
-          subscriptionId: this.subscriptionState.subscriptionId
+          planId,
+          paymentMethod
         })
       });
       
-      if (result.ok) {
-        // Update local state
-        this.subscriptionState.isSubscribed = false;
-        this.subscriptionState.plan = null;
-        this.subscriptionState.expiryDate = null;
-        this.subscriptionState.subscriptionId = null;
-        this.saveSubscriptionState();
-        return { success: true };
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Subscription creation failed');
       }
       
-      const data = await result.json();
-      return { success: false, error: data.message };
+      const subscriptionData = await response.json();
+      
+      // Store locally for offline access
+      localStorage.setItem('subscription_status', JSON.stringify({
+        isActive: true,
+        plan: subscriptionData.plan,
+        expiresAt: subscriptionData.expiresAt,
+        freeAlertsUsed: 0,
+        freeAlertsLimit: 3
+      }));
+      
+      return subscriptionData;
     } catch (error) {
-      console.error('Error canceling subscription:', error);
-      return { success: false, error: error.message };
+      console.error('Subscription creation error:', error);
+      throw error;
     }
   }
   
-  // Platform-specific payment handlers
-  async handleGooglePayment(plan) {
-    // Google Pay implementation
-    // For testing, we'll return a mock successful result
-    return {
-      success: true,
-      expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      paymentMethod: 'google_pay',
-      subscriptionId: 'gp_' + Math.random().toString(36).substring(2, 15)
-    };
+  // Cancel current subscription
+  async cancelSubscription() {
+    try {
+      const response = await fetch(`${this.apiUrl}/cancel`, {
+        method: 'POST',
+        headers: authService.getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Subscription cancellation failed');
+      }
+      
+      const result = await response.json();
+      
+      // Update local storage
+      const storedStatus = localStorage.getItem('subscription_status');
+      if (storedStatus) {
+        try {
+          const status = JSON.parse(storedStatus);
+          status.isActive = false;
+          localStorage.setItem('subscription_status', JSON.stringify(status));
+        } catch (e) {
+          console.error('Error updating stored subscription status:', e);
+        }
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Subscription cancellation error:', error);
+      throw error;
+    }
   }
   
-  async handleApplePayment(plan) {
-    // Apple Pay implementation
-    return {
-      success: true,
-      expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      paymentMethod: 'apple_pay',
-      subscriptionId: 'ap_' + Math.random().toString(36).substring(2, 15)
-    };
-  }
-  
-  async handleWebPayment(plan) {
-    // Stripe/PayPal implementation for web
-    return {
-      success: true,
-      expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      paymentMethod: 'stripe',
-      subscriptionId: 'st_' + Math.random().toString(36).substring(2, 15)
-    };
-  }
-  
-  // Check if subscription is about to expire
-  isSubscriptionExpiringSoon() {
-    if (!this.subscriptionState.isSubscribed || !this.subscriptionState.expiryDate) {
-      return false;
+  // Check if user has any free alerts remaining
+  async hasFreeAlertsRemaining() {
+    const status = await this.getSubscriptionStatus();
+    
+    if (status.isActive) {
+      return true; // Subscribed users have unlimited alerts
     }
     
-    const expiryDate = new Date(this.subscriptionState.expiryDate);
-    const now = new Date();
-    const daysUntilExpiry = Math.floor((expiryDate - now) / (1000 * 60 * 60 * 24));
-    
-    return daysUntilExpiry <= 3; // Consider "soon" as 3 days or less
+    return status.freeAlertsUsed < status.freeAlertsLimit;
   }
   
-  // Get subscription details for display
-  getFormattedSubscriptionDetails() {
-    if (!this.subscriptionState.isSubscribed) {
-      return { status: 'Not subscribed' };
+  // Use a free alert
+  async useFreeAlert() {
+    try {
+      const response = await fetch(`${this.apiUrl}/use-free-alert`, {
+        method: 'POST',
+        headers: authService.getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to use free alert');
+      }
+      
+      const result = await response.json();
+      
+      // Update local storage
+      const storedStatus = localStorage.getItem('subscription_status');
+      if (storedStatus) {
+        try {
+          const status = JSON.parse(storedStatus);
+          status.freeAlertsUsed = result.freeAlertsUsed;
+          localStorage.setItem('subscription_status', JSON.stringify(status));
+        } catch (e) {
+          console.error('Error updating stored free alerts:', e);
+        }
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error using free alert:', error);
+      
+      // Fallback to updating locally if offline
+      if (!navigator.onLine) {
+        const storedStatus = localStorage.getItem('subscription_status');
+        if (storedStatus) {
+          try {
+            const status = JSON.parse(storedStatus);
+            if (status.freeAlertsUsed < status.freeAlertsLimit) {
+              status.freeAlertsUsed++;
+              localStorage.setItem('subscription_status', JSON.stringify(status));
+              return {
+                success: true,
+                freeAlertsUsed: status.freeAlertsUsed,
+                freeAlertsLimit: status.freeAlertsLimit
+              };
+            }
+          } catch (e) {
+            console.error('Error updating stored free alerts:', e);
+          }
+        }
+      }
+      
+      throw error;
+    }
+  }
+  
+  // Get remaining free alerts count
+  async getRemainingFreeAlerts() {
+    const status = await this.getSubscriptionStatus();
+    
+    if (status.isActive) {
+      return Infinity; // Subscribed users have unlimited alerts
     }
     
-    const expiryDate = new Date(this.subscriptionState.expiryDate);
-    
+    return Math.max(0, status.freeAlertsLimit - status.freeAlertsUsed);
+  }
+  
+  // Get payment methods
+  async getPaymentMethods() {
+    try {
+      const response = await fetch(`${this.apiUrl}/payment-methods`, {
+        headers: authService.getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get payment methods');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting payment methods:', error);
+      return { paymentMethods: [] };
+    }
+  }
+  
+  // Add payment method
+  async addPaymentMethod(paymentDetails) {
+    try {
+      const response = await fetch(`${this.apiUrl}/payment-methods`, {
+        method: 'POST',
+        headers: authService.getAuthHeaders(),
+        body: JSON.stringify(paymentDetails)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to add payment method');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error adding payment method:', error);
+      throw error;
+    }
+  }
+  
+  // Get subscription history
+  async getSubscriptionHistory() {
+    try {
+      const response = await fetch(`${this.apiUrl}/history`, {
+        headers: authService.getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get subscription history');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting subscription history:', error);
+      return { history: [] };
+    }
+  }
+  
+  // Apply promo code
+  async applyPromoCode(code) {
+    try {
+      const response = await fetch(`${this.apiUrl}/promo`, {
+        method: 'POST',
+        headers: authService.getAuthHeaders(),
+        body: JSON.stringify({ code })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Invalid promo code');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error applying promo code:', error);
+      throw error;
+    }
+  }
+  
+  // Create mock payment method UI data for frontend
+  getMockPaymentUI() {
+    // In a real implementation, this would integrate with Stripe, PayPal, etc.
     return {
-      status: 'Active',
-      plan: this.subscriptionState.plan,
-      expiryDate: expiryDate.toLocaleDateString(),
-      daysRemaining: Math.max(0, Math.floor((expiryDate - new Date()) / (1000 * 60 * 60 * 24))),
-      paymentMethod: this.subscriptionState.paymentMethod
+      paymentMethods: [
+        { type: 'credit_card', name: 'Visa', iconUrl: '/icons/visa.svg' },
+        { type: 'credit_card', name: 'Mastercard', iconUrl: '/icons/mastercard.svg' },
+        { type: 'paypal', name: 'PayPal', iconUrl: '/icons/paypal.svg' },
+        { type: 'apple_pay', name: 'Apple Pay', iconUrl: '/icons/apple-pay.svg' },
+        { type: 'google_pay', name: 'Google Pay', iconUrl: '/icons/google-pay.svg' }
+      ]
     };
   }
 }

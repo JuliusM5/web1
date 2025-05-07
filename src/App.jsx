@@ -1,102 +1,177 @@
+// src/App.jsx
+
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import EnhancedTripPlanner from './components/TravelPlanner/EnhancedTripPlanner';
 import EnhancedOfflineIndicator from './components/Offline/EnhancedOfflineIndicator';
 import Header from './components/UI/Header';
-// Import the CheapFlightsDashboard component
 import CheapFlightsDashboard from './components/CheapFlights/CheapFlightsDashboard';
 import { SettingsProvider } from './context/SettingsContext';
-import { SubscriptionProvider } from './context/SubscriptionContext'; // Add this import
-import { AuthProvider } from './context/AuthContext'; // Add this import
+import { SubscriptionProvider } from './context/SubscriptionContext';
+import { AuthProvider } from './context/AuthContext';
 import { I18nProvider } from './utils/i18n';
 import AppSettingsWrapper from './components/UI/AppSettingsWrapper';
 import UserSettings from './components/Settings/UserSettings';
 import MobileNavigation from './components/UI/MobileNavigation';
 import { useDeviceDetection } from './utils/deviceDetection';
+import LoginForm from './components/Auth/LoginForm';
+import RegisterForm from './components/Auth/RegisterForm';
+import PrivateRoute from './components/Auth/PrivateRoute';
+import PremiumFeaturesNotice from './components/CheapFlights/PremiumFeaturesNotice';
+import NotificationSettings from './components/Settings/NotificationSettings';
 
-function App() {
-  // Add the state variable for the current view
-  const [view, setView] = useState('dashboard');
-  const [showSettings, setShowSettings] = useState(false);
+// Import the subscription components with the correct path
+import PlanCards from './components/Accessibility/Subscription/PlanCards';
+import Checkout from './components/Accessibility/Subscription/Checkout';
+import ManageSubscription from './components/Accessibility/Subscription/ManageSubscription';
+
+// Import the TravelPlanner components
+import TripPlanner from './components/TravelPlanner/TripPlanner';
+import TripsList from './components/TravelPlanner/TripsList';
+import TemplateManager from './components/TripTemplates/TemplateManager';
+
+// App Routes component with state for trip planning
+function AppRoutes() {
   const deviceInfo = useDeviceDetection();
-
-  // Handler for creating a new trip
-  const handleNewTrip = () => {
-    setView('planner');
-  };
-
-  // Handler for opening settings
+  const [showSettings, setShowSettings] = useState(false);
+  
+  // State for managing views
+  const [view, setView] = useState('dashboard');
+  
+  // Handle settings functions
   const handleOpenSettings = () => {
     setShowSettings(true);
   };
-
-  // Handler for closing settings
+  
   const handleCloseSettings = () => {
     setShowSettings(false);
   };
-
-  // Handler for opening templates
-  const handleOpenTemplates = () => {
-    // Handle templates functionality here
+  
+  // Trip planner specific functions
+  const handleNewTrip = () => {
+    setView('planner');
   };
-
+  
   return (
-    <AuthProvider>  {/* Add AuthProvider */}
-      <SubscriptionProvider>  {/* Add SubscriptionProvider */}
-        <SettingsProvider>
-          <I18nProvider>
-            <AppSettingsWrapper>
-              <div className="App">
-                {/* Pass the view state and setView function to Header */}
-                <Header 
-                  view={view} 
-                  setView={setView} 
-                  onNewTrip={handleNewTrip}
-                  onOpenSettings={handleOpenSettings}
-                  onOpenTemplates={handleOpenTemplates}
-                />
-                
-                {/* Always render EnhancedTripPlanner but only make it visible for relevant views */}
-                {(view === 'dashboard' || view === 'planner' || view === 'trips' || view === 'tripDetails') && (
-                  <EnhancedTripPlanner 
-                    showSettings={showSettings}
-                    onOpenSettings={handleOpenSettings}
-                    onCloseSettings={handleCloseSettings}
-                    showHeader={false}
-                    view={view}
-                    setView={setView}
-                  />
-                )}
-                
-                {/* Show CheapFlightsDashboard when view is 'flights' or 'cheapFlights' */}
-                {(view === 'flights' || view === 'cheapFlights') && (
-                  <CheapFlightsDashboard />
-                )}
-                
-                {/* Settings Modal */}
-                {showSettings && (
-                  <UserSettings onClose={handleCloseSettings} />
-                )}
-                
-                {/* Offline Indicator */}
-                <EnhancedOfflineIndicator />
-                
-                {/* Mobile Navigation for small screens */}
-                {deviceInfo.isMobile && (
-                  <MobileNavigation 
-                    view={view}
-                    setView={setView}
-                    onNewTrip={handleNewTrip}
-                    onOpenSettings={handleOpenSettings}
-                    onOpenTemplates={handleOpenTemplates}
-                  />
-                )}
-              </div>
-            </AppSettingsWrapper>
-          </I18nProvider>
-        </SettingsProvider>
-      </SubscriptionProvider>
-    </AuthProvider>
+    <div className="App">
+      {/* ONLY ONE HEADER - Pass it to the EnhancedTripPlanner with showHeader={false} */}
+      <Header 
+        view={view} 
+        setView={setView} 
+        onNewTrip={handleNewTrip}
+        onOpenSettings={handleOpenSettings}
+      />
+      
+      <Routes>
+        {/* Main app routes */}
+        <Route path="/" element={
+          <EnhancedTripPlanner 
+            showHeader={false}
+            view={view}
+            setView={setView}
+            showSettings={showSettings}
+            onOpenSettings={handleOpenSettings}
+            onCloseSettings={handleCloseSettings}
+          />
+        } />
+        <Route path="/flights" element={<CheapFlightsDashboard />} />
+        
+        {/* Travel Planner routes */}
+        <Route path="/planner" element={
+          <EnhancedTripPlanner 
+            showHeader={false}
+            view="planner"
+            setView={setView}
+            showSettings={showSettings}
+            onOpenSettings={handleOpenSettings}
+            onCloseSettings={handleCloseSettings}
+          />
+        } />
+        
+        <Route path="/trips" element={
+          <EnhancedTripPlanner 
+            showHeader={false}
+            view="trips"
+            setView={setView}
+            showSettings={showSettings}
+            onOpenSettings={handleOpenSettings}
+            onCloseSettings={handleCloseSettings}
+          />
+        } />
+        
+        <Route path="/templates" element={
+          <TemplateManager 
+            trips={[]} 
+            onUseTemplate={() => {}}
+            onClose={() => window.history.back()}
+          />
+        } />
+        
+        {/* Auth routes */}
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<RegisterForm />} />
+        
+        {/* Protected routes */}
+        <Route path="/settings" element={
+          <PrivateRoute>
+            <UserSettings />
+          </PrivateRoute>
+        } />
+        
+        <Route path="/notification-settings" element={
+          <PrivateRoute>
+            <NotificationSettings />
+          </PrivateRoute>
+        } />
+        
+        {/* Subscription routes */}
+        <Route path="/subscription/plans" element={
+          <PrivateRoute>
+            <PlanCards />
+          </PrivateRoute>
+        } />
+        
+        <Route path="/subscription/checkout/:planId" element={
+          <PrivateRoute>
+            <Checkout />
+          </PrivateRoute>
+        } />
+        
+        <Route path="/subscription/manage" element={
+          <PrivateRoute>
+            <ManageSubscription />
+          </PrivateRoute>
+        } />
+      </Routes>
+      
+      {/* Offline indicator */}
+      <EnhancedOfflineIndicator />
+      
+      {/* Premium features notice for free users */}
+      <PremiumFeaturesNotice />
+      
+      {/* Mobile Navigation for small screens */}
+      {deviceInfo.isMobile && <MobileNavigation />}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <SubscriptionProvider>
+          <SettingsProvider>
+            <I18nProvider>
+              <AppSettingsWrapper>
+                <AppRoutes />
+              </AppSettingsWrapper>
+            </I18nProvider>
+          </SettingsProvider>
+        </SubscriptionProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

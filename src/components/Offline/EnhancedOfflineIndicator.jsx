@@ -1,28 +1,45 @@
+// src/components/Offline/EnhancedOfflineIndicator.jsx
+
 import React, { useState, useEffect } from 'react';
 import { triggerSync } from '../../serviceWorkerRegistration';
+import offlineDataService from '../../services/offlineDataService';
 
 function EnhancedOfflineIndicator() {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [showIndicator, setShowIndicator] = useState(false);
-  const [lastSynced, setLastSynced] = useState(localStorage.getItem('lastSyncTime') || null);
-  const [unsyncedChanges, setUnsyncedChanges] = useState(0);
-  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   
-  // Update online/offline status
+  // Check for pending changes
+  useEffect(() => {
+    const checkPendingChanges = async () => {
+      try {
+        const changes = await offlineDataService.getPendingChanges();
+        setHasPendingChanges(changes.length > 0);
+      } catch (error) {
+        console.error('Error checking pending changes:', error);
+      }
+    };
+    
+    // Check on mount
+    checkPendingChanges();
+    
+    // Set up interval to check regularly
+    const interval = setInterval(checkPendingChanges, 30000); // Check every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Monitor online/offline status
   useEffect(() => {
     const handleOnline = () => {
       setIsOffline(false);
-      setShowIndicator(true);
-      
-      // Trigger sync when coming back online
-      triggerSync();
-      
-      // Hide the indicator after 5 seconds when going back online
-      const timer = setTimeout(() => {
-        setShowIndicator(false);
-      }, 5000);
-      
-      return () => clearTimeout(timer);
+      // If we came back online and have pending changes, show the indicator
+      offlineDataService.getPendingChanges().then(changes => {
+        const hasPending = changes.length > 0;
+        setHasPendingChanges(hasPending);
+        setShowIndicator(hasPending);
+      });
     };
     
     const handleOffline = () => {
@@ -30,230 +47,104 @@ function EnhancedOfflineIndicator() {
       setShowIndicator(true);
     };
     
-    // Handle service worker updates
-    const handleServiceWorkerUpdated = () => {
-      setShowUpdatePrompt(true);
-    };
-    
-    // Handle service worker installation
-    const handleServiceWorkerInstalled = () => {
-      // Show a notification that the app is now available offline
-      if ('serviceWorker' in navigator) {
-        const notification = {
-          title: 'TravelEase',
-          options: {
-            body: 'The app is now available for offline use.',
-            icon: '/logo192.png',
-            badge: '/favicon.ico'
-          }
-        };
-        
-        // Check if notification permission is granted
-        if (Notification.permission === 'granted') {
-          navigator.serviceWorker.ready.then(registration => {
-            registration.showNotification(notification.title, notification.options);
-          });
-        }
-      }
-    };
-    
-    // Check for unsynced changes
-    const checkUnsyncedChanges = () => {
-      const unsynced = JSON.parse(localStorage.getItem('unsyncedChanges') || '[]');
-      setUnsyncedChanges(unsynced.length);
-    };
-    
-    // Listen for messages from service worker
-    const handleServiceWorkerMessage = (event) => {
-      if (event.data.type === 'SYNC_COMPLETED') {
-        setLastSynced(event.data.timestamp);
-        checkUnsyncedChanges();
-      }
-    };
-    
-    // Set initial state
-    setIsOffline(!navigator.onLine);
-    checkUnsyncedChanges();
-    
-    if (!navigator.onLine && unsyncedChanges > 0) {
-      setShowIndicator(true);
-    }
-    
-    // Add event listeners
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    window.addEventListener('serviceWorkerUpdated', handleServiceWorkerUpdated);
-    window.addEventListener('serviceWorkerInstalled', handleServiceWorkerInstalled);
     
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
-    }
-    
-    // Set up interval to check unsynced changes
-    const interval = setInterval(checkUnsyncedChanges, 10000); // Check every 10 seconds
-    
-    // Clean up event listeners
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('serviceWorkerUpdated', handleServiceWorkerUpdated);
-      window.removeEventListener('serviceWorkerInstalled', handleServiceWorkerInstalled);
-      
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
-      }
-      
-      clearInterval(interval);
     };
-  }, [unsyncedChanges]);
+  }, []);
   
-  // Format last synced time
-  const formatLastSynced = () => {
-    if (!lastSynced) return 'Never';
+  // Hide indicator after a delay if online
+  useEffect(() => {
+    let timeoutId;
     
-    try {
-      const date = new Date(lastSynced);
-      return date.toLocaleString();
-    } catch (error) {
-      return 'Unknown';
-    }
-  };
-  
-  // Handle refresh for service worker update
-  const handleRefreshApp = () => {
-    // Skip waiting and reload to activate new service worker
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
+    if (!isOffline && !hasPendingChanges) {
+      timeoutId = setTimeout(() => {
+        setShowIndicator(false);
+      }, 3000);
     }
     
-    // Reload the page
-    window.location.reload();
-  };
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [isOffline, hasPendingChanges]);
   
   // Handle manual sync
-  const handleManualSync = () => {
-    if (navigator.onLine) {
-      triggerSync();
+  const handleSync = async () => {
+    if (isOffline) {
+      return; // Can't sync while offline
+    }
+    
+    setIsSyncing(true);
+    
+    try {
+      // Try to trigger service worker sync
+      await triggerSync();
       
-      // Show brief message
-      const syncMessage = document.getElementById('sync-message');
-      if (syncMessage) {
-        syncMessage.classList.remove('opacity-0');
-        syncMessage.classList.add('opacity-100');
+      // Fallback to manual sync if service worker sync fails
+      const result = await offlineDataService.syncChanges();
+      
+      if (result.success) {
+        // Check if we still have pending changes
+        const changes = await offlineDataService.getPendingChanges();
+        setHasPendingChanges(changes.length > 0);
         
-        setTimeout(() => {
-          syncMessage.classList.remove('opacity-100');
-          syncMessage.classList.add('opacity-0');
-        }, 3000);
+        if (changes.length === 0) {
+          // Hide after successful sync
+          setTimeout(() => {
+            setShowIndicator(false);
+          }, 3000);
+        }
       }
+    } catch (error) {
+      console.error('Error syncing changes:', error);
+    } finally {
+      setIsSyncing(false);
     }
   };
   
+  if (!showIndicator) {
+    return null;
+  }
+  
   return (
-    <>
-      {/* Offline/Online Indicator */}
-      {showIndicator && (
-        <div className={`fixed bottom-4 left-4 rounded-lg shadow-lg z-50 p-4 transition-all duration-300 ${
-          isOffline ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-        }`}>
-          <div className="flex items-center">
-            <div className={`w-3 h-3 rounded-full mr-2 ${
-              isOffline ? 'bg-red-200 animate-pulse' : 'bg-green-200'
-            }`}></div>
-            <p className="font-medium">
-              {isOffline ? 'You are offline' : 'Connected'}
-            </p>
-            {!isOffline && (
-              <button
-                onClick={() => setShowIndicator(false)}
-                className="ml-4 text-white hover:text-gray-200"
-                aria-label="Close"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            )}
-          </div>
-          
-          <div className="text-xs mt-1">
-            {isOffline ? (
-              <div>
-                <p>
-                  Changes will be saved locally and synchronized when you reconnect.
-                  <br />
-                  Last synced: {formatLastSynced()}
-                </p>
-                {unsyncedChanges > 0 && (
-                  <p className="mt-1 font-bold">
-                    {unsyncedChanges} change{unsyncedChanges !== 1 ? 's' : ''} pending synchronization
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div>
-                <p>Your data has been synchronized.</p>
-                {unsyncedChanges > 0 && (
-                  <div className="flex items-center mt-1">
-                    <p className="font-bold mr-2">
-                      {unsyncedChanges} change{unsyncedChanges !== 1 ? 's' : ''} pending synchronization
-                    </p>
-                    <button
-                      onClick={handleManualSync}
-                      className="bg-white text-green-600 px-2 py-0.5 rounded text-xs hover:bg-green-100"
-                    >
-                      Sync Now
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+    <div className={`fixed bottom-5 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-full shadow-lg ${
+      isOffline ? 'bg-red-500 text-white' : (hasPendingChanges ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white')
+    }`}>
+      {isOffline ? (
+        <div className="flex items-center">
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L8 10.586m4.95-2.12a3 3 0 10-4.243 4.243m4.243-4.243L18 3.222M10.344 9.879l1.414 1.414" />
+          </svg>
+          <span>You're offline. Changes will be saved locally.</span>
         </div>
-      )}
-      
-      {/* Update Prompt */}
-      {showUpdatePrompt && (
-        <div className="fixed bottom-4 right-4 rounded-lg shadow-lg z-50 p-4 bg-blue-600 text-white max-w-sm">
-          <div className="flex justify-between items-start">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <p className="font-medium">Update Available</p>
-            </div>
-            <button
-              onClick={() => setShowUpdatePrompt(false)}
-              className="text-white hover:text-gray-200"
-              aria-label="Close"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-          </div>
-          
-          <p className="text-sm mt-2">
-            A new version of TravelEase is available. Refresh to update.
-          </p>
-          
-          <button
-            onClick={handleRefreshApp}
-            className="mt-3 bg-white text-blue-600 px-3 py-1 rounded hover:bg-blue-50 w-full"
+      ) : hasPendingChanges ? (
+        <div className="flex items-center">
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>Changes pending to sync.</span>
+          <button 
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="ml-2 px-2 py-1 bg-white text-yellow-500 rounded-md text-sm font-medium"
           >
-            Update Now
+            {isSyncing ? 'Syncing...' : 'Sync Now'}
           </button>
         </div>
+      ) : (
+        <div className="flex items-center">
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>You're back online!</span>
+        </div>
       )}
-      
-      {/* Sync Message (hidden by default) */}
-      <div 
-        id="sync-message" 
-        className="fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded shadow-lg z-50 opacity-0 transition-opacity duration-300"
-      >
-        Synchronizing data...
-      </div>
-    </>
+    </div>
   );
 }
 
