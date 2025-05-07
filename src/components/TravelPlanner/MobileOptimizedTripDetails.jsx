@@ -65,7 +65,7 @@ const TabNavigation = memo(({ activeTab, setActiveTab }) => (
 ));
 
 const ActionsMenu = memo(({ showActionsMenu, editTrip, trip, handleExportPDF }) => {
-  if (!showActionsMenu) return null;
+  if (!showActionsMenu || !trip) return null;
   
   return (
     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
@@ -162,6 +162,15 @@ function ImprovedMobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEm
   
   // Render tab content
   const renderTabContent = () => {
+    // First check if trip exists
+    if (!trip) {
+      return (
+        <div className="bg-gray-50 p-4 rounded-lg text-center">
+          <p className="text-gray-500">Trip data not available</p>
+        </div>
+      );
+    }
+    
     switch (activeTab) {
       case 'overview':
         return <OverviewTab trip={trip} formatMobileDate={formatMobileDate} userSettings={userSettings} setActiveTab={setActiveTab} />;

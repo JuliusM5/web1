@@ -1,8 +1,11 @@
+// src/components/Dashboard/MobileOptimizedDashboard.jsx
+
 import React, { useState } from 'react';
 import { calculateDuration, exportTripToPDF } from '../../utils/helpers';
 import { useAppSettings } from '../../utils/useAppSettings';
 
 function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, setShareEmail }) {
+  // Always call hooks at the top level, never conditionally
   const [activeTab, setActiveTab] = useState('overview');
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const { currency, date: formatDate } = useAppSettings();
@@ -17,22 +20,39 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
   
   // Handle PDF export
   const handleExportPDF = () => {
+    if (!trip) return;
     exportTripToPDF(trip);
     setShowActionsMenu(false);
   };
   
   // Handle email sharing
   const handleEmailShare = () => {
-    if (!shareEmail) {
+    if (!shareEmail || !trip) {
       alert('Please enter an email address');
       return;
     }
     
     // In a real implementation, this would send an email
-    alert(`Trip details for ${trip.destination} sent to ${shareEmail}`);
+    alert(`Trip details for ${trip?.destination || 'Unknown Destination'} sent to ${shareEmail}`);
     setShareEmail('');
     setShowActionsMenu(false);
   };
+  
+  // Now we can have our conditional return after all hooks are called
+  if (!trip) {
+    return (
+      <div className="px-4 max-w-md mx-auto py-8 text-center">
+        <h2 className="text-xl font-bold text-gray-800 mb-3">Trip Not Found</h2>
+        <p className="text-gray-600 mb-4">The trip information is not available.</p>
+        <button
+          onClick={closeTrip}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
   
   return (
     <div className="px-4 max-w-md mx-auto pb-20">
@@ -83,8 +103,8 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
                     onClick={() => {
                       if (navigator.share) {
                         navigator.share({
-                          title: `Trip to ${trip.destination}`,
-                          text: `Check out my trip to ${trip.destination} from ${formatDate(trip.startDate)} to ${formatDate(trip.endDate)}!`,
+                          title: `Trip to ${trip?.destination || 'Unknown Destination'}`,
+                          text: `Check out my trip to ${trip?.destination || 'Unknown Destination'} from ${formatDate(trip?.startDate || new Date())} to ${formatDate(trip?.endDate || new Date())}!`,
                           url: window.location.href
                         });
                       } else {
@@ -102,10 +122,10 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
           </div>
         </div>
         
-        <h2 className="text-2xl font-bold text-gray-800">{trip.destination}</h2>
+        <h2 className="text-2xl font-bold text-gray-800">{trip?.destination || 'No Destination'}</h2>
         <p className="text-gray-600">
-          {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
-          <span className="ml-2 text-sm">({calculateDuration(trip.startDate, trip.endDate)} days)</span>
+          {formatDate(trip?.startDate)} - {formatDate(trip?.endDate)}
+          <span className="ml-2 text-sm">({calculateDuration(trip?.startDate, trip?.endDate)} days)</span>
         </p>
         
         {/* Tab Navigation */}
@@ -172,24 +192,24 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-blue-100 p-3 rounded-lg text-center">
                 <p className="text-xs text-blue-800">Duration</p>
-                <p className="text-xl font-bold text-blue-800">{calculateDuration(trip.startDate, trip.endDate)} days</p>
+                <p className="text-xl font-bold text-blue-800">{calculateDuration(trip?.startDate, trip?.endDate)} days</p>
               </div>
               <div className="bg-green-100 p-3 rounded-lg text-center">
                 <p className="text-xs text-green-800">Budget</p>
-                <p className="text-xl font-bold text-green-800">{currency(trip.budget)}</p>
+                <p className="text-xl font-bold text-green-800">{currency(trip?.budget)}</p>
               </div>
               <div className="bg-purple-100 p-3 rounded-lg text-center">
                 <p className="text-xs text-purple-800">Tasks</p>
-                <p className="text-xl font-bold text-purple-800">{trip.tasks?.length || 0}</p>
+                <p className="text-xl font-bold text-purple-800">{trip?.tasks?.length || 0}</p>
               </div>
               <div className="bg-orange-100 p-3 rounded-lg text-center">
                 <p className="text-xs text-orange-800">Notes</p>
-                <p className="text-xl font-bold text-orange-800">{trip.notes?.length || 0}</p>
+                <p className="text-xl font-bold text-orange-800">{trip?.notes?.length || 0}</p>
               </div>
             </div>
             
             {/* Local Info */}
-            {trip.info && (
+            {trip?.info && (
               <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
                 <h3 className="font-semibold text-gray-800 mb-2">Local Information</h3>
                 <div className="space-y-2 text-sm">
@@ -197,21 +217,21 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
                     <span className="text-red-500 mr-2">🚨</span>
                     <div>
                       <p className="font-medium">Emergency</p>
-                      <p>{trip.info.emergency}</p>
+                      <p>{trip?.info?.emergency}</p>
                     </div>
                   </div>
                   <div className="flex items-start">
                     <span className="text-green-500 mr-2">💰</span>
                     <div>
                       <p className="font-medium">Currency</p>
-                      <p>{trip.info.currency}</p>
+                      <p>{trip?.info?.currency}</p>
                     </div>
                   </div>
                   <div className="flex items-start">
                     <span className="text-blue-500 mr-2">🗣️</span>
                     <div>
                       <p className="font-medium">Language</p>
-                      <p>{trip.info.language}</p>
+                      <p>{trip?.info?.language}</p>
                     </div>
                   </div>
                 </div>
@@ -219,7 +239,7 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
             )}
             
             {/* Transportation */}
-            {trip.transports && trip.transports.length > 0 && (
+            {trip?.transports && trip.transports.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-semibold text-gray-800">Transportation</h3>
@@ -251,7 +271,7 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
             )}
             
             {/* Tasks Quick View */}
-            {trip.tasks && trip.tasks.length > 0 && (
+            {trip?.tasks && trip.tasks.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-semibold text-gray-800">Tasks</h3>
@@ -281,7 +301,7 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
             )}
             
             {/* Photos Quick View */}
-            {trip.photos && trip.photos.length > 0 && (
+            {trip?.photos && trip.photos.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
                 <h3 className="font-semibold text-gray-800 mb-2">Photos</h3>
                 <div className="flex overflow-x-auto -mx-1 px-1 pb-2 hide-scrollbar">
@@ -310,7 +330,7 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
             <h3 className="font-semibold text-gray-800">Trip Itinerary</h3>
             
             {/* Transportation */}
-            {trip.transports && trip.transports.length > 0 ? (
+            {trip?.transports && trip.transports.length > 0 ? (
               <div className="space-y-3">
                 <h4 className="text-sm text-gray-600">Transportation</h4>
                 {trip.transports.map(t => (
@@ -347,7 +367,7 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
             {/* Daily Schedule */}
             <div className="mt-4">
               <h4 className="text-sm text-gray-600 mb-2">Day-by-Day Schedule</h4>
-              {trip.tasks && trip.tasks.filter(task => task.date).length > 0 ? (
+              {trip?.tasks && trip.tasks.filter(task => task.date).length > 0 ? (
                 <div className="space-y-4">
                   {/* Group tasks by date */}
                   {Object.entries(
@@ -410,11 +430,11 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
             <div className="flex justify-between items-center">
               <h3 className="font-semibold text-gray-800">Trip Tasks</h3>
               <div className="text-sm text-gray-600">
-                {trip.tasks?.filter(t => t.completed).length || 0}/{trip.tasks?.length || 0} completed
+                {trip?.tasks?.filter(t => t.completed).length || 0}/{trip?.tasks?.length || 0} completed
               </div>
             </div>
             
-            {trip.tasks && trip.tasks.length > 0 ? (
+            {trip?.tasks && trip.tasks.length > 0 ? (
               <div>
                 {/* Task Progress */}
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
@@ -487,14 +507,14 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
             {/* Budget Overview */}
             <div className="bg-blue-100 p-4 rounded-lg text-center">
               <p className="text-sm text-blue-600">Total Budget</p>
-              <p className="text-3xl font-bold text-blue-800">{currency(trip.budget)}</p>
+              <p className="text-3xl font-bold text-blue-800">{currency(trip?.budget)}</p>
               <p className="text-sm text-blue-600 mt-1">
-                {currency(trip.budget / calculateDuration(trip.startDate, trip.endDate))} per day
+                {currency(trip?.budget / calculateDuration(trip?.startDate, trip?.endDate))} per day
               </p>
             </div>
             
             {/* Budget Breakdown */}
-            {trip.budgetBreakdown ? (
+            {trip?.budgetBreakdown ? (
               <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
                 <h4 className="font-medium mb-3">Budget Breakdown</h4>
                 <div className="space-y-2">
@@ -529,7 +549,7 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
             )}
             
             {/* Expenses */}
-            {trip.expenses && trip.expenses.length > 0 && (
+            {trip?.expenses && trip.expenses.length > 0 && (
               <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
                 <h4 className="font-medium mb-3">Expenses</h4>
                 <div className="space-y-2">
@@ -576,7 +596,7 @@ function MobileOptimizedTripDetails({ trip, editTrip, closeTrip, shareEmail, set
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-800">Notes</h3>
             
-            {trip.notes && trip.notes.length > 0 ? (
+            {trip?.notes && trip.notes.length > 0 ? (
               <div className="space-y-3">
                 {trip.notes.map(note => (
                   <div key={note.id} className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">

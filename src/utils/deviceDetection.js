@@ -6,7 +6,18 @@
  */
 
 import { useState, useEffect } from 'react';
-
+export const deviceDetection = () => {
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+  
+  return {
+    isMobile: /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(userAgent),
+    isAndroid: /Android/i.test(userAgent),
+    isIOS: /iPhone|iPad|iPod/i.test(userAgent) && !window.MSStream,
+    isTablet: (/iPad/i.test(userAgent) || 
+              (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent))),
+    isDesktop: !(/iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(userAgent))
+  };
+}; 
 /**
  * Device type constants
  */

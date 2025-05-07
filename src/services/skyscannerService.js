@@ -1,166 +1,135 @@
 // src/services/skyscannerService.js
 
-// This is a service to handle interactions with the Skyscanner API
-// You'll need to replace these with your actual Skyscanner API credentials
-const SKYSCANNER_API_KEY = 'YOUR_SKYSCANNER_API_KEY';
-const SKYSCANNER_API_URL = 'https://skyscanner-api.p.rapidapi.com/v3';
-
-class SkyscannerService {
-  constructor() {
-    this.headers = {
-      'X-RapidAPI-Key': SKYSCANNER_API_KEY,
-      'X-RapidAPI-Host': 'skyscanner-api.p.rapidapi.com',
-      'Content-Type': 'application/json'
-    };
-  }
-
-  // Get cheap flights from a specific location
-  async getCheapFlights(originCode, options = {}) {
-    try {
-      // Default parameters
-      const params = {
-        market: options.market || 'LT',
-        locale: options.locale || 'en-US',
-        currency: options.currency || 'EUR',
-        queryLegs: [
-          {
-            originPlaceId: { iata: originCode },
-            destinationPlaceId: { anywhere: true },
-            date: {
-              year: options.year || new Date().getFullYear(),
-              month: options.month || new Date().getMonth() + 1,
-              day: options.day || new Date().getDate() + 7
+// Mock implementation for testing without real API
+const skyscannerService = {
+  // Mock cache
+  cache: new Map(),
+  
+  // Search for one-way flights
+  async searchOneWayFlights(origin, destination, originId, destinationId, date = null) {
+    const cacheKey = `oneway-${origin}-${destination}-${date || 'any'}`;
+    
+    // Check cache
+    const cachedResult = this.getFromCache(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+    
+    // Mock API response
+    const mockData = {
+      itineraries: [
+        {
+          price: { amount: 299.99 },
+          legs: [{
+            departure: new Date().toISOString(),
+            arrival: new Date(Date.now() + 7200000).toISOString(), // 2 hours later
+            durationInMinutes: 120,
+            carriers: {
+              marketing: [{ name: 'Example Airlines' }]
             }
-          }
-        ],
-        cabinClass: options.cabinClass || 'CABIN_CLASS_ECONOMY',
-        adults: options.adults || 1,
-        childrenAges: options.childrenAges || []
-      };
-
-      const response = await fetch(`${SKYSCANNER_API_URL}/flights/live/search/create`, {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify(params)
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return this.processFlightData(data);
-    } catch (error) {
-      console.error('Error fetching cheap flights:', error);
-      throw error;
-    }
-  }
-
-  // Get airport information by city name
-  async getAirportByCity(cityName) {
-    try {
-      const response = await fetch(`${SKYSCANNER_API_URL}/autosuggest/flights`, {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({
-          query: cityName,
-          market: 'LT',
-          locale: 'en-US'
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.places || [];
-    } catch (error) {
-      console.error('Error fetching airport information:', error);
-      throw error;
-    }
-  }
-
-  // Process and filter flight data to find deals
-  processFlightData(data) {
-    // Here you would implement your logic to determine what constitutes a "deal"
-    // For example, flights that are X% below average price for that route
-    
-    // This is a placeholder implementation
-    const deals = [];
-    
-    if (data.itineraries && data.legs) {
-      // Extract price information
-      data.itineraries.forEach(itinerary => {
-        const priceOptions = itinerary.pricingOptions || [];
-        
-        if (priceOptions.length > 0) {
-          // Get the cheapest price option
-          const cheapestOption = priceOptions.reduce((min, option) => 
-            option.price.amount < min.price.amount ? option : min, priceOptions[0]);
-          
-          // Find the associated legs
-          const outboundLeg = data.legs.find(leg => leg.id === itinerary.legIds[0]);
-          const inboundLeg = itinerary.legIds[1] ? data.legs.find(leg => leg.id === itinerary.legIds[1]) : null;
-          
-          if (outboundLeg) {
-            // Calculate if this is a deal (e.g., below average price)
-            // This would require historical data or market averages in a real implementation
-            const isDeal = Math.random() > 0.5; // Placeholder - replace with real logic
-            
-            if (isDeal) {
-              deals.push({
-                id: itinerary.id,
-                from: outboundLeg.origin.name,
-                to: outboundLeg.destination.name,
-                departure: outboundLeg.departure,
-                return: inboundLeg ? inboundLeg.departure : null,
-                price: cheapestOption.price.amount,
-                currency: cheapestOption.price.unit,
-                airline: outboundLeg.carriers && outboundLeg.carriers.marketing && outboundLeg.carriers.marketing[0] ? 
-                         outboundLeg.carriers.marketing[0].name : 'Unknown',
-                discount: `${Math.floor(Math.random() * 30 + 20)}% off`, // Placeholder
-                lastMinute: new Date(outboundLeg.departure) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-              });
+          }]
+        },
+        {
+          price: { amount: 349.99 },
+          legs: [{
+            departure: new Date(Date.now() + 3600000).toISOString(), // 1 hour later
+            arrival: new Date(Date.now() + 10800000).toISOString(), // 3 hours later
+            durationInMinutes: 120,
+            carriers: {
+              marketing: [{ name: 'Budget Air' }]
             }
-          }
+          }]
+        },
+        {
+          price: { amount: 199.99 },
+          legs: [{
+            departure: new Date(Date.now() + 7200000).toISOString(), // 2 hours later
+            arrival: new Date(Date.now() + 14400000).toISOString(), // 4 hours later
+            durationInMinutes: 120,
+            carriers: {
+              marketing: [{ name: 'Discount Flights' }]
+            }
+          }]
         }
-      });
-    }
-    
-    return deals;
-  }
-
-  // Monitor for deals and notify users
-  async setupDealMonitor(userLocation, userPreferences, callback) {
-    // This would typically be implemented as a background job/cron task
-    // For this example, we'll simulate with a setInterval
-    
-    const airportInfo = await this.getAirportByCity(userLocation);
-    
-    if (!airportInfo || airportInfo.length === 0) {
-      throw new Error(`Could not find airport information for ${userLocation}`);
-    }
-    
-    const originCode = airportInfo[0].iata;
-    
-    // Monitor for deals daily
-    const intervalId = setInterval(async () => {
-      try {
-        const deals = await this.getCheapFlights(originCode, userPreferences);
-        
-        if (deals && deals.length > 0) {
-          callback(deals);
-        }
-      } catch (error) {
-        console.error('Error in deal monitoring:', error);
-      }
-    }, 24 * 60 * 60 * 1000); // Check once per day
-    
-    return {
-      stop: () => clearInterval(intervalId)
+      ]
     };
+    
+    // Add to cache
+    this.addToCache(cacheKey, mockData);
+    
+    return mockData;
+  },
+  
+  // Location autocomplete
+  async locationAutocomplete(query) {
+    const cacheKey = `location-${query.toLowerCase()}`;
+    
+    // Check cache
+    const cachedResult = this.getFromCache(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+    
+    // Mock results
+    const mockResults = {
+      places: [
+        {
+          id: '123',
+          entityId: 'LHR-sky',
+          name: 'London Heathrow',
+          code: 'LHR',
+          iata: 'LHR',
+          cityName: 'London',
+          countryName: 'United Kingdom',
+          type: 'AIRPORT'
+        },
+        {
+          id: '456',
+          entityId: 'LON-sky',
+          name: 'London',
+          code: 'LON',
+          cityName: 'London',
+          countryName: 'United Kingdom',
+          type: 'CITY'
+        },
+        {
+          id: '789',
+          entityId: 'LGW-sky',
+          name: 'London Gatwick',
+          code: 'LGW',
+          iata: 'LGW',
+          cityName: 'London',
+          countryName: 'United Kingdom',
+          type: 'AIRPORT'
+        }
+      ]
+    };
+    
+    // Add to cache
+    this.addToCache(cacheKey, mockResults);
+    
+    return mockResults;
+  },
+  
+  // Cache functions
+  getFromCache(key) {
+    if (this.cache.has(key)) {
+      const { data, timestamp } = this.cache.get(key);
+      // Check if cache is valid (1 hour)
+      if (Date.now() - timestamp < 3600000) {
+        return data;
+      }
+      this.cache.delete(key);
+    }
+    return null;
+  },
+  
+  addToCache(key, data) {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
   }
-}
+};
 
-export default new SkyscannerService();
+export default skyscannerService;

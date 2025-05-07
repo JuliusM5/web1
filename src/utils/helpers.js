@@ -1,4 +1,24 @@
 import { generateTripPdf as generateTripPDF } from './enhancedPdfGenerator';
+import { useState, useEffect } from 'react';
+
+
+
+// Add this export to the file
+export const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 // Calculate trip duration in days
 export function calculateDuration(startDate, endDate) {

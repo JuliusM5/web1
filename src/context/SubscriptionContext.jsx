@@ -1,86 +1,123 @@
-// src/context/SubscriptionContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
+// src/context/SubscriptionContext.jsx
 
-// Create subscription context
-const SubscriptionContext = createContext();
+import React, { createContext, useState, useEffect } from 'react';
 
-// Custom hook to use the subscription context
-export const useSubscription = () => {
-  const context = useContext(SubscriptionContext);
-  
-  if (!context) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
-  }
-  
-  return context;
-};
+// Create the context
+export const SubscriptionContext = createContext(null);
 
-// Subscription provider component
 export const SubscriptionProvider = ({ children }) => {
-  const [subscriptionStatus, setSubscriptionStatus] = useState('free'); // 'free' or 'premium'
-  const [notificationsUsed, setNotificationsUsed] = useState(0);
-  const [maxFreeNotifications] = useState(3);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriptionPlan, setSubscriptionPlan] = useState(null);
+  const [freeAlertCount, setFreeAlertCount] = useState(0);
+  const [expiryDate, setExpiryDate] = useState(null);
+  const [loading, setLoading] = useState(true);
   
-  // Load subscription data from localStorage on initial render
+  // Load subscription state on mount
   useEffect(() => {
-    const savedStatus = localStorage.getItem('subscriptionStatus');
-    const savedNotificationsUsed = localStorage.getItem('notificationsUsed');
+    const loadSubscription = async () => {
+      try {
+        const savedState = localStorage.getItem('user_subscription');
+        if (savedState) {
+          const state = JSON.parse(savedState);
+          setIsSubscribed(state.isSubscribed);
+          setSubscriptionPlan(state.plan);
+          setFreeAlertCount(state.freeAlertsUsed || 0);
+          setExpiryDate(state.expiryDate ? new Date(state.expiryDate) : null);
+        }
+      } catch (error) {
+        console.error('Error loading subscription:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    if (savedStatus) {
-      setSubscriptionStatus(savedStatus);
-    }
-    
-    if (savedNotificationsUsed) {
-      setNotificationsUsed(parseInt(savedNotificationsUsed, 10));
-    }
+    loadSubscription();
   }, []);
   
-  // Save subscription data to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('subscriptionStatus', subscriptionStatus);
-    localStorage.setItem('notificationsUsed', notificationsUsed.toString());
-  }, [subscriptionStatus, notificationsUsed]);
-  
-  // Function to use a notification
-  const useNotification = () => {
-    if (subscriptionStatus === 'premium') {
-      return true; // Premium users can always use notifications
-    }
-    
-    if (notificationsUsed < maxFreeNotifications) {
-      setNotificationsUsed(prev => prev + 1);
+  const incrementFreeAlertCount = () => {
+    if (!isSubscribed && freeAlertCount < 3) {
+      const newCount = freeAlertCount + 1;
+      setFreeAlertCount(newCount);
+      
+      // Update localStorage
+      try {
+        const savedState = localStorage.getItem('user_subscription');
+        const state = savedState ? JSON.parse(savedState) : {};
+        state.freeAlertsUsed = newCount;
+        localStorage.setItem('user_subscription', JSON.stringify(state));
+      } catch (error) {
+        console.error('Error saving free alert count:', error);
+      }
+      
       return true;
     }
-    
-    return false; // Out of free notifications
+    return false;
   };
   
-  // Function to upgrade to premium
-  const upgradeToPremium = () => {
-    setSubscriptionStatus('premium');
+  const startSubscription = async (plan) => {
+    setLoading(true);
+    try {
+      // Mock subscription process
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30); // 30 day subscription
+      
+      setIsSubscribed(true);
+      setSubscriptionPlan(plan);
+      setExpiryDate(expiryDate);
+      
+      // Update localStorage
+      const state = {
+        isSubscribed: true,
+        plan: plan,
+        expiryDate: expiryDate.toISOString(),
+        freeAlertsUsed: freeAlertCount
+      };
+      localStorage.setItem('user_subscription', JSON.stringify(state));
+      
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
   };
   
-  // Function to reset notifications (for testing)
-  const resetNotifications = () => {
-    setNotificationsUsed(0);
-  };
-  
-  // Provide the subscription context value
-  const value = {
-    subscriptionStatus,
-    notificationsUsed,
-    maxFreeNotifications,
-    useNotification,
-    upgradeToPremium,
-    resetNotifications,
-    freeNotificationsRemaining: maxFreeNotifications - notificationsUsed
+  const cancelSubscription = async () => {
+    setLoading(true);
+    try {
+      setIsSubscribed(false);
+      setSubscriptionPlan(null);
+      setExpiryDate(null);
+      
+      // Update localStorage
+      const state = {
+        isSubscribed: false,
+        plan: null,
+        expiryDate: null,
+        freeAlertsUsed: freeAlertCount
+      };
+      localStorage.setItem('user_subscription', JSON.stringify(state));
+      
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
-    <SubscriptionContext.Provider value={value}>
+    <SubscriptionContext.Provider value={{
+      isSubscribed,
+      subscriptionPlan,
+      freeAlertCount,
+      expiryDate,
+      loading,
+      incrementFreeAlertCount,
+      startSubscription,
+      cancelSubscription
+    }}>
       {children}
     </SubscriptionContext.Provider>
   );
 };
-
-export default SubscriptionContext;

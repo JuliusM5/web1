@@ -6,6 +6,8 @@ import Header from './components/UI/Header';
 // Import the CheapFlightsDashboard component
 import CheapFlightsDashboard from './components/CheapFlights/CheapFlightsDashboard';
 import { SettingsProvider } from './context/SettingsContext';
+import { SubscriptionProvider } from './context/SubscriptionContext'; // Add this import
+import { AuthProvider } from './context/AuthContext'; // Add this import
 import { I18nProvider } from './utils/i18n';
 import AppSettingsWrapper from './components/UI/AppSettingsWrapper';
 import UserSettings from './components/Settings/UserSettings';
@@ -39,58 +41,62 @@ function App() {
   };
 
   return (
-    <SettingsProvider>
-      <I18nProvider>
-        <AppSettingsWrapper>
-          <div className="App">
-            {/* Pass the view state and setView function to Header */}
-            <Header 
-              view={view} 
-              setView={setView} 
-              onNewTrip={handleNewTrip}
-              onOpenSettings={handleOpenSettings}
-              onOpenTemplates={handleOpenTemplates}
-            />
-            
-            {/* Always render EnhancedTripPlanner but only make it visible for relevant views */}
-            {(view === 'dashboard' || view === 'planner' || view === 'trips' || view === 'tripDetails') && (
-              <EnhancedTripPlanner 
-                showSettings={showSettings}
-                onOpenSettings={handleOpenSettings}
-                onCloseSettings={handleCloseSettings}
-                showHeader={false}
-                view={view}
-                setView={setView}
-              />
-            )}
-            
-            {/* Show CheapFlightsDashboard when view is 'flights' or 'cheapFlights' */}
-            {(view === 'flights' || view === 'cheapFlights') && (
-              <CheapFlightsDashboard />
-            )}
-            
-            {/* Settings Modal */}
-            {showSettings && (
-              <UserSettings onClose={handleCloseSettings} />
-            )}
-            
-            {/* Offline Indicator */}
-            <EnhancedOfflineIndicator />
-            
-            {/* Mobile Navigation for small screens */}
-            {deviceInfo.isMobile && (
-              <MobileNavigation 
-                view={view}
-                setView={setView}
-                onNewTrip={handleNewTrip}
-                onOpenSettings={handleOpenSettings}
-                onOpenTemplates={handleOpenTemplates}
-              />
-            )}
-          </div>
-        </AppSettingsWrapper>
-      </I18nProvider>
-    </SettingsProvider>
+    <AuthProvider>  {/* Add AuthProvider */}
+      <SubscriptionProvider>  {/* Add SubscriptionProvider */}
+        <SettingsProvider>
+          <I18nProvider>
+            <AppSettingsWrapper>
+              <div className="App">
+                {/* Pass the view state and setView function to Header */}
+                <Header 
+                  view={view} 
+                  setView={setView} 
+                  onNewTrip={handleNewTrip}
+                  onOpenSettings={handleOpenSettings}
+                  onOpenTemplates={handleOpenTemplates}
+                />
+                
+                {/* Always render EnhancedTripPlanner but only make it visible for relevant views */}
+                {(view === 'dashboard' || view === 'planner' || view === 'trips' || view === 'tripDetails') && (
+                  <EnhancedTripPlanner 
+                    showSettings={showSettings}
+                    onOpenSettings={handleOpenSettings}
+                    onCloseSettings={handleCloseSettings}
+                    showHeader={false}
+                    view={view}
+                    setView={setView}
+                  />
+                )}
+                
+                {/* Show CheapFlightsDashboard when view is 'flights' or 'cheapFlights' */}
+                {(view === 'flights' || view === 'cheapFlights') && (
+                  <CheapFlightsDashboard />
+                )}
+                
+                {/* Settings Modal */}
+                {showSettings && (
+                  <UserSettings onClose={handleCloseSettings} />
+                )}
+                
+                {/* Offline Indicator */}
+                <EnhancedOfflineIndicator />
+                
+                {/* Mobile Navigation for small screens */}
+                {deviceInfo.isMobile && (
+                  <MobileNavigation 
+                    view={view}
+                    setView={setView}
+                    onNewTrip={handleNewTrip}
+                    onOpenSettings={handleOpenSettings}
+                    onOpenTemplates={handleOpenTemplates}
+                  />
+                )}
+              </div>
+            </AppSettingsWrapper>
+          </I18nProvider>
+        </SettingsProvider>
+      </SubscriptionProvider>
+    </AuthProvider>
   );
 }
 
