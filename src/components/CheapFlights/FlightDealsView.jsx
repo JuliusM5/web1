@@ -6,7 +6,8 @@ import GlobalAirportSelector from './GlobalAirportSelector';
 import DealCard from './DealCard';
 import flightDataSharingService from '../../services/flightDataSharingService';
 import skyscannerService from '../../services/skyscannerService';
-import AuthContext from '../../context/AuthContext'; // Assuming you have this
+import AuthContext from '../../context/AuthContext';
+import PremiumContentGuard from '../Subscription/PremiumContentGuard';
 
 const FlightDealsView = () => {
   const [origin, setOrigin] = useState(null);
@@ -17,40 +18,45 @@ const FlightDealsView = () => {
   const { isSubscribed } = useContext(SubscriptionContext);
   const { user } = useContext(AuthContext); // Get current user
   const [remainingSignals, setRemainingSignals] = useState(3);
+  const [usedSignals, setUsedSignals] = useState(0);
   
   // Load remaining signals on component mount
   useEffect(() => {
-    if (user && !isSubscribed) {
-      const remaining = flightDataSharingService.getRemainingFreeSignals(user.id);
-      setRemainingSignals(remaining);
+    if (user) {
+      // For free users, track signal usage
+      if (!isSubscribed) {
+        const usedCount = flightDataSharingService.getUsedSignalCount(user.id);
+        setUsedSignals(usedCount);
+        setRemainingSignals(Math.max(0, 3 - usedCount));
+      } else {
+        // Subscribed users have unlimited signals
+        setRemainingSignals('∞');
+      }
     }
   }, [user, isSubscribed]);
   
   const handleSearch = async () => {
-    // Check if origin and destination are selected
     if (!origin || !destination) {
       setError('Please select both origin and destination airports');
       return;
     }
     
-    // Check if free user has signals remaining
-    if (!isSubscribed) {
-      if (remainingSignals <= 0) {
-        setError('You have used all your free signals. Subscribe for unlimited searches!');
-        return;
-      }
-      
-      // Use a free signal
-      const signalsUsed = flightDataSharingService.recordFreeSignalUsage(user.id);
-      setRemainingSignals(3 - signalsUsed);
-    }
+    // We'll use PremiumContentGuard for access control
+    // So this function only runs if the user still has signals or is subscribed
     
     setIsLoading(true);
     setError(null);
     
     try {
+      // Record signal usage for free users
+      if (!isSubscribed && user) {
+        flightDataSharingService.recordSignalUsage(user.id);
+        const newUsedCount = flightDataSharingService.getUsedSignalCount(user.id);
+        setUsedSignals(newUsedCount);
+        setRemainingSignals(Math.max(0, 3 - newUsedCount));
+      }
+      
       // Use the sharing service to efficiently get flight data
-      // This will reuse data for the same route across all users
       const flightData = await flightDataSharingService.getFlightData(
         origin.code,
         destination.code,
@@ -122,6 +128,51 @@ const FlightDealsView = () => {
     return `https://www.skyscanner.com/transport/flights/${origin}/${destination}/${formattedDate}/`;
   };
   
+  // Use PremiumContentGuard for the search button if signals are used up
+  const renderSearchButton = () => {
+    if (!isSubscribed && usedSignals >= 3) {
+      return (
+        <PremiumContentGuard 
+          featureId="flight_search"
+          usageCount={usedSignals}
+          showUpgradeButton={true}
+          fallback={
+            <button
+              disabled={true}
+              className="w-full p-3 rounded-md font-medium text-white bg-gray-400 cursor-not-allowed"
+            >
+              No Free Signals Remaining
+            </button>
+          }
+        >
+          <button
+            onClick={handleSearch}
+            disabled={isLoading || !origin || !destination}
+            className={`w-full p-3 rounded-md font-medium text-white
+              ${isLoading || !origin || !destination ? 
+                'bg-gray-400 cursor-not-allowed' : 
+                'bg-blue-600 hover:bg-blue-700'}`}
+          >
+            {isLoading ? 'Searching...' : 'Search Flights'}
+          </button>
+        </PremiumContentGuard>
+      );
+    }
+    
+    return (
+      <button
+        onClick={handleSearch}
+        disabled={isLoading || !origin || !destination}
+        className={`w-full p-3 rounded-md font-medium text-white
+          ${isLoading || !origin || !destination ? 
+            'bg-gray-400 cursor-not-allowed' : 
+            'bg-blue-600 hover:bg-blue-700'}`}
+      >
+        {isLoading ? 'Searching...' : 'Search Flights'}
+      </button>
+    );
+  };
+  
   return (
     <div className="flight-deals-view p-4 md:p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-4">Search Flight Deals</h2>
@@ -141,11 +192,14 @@ const FlightDealsView = () => {
               )}
               {remainingSignals > 0 && (
                 <p className="text-sm text-gray-600 mt-1">
-                  Free users get 3 signals total. Use them wisely!
+                  Free users get 3 signals per month. Use them wisely!
                 </p>
               )}
             </div>
-            <button className="bg-blue-600 text-white px-4 py-1 rounded-md text-sm">
+            <button 
+              onClick={() => window.location.href = '/subscription/plans'}
+              className="bg-blue-600 text-white px-4 py-1 rounded-md text-sm"
+            >
               Subscribe
             </button>
           </div>
@@ -172,18 +226,7 @@ const FlightDealsView = () => {
         </div>
       </div>
       
-      <button
-        onClick={handleSearch}
-        disabled={isLoading || !origin || !destination || (!isSubscribed && remainingSignals === 0)}
-        className={`w-full p-3 rounded-md font-medium text-white
-          ${isLoading || !origin || !destination || (!isSubscribed && remainingSignals === 0) ? 
-            'bg-gray-400 cursor-not-allowed' : 
-            'bg-blue-600 hover:bg-blue-700'}`}
-      >
-        {isLoading ? 'Searching...' : 
-         !isSubscribed && remainingSignals === 0 ? 'No Free Signals Remaining' :
-         'Search Flights'}
-      </button>
+      {renderSearchButton()}
       
       {error && (
         <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">

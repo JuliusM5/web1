@@ -28,7 +28,8 @@ import SubscriptionSuccess from './components/Subscription/SubscriptionSuccess';
 // Import the missing components
 import MobileCodeActivation from './components/Subscription/MobileCodeActivation';
 import PremiumFeatures from './components/Subscription/PremiumFeatures';
-
+import PremiumFeatureShowcase from './components/Subscription/PremiumFeatureShowcase';
+import MockCheckout from './components/Subscription/MockCheckout';
 // Import the TripTemplates component
 import TemplateManager from './components/TripTemplates/TemplateManager';
 
@@ -130,22 +131,16 @@ function AppRoutes() {
           />
         } />
         
-        {/* My Trips route - Behind premium guard but with free limit */}
+        {/* My Trips route - No longer behind premium guard */}
         <Route path="/trips" element={
-          <PremiumContentGuard 
-            isTripsFeature={true}
-            freeTripLimit={3} 
-            currentTripCount={trips.length}
-          >
-            <EnhancedTripPlanner 
-              showHeader={false}
-              view="trips"
-              setView={setView}
-              showSettings={showSettings}
-              onOpenSettings={handleOpenSettings}
-              onCloseSettings={handleCloseSettings}
-            />
-          </PremiumContentGuard>
+          <EnhancedTripPlanner 
+            showHeader={false}
+            view="trips"
+            setView={setView}
+            showSettings={showSettings}
+            onOpenSettings={handleOpenSettings}
+            onCloseSettings={handleCloseSettings}
+          />
         } />
         
         {/* Templates route - Behind premium guard */}
@@ -167,6 +162,9 @@ function AppRoutes() {
         <Route path="/subscription/success" element={<SubscriptionSuccess />} />
         <Route path="/subscription/activate-code" element={<MobileCodeActivation />} />
         <Route path="/premium-features" element={<PremiumFeatures />} />
+        <Route path="/premium-features/:featureId" element={<PremiumFeatureShowcase />} />
+        <Route path="/premium-features/:featureId" element={<PremiumFeatureShowcase />} />
+        <Route path="/mock-checkout" element={<MockCheckout />} />
         
         {/* Settings routes */}
         <Route path="/settings" element={<UserSettings />} />
