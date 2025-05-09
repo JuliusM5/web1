@@ -1,34 +1,30 @@
 // src/constants/storageKeys.js
 
-const storageKeys = {
-  // Flight data related
-  FLIGHT_CACHE: 'flight_data_cache',
-  GLOBAL_FLIGHT_CACHE: 'global_flight_cache',
-  ROUTE_STATISTICS: 'route_request_stats',
-  LOCATIONS_CACHE: 'locations_cache',
+/**
+ * Constants for localStorage keys
+ * Using constants avoids typos and makes it easier to change keys if needed
+ */
+export const storageKeys = {
+  // Subscription keys
+  SUBSCRIPTION_TOKEN: 'subscription_token',
+  SUBSCRIPTION_EXPIRY: 'subscription_expiry',
+  FLIGHT_ALERTS: 'flight_alerts',
   
-  // User related
-  SAVED_DEALS: 'user_saved_deals',
-  USER_SUBSCRIPTION: 'user_subscription',
-  USER_SIGNALS: 'user_signals', // Prefix with user ID when using
+  // User preferences
+  USER_SETTINGS: 'user_settings',
+  LANGUAGE: 'language',
+  THEME: 'theme',
   
-  // App settings
-  APP_SETTINGS: 'app_settings',
-  THEME_PREFERENCE: 'theme_preference'
+  // App state
+  LAST_VIEWED_PAGE: 'last_viewed_page',
+  
+  // Cached data
+  CACHED_FLIGHT_DEALS: 'cached_flight_deals',
+  CACHED_DESTINATIONS: 'cached_destinations',
+  
+  // Offline data
+  OFFLINE_TRIPS: 'offline_trips',
+  OFFLINE_TEMPLATES: 'offline_templates'
 };
 
-export { storageKeys };
-
-// Keep existing exports for backward compatibility
-export const LOCAL_STORAGE_KEYS = {
-  // Your existing keys
-};
-
-export const SESSION_STORAGE_KEYS = {
-  // Your existing keys  
-};
-
-export default {
-  LOCAL_STORAGE_KEYS,
-  SESSION_STORAGE_KEYS
-};
+export default storageKeys;

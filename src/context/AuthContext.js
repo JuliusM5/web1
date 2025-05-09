@@ -1,130 +1,105 @@
-// src/context/AuthContext.jsx
+// src/context/AuthContext.js
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-import React, { createContext, useState, useEffect } from 'react';
-import authService from '../services/authService';
+// Create the auth context
+const AuthContext = createContext(null);
 
-const AuthContext = createContext();
-
+// Auth provider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // Load user on mount
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Initialize auth state on mount
   useEffect(() => {
-    const initAuth = async () => {
+    const checkAuth = async () => {
       try {
-        // Check if the user is authenticated
-        if (authService.isAuthenticated()) {
-          const userData = authService.getUser();
+        // Check if there's a user in localStorage
+        const storedUser = localStorage.getItem('user');
+        
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
           setUser(userData);
+          setIsAuthenticated(true);
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
-        setError(error.message);
+        console.error('Failed to restore auth state:', error);
+        // Clear potentially corrupted data
+        localStorage.removeItem('user');
       } finally {
         setLoading(false);
       }
     };
-    
-    initAuth();
+
+    checkAuth();
   }, []);
-  
-  // Login handler
-  const login = async (email, password) => {
-    setLoading(true);
-    setError(null);
+
+  // Login function
+  const login = async (username, password) => {
+    // This would normally call your API
+    // For now, we'll simulate a successful login
     
-    try {
-      const result = await authService.login({ email, password });
-      
-      if (result.success) {
-        setUser(result.user);
-        return { success: true };
-      } else {
-        setError(result.error || 'Login failed');
-        return { success: false, error: result.error };
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError(error.message);
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
+    const userData = {
+      id: '123',
+      username,
+      name: 'Demo User',
+      email: `${username}@example.com`
+    };
+
+    // Store user in localStorage for persistence
+    localStorage.setItem('user', JSON.stringify(userData));
+    
+    setUser(userData);
+    setIsAuthenticated(true);
+    return userData;
   };
-  
-  // Register handler
+
+  // Register function
   const register = async (userData) => {
-    setLoading(true);
-    setError(null);
+    // This would normally call your API
+    // For now, we'll simulate a successful registration
     
-    try {
-      const result = await authService.register(userData);
-      
-      if (result.success) {
-        setUser(result.user);
-        return { success: true };
-      } else {
-        setError(result.error || 'Registration failed');
-        return { success: false, error: result.error };
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      setError(error.message);
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
+    const newUser = {
+      id: Date.now().toString(),
+      ...userData,
+      name: userData.username
+    };
+
+    // Store user in localStorage
+    localStorage.setItem('user', JSON.stringify(newUser));
+    
+    setUser(newUser);
+    setIsAuthenticated(true);
+    return newUser;
   };
-  
-  // Logout handler
+
+  // Logout function
   const logout = () => {
-    authService.logout();
+    localStorage.removeItem('user');
     setUser(null);
+    setIsAuthenticated(false);
   };
-  
-  // Update profile handler
-  const updateProfile = async (userData) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const result = await authService.updateProfile(userData);
-      
-      if (result.success) {
-        setUser(result.user);
-        return { success: true };
-      } else {
-        setError(result.error || 'Profile update failed');
-        return { success: false, error: result.error };
-      }
-    } catch (error) {
-      console.error('Profile update error:', error);
-      setError(error.message);
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Value to be provided to consumers
+
+  // The value that will be given to the context
   const value = {
     user,
     loading,
-    error,
-    isAuthenticated: !!user,
+    isAuthenticated,
     login,
     register,
-    logout,
-    updateProfile
+    logout
   };
-  
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+// Custom hook to use the auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
 
 export default AuthContext;

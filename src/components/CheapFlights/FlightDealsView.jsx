@@ -27,8 +27,9 @@ const FlightDealsView = () => {
   }, [user, isSubscribed]);
   
   const handleSearch = async () => {
+    // Check if origin and destination are selected
     if (!origin || !destination) {
-      setError('Please select both origin and destination');
+      setError('Please select both origin and destination airports');
       return;
     }
     

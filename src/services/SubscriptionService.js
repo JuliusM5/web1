@@ -1,319 +1,236 @@
 // src/services/subscriptionService.js
 
-import authService from './authService';
+const TokenizedSubscription = require('../models/TokenizedSubscription');
+// Or use the in-memory version for development
+// const TokenizedSubscription = require('../models/inMemoryTokenizedSubscription');
 
+const appleReceiptVerifier = require('./platforms/appleReceiptVerifier');
+const googleReceiptVerifier = require('./platforms/googleReceiptVerifier');
+
+/**
+ * Service for managing accountless subscriptions
+ */
 class SubscriptionService {
-  constructor() {
-    this.apiUrl = '/api/subscriptions';
-    this.plans = {
-      MONTHLY: {
-        id: 'monthly',
-        name: 'Monthly Plan',
-        price: 4.99,
-        interval: 'month',
-        features: [
-          'Unlimited flight alerts',
-          'No ads',
-          'Priority notifications',
-          'Price history graphs'
-        ]
-      },
-      YEARLY: {
-        id: 'yearly',
-        name: 'Annual Plan',
-        price: 39.99,
-        interval: 'year',
-        features: [
-          'Unlimited flight alerts',
-          'No ads',
-          'Priority notifications',
-          'Price history graphs',
-          'Personalized deal recommendations',
-          '2 months free'
-        ]
-      }
-    };
-  }
-  
-  // Get available subscription plans
-  getPlans() {
-    return Object.values(this.plans);
-  }
-  
-  // Get current subscription status
-  async getSubscriptionStatus() {
+  /**
+   * Create a new subscription from web purchase
+   * @param {string} email - User's email (only for receipts)
+   * @param {string} plan - Subscription plan ID
+   * @param {string} paymentId - Reference to payment processor's transaction ID
+   * @returns {Promise<Object>} - Created subscription details
+   */
+  async createSubscription(email, plan, paymentId) {
     try {
-      const response = await fetch(this.apiUrl, {
-        headers: authService.getAuthHeaders()
+      // Calculate expiry date
+      const expiresAt = this.calculateExpiryDate(plan);
+      
+      // For MongoDB implementation
+      // Create new subscription document
+      const subscription = await TokenizedSubscription.create({
+        email,
+        accessToken: TokenizedSubscription.generateToken(),
+        mobileAccessCode: TokenizedSubscription.generateMobileAccessCode(),
+        plan,
+        expiresAt,
+        paymentId,
+        active: true
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to get subscription status');
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting subscription status:', error);
-      
-      // Check if stored locally
-      const storedStatus = localStorage.getItem('subscription_status');
-      if (storedStatus) {
-        try {
-          return JSON.parse(storedStatus);
-        } catch (e) {
-          console.error('Error parsing stored subscription status:', e);
-        }
-      }
-      
-      // Default status if nothing available
       return {
-        isActive: false,
-        plan: null,
-        expiresAt: null,
-        freeAlertsUsed: 0,
-        freeAlertsLimit: 3
+        success: true,
+        accessToken: subscription.accessToken,
+        mobileAccessCode: subscription.mobileAccessCode,
+        expiresAt: subscription.expiresAt
       };
+      
+      // For in-memory implementation
+      /*
+      return await TokenizedSubscription.create({
+        email,
+        plan,
+        expiresAt,
+        paymentId
+      });
+      */
+    } catch (error) {
+      console.error('Failed to create subscription:', error);
+      return { success: false, error: 'Subscription creation failed' };
     }
   }
-  
-  // Start a new subscription
-  async subscribe(planId, paymentMethod) {
+
+  /**
+   * Verify a subscription token
+   * @param {string} token - Subscription access token
+   * @returns {Promise<Object>} - Verification result
+   */
+  async verifyToken(token) {
     try {
-      const response = await fetch(`${this.apiUrl}/create`, {
-        method: 'POST',
-        headers: authService.getAuthHeaders(),
-        body: JSON.stringify({
-          planId,
-          paymentMethod
-        })
+      return await TokenizedSubscription.verifyToken(token);
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      return { valid: false, error: 'Verification failed' };
+    }
+  }
+
+  /**
+   * Verify an Apple receipt
+   * @param {string} receipt - Apple receipt data
+   * @returns {Promise<Object>} - Verification result
+   */
+  async verifyAppleReceipt(receipt) {
+    try {
+      // Use Apple's verification service
+      const verificationResult = await appleReceiptVerifier.verify(receipt);
+      
+      if (verificationResult.valid) {
+        // Store the verified receipt for future reference
+        // This could be in a separate collection/table
+        
+        return {
+          verified: true,
+          expiresAt: verificationResult.expiresAt,
+          productId: verificationResult.productId
+        };
+      }
+      
+      return { verified: false };
+    } catch (error) {
+      console.error('Apple receipt verification failed:', error);
+      return { verified: false, error: error.message };
+    }
+  }
+
+  /**
+   * Verify a Google Play receipt
+   * @param {string|Object} receipt - Google Play receipt data
+   * @returns {Promise<Object>} - Verification result
+   */
+  async verifyGoogleReceipt(receipt) {
+    try {
+      // Parse the receipt if it's a string
+      const receiptData = typeof receipt === 'string' ? JSON.parse(receipt) : receipt;
+      
+      // Use Google's API to verify
+      const verificationResult = await googleReceiptVerifier.verify(
+        receiptData.packageName,
+        receiptData.productId,
+        receiptData.purchaseToken
+      );
+      
+      if (verificationResult.valid) {
+        // Store the verified receipt for future reference
+        
+        return {
+          verified: true,
+          expiresAt: verificationResult.expiresAt,
+          productId: receiptData.productId
+        };
+      }
+      
+      return { verified: false };
+    } catch (error) {
+      console.error('Google receipt verification failed:', error);
+      return { verified: false, error: error.message };
+    }
+  }
+
+  /**
+   * Activate subscription on mobile with web access code
+   * @param {string} accessCode - Mobile access code from web purchase
+   * @param {string} platform - Mobile platform ('ios' or 'android')
+   * @returns {Promise<Object>} - Activation result
+   */
+  async activateWithCode(accessCode, platform) {
+    try {
+      // Find the subscription by mobile access code
+      const verification = await TokenizedSubscription.verifyMobileCode(accessCode);
+      
+      if (!verification.valid) {
+        return { success: false, error: 'Invalid or expired code' };
+      }
+      
+      // Create a "web receipt" that can be stored on the mobile device
+      const webReceipt = JSON.stringify({
+        accessToken: verification.accessToken,
+        code: accessCode,
+        platform
       });
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Subscription creation failed');
-      }
-      
-      const subscriptionData = await response.json();
-      
-      // Store locally for offline access
-      localStorage.setItem('subscription_status', JSON.stringify({
-        isActive: true,
-        plan: subscriptionData.plan,
-        expiresAt: subscriptionData.expiresAt,
-        freeAlertsUsed: 0,
-        freeAlertsLimit: 3
-      }));
-      
-      return subscriptionData;
+      return {
+        success: true,
+        webReceipt,
+        plan: verification.plan,
+        expiresAt: verification.expiresAt
+      };
     } catch (error) {
-      console.error('Subscription creation error:', error);
-      throw error;
+      console.error('Code activation failed:', error);
+      return { success: false, error: 'Activation failed' };
     }
   }
-  
-  // Cancel current subscription
-  async cancelSubscription() {
+
+  /**
+   * Verify a "web receipt" from mobile device
+   * @param {string|Object} webReceipt - Web receipt data
+   * @returns {Promise<Object>} - Verification result
+   */
+  async verifyWebReceipt(webReceipt) {
     try {
-      const response = await fetch(`${this.apiUrl}/cancel`, {
-        method: 'POST',
-        headers: authService.getAuthHeaders()
-      });
+      // Parse the receipt if it's a string
+      const receiptData = typeof webReceipt === 'string' ? JSON.parse(webReceipt) : webReceipt;
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Subscription cancellation failed');
-      }
-      
-      const result = await response.json();
-      
-      // Update local storage
-      const storedStatus = localStorage.getItem('subscription_status');
-      if (storedStatus) {
-        try {
-          const status = JSON.parse(storedStatus);
-          status.isActive = false;
-          localStorage.setItem('subscription_status', JSON.stringify(status));
-        } catch (e) {
-          console.error('Error updating stored subscription status:', e);
-        }
-      }
-      
-      return result;
+      // Verify the access token
+      return await this.verifyToken(receiptData.accessToken);
     } catch (error) {
-      console.error('Subscription cancellation error:', error);
-      throw error;
+      console.error('Web receipt verification failed:', error);
+      return { verified: false, error: error.message };
     }
   }
-  
-  // Check if user has any free alerts remaining
-  async hasFreeAlertsRemaining() {
-    const status = await this.getSubscriptionStatus();
+
+  /**
+   * Cancel a subscription
+   * @param {string} token - Subscription token
+   * @returns {Promise<Object>} - Cancellation result
+   */
+  async cancelSubscription(token) {
+    try {
+      // For MongoDB implementation
+      const subscription = await TokenizedSubscription.findOne({ accessToken: token });
+      
+      if (!subscription) {
+        return { success: false, error: 'Subscription not found' };
+      }
+      
+      subscription.active = false;
+      await subscription.save();
+      
+      return { success: true };
+      
+      // For in-memory implementation
+      /*
+      return await TokenizedSubscription.cancelSubscription(token);
+      */
+    } catch (error) {
+      console.error('Cancellation failed:', error);
+      return { success: false, error: 'Failed to cancel subscription' };
+    }
+  }
+
+  /**
+   * Calculate subscription expiry date based on plan
+   * @param {string} plan - Subscription plan ID
+   * @returns {Date} - Expiry date
+   */
+  calculateExpiryDate(plan) {
+    const now = new Date();
     
-    if (status.isActive) {
-      return true; // Subscribed users have unlimited alerts
+    if (plan === 'monthly_premium') {
+      return new Date(now.setMonth(now.getMonth() + 1));
+    } else if (plan === 'yearly_premium') {
+      return new Date(now.setFullYear(now.getFullYear() + 1));
+    } else {
+      // Default to 1 month if plan is unknown
+      return new Date(now.setMonth(now.getMonth() + 1));
     }
-    
-    return status.freeAlertsUsed < status.freeAlertsLimit;
-  }
-  
-  // Use a free alert
-  async useFreeAlert() {
-    try {
-      const response = await fetch(`${this.apiUrl}/use-free-alert`, {
-        method: 'POST',
-        headers: authService.getAuthHeaders()
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to use free alert');
-      }
-      
-      const result = await response.json();
-      
-      // Update local storage
-      const storedStatus = localStorage.getItem('subscription_status');
-      if (storedStatus) {
-        try {
-          const status = JSON.parse(storedStatus);
-          status.freeAlertsUsed = result.freeAlertsUsed;
-          localStorage.setItem('subscription_status', JSON.stringify(status));
-        } catch (e) {
-          console.error('Error updating stored free alerts:', e);
-        }
-      }
-      
-      return result;
-    } catch (error) {
-      console.error('Error using free alert:', error);
-      
-      // Fallback to updating locally if offline
-      if (!navigator.onLine) {
-        const storedStatus = localStorage.getItem('subscription_status');
-        if (storedStatus) {
-          try {
-            const status = JSON.parse(storedStatus);
-            if (status.freeAlertsUsed < status.freeAlertsLimit) {
-              status.freeAlertsUsed++;
-              localStorage.setItem('subscription_status', JSON.stringify(status));
-              return {
-                success: true,
-                freeAlertsUsed: status.freeAlertsUsed,
-                freeAlertsLimit: status.freeAlertsLimit
-              };
-            }
-          } catch (e) {
-            console.error('Error updating stored free alerts:', e);
-          }
-        }
-      }
-      
-      throw error;
-    }
-  }
-  
-  // Get remaining free alerts count
-  async getRemainingFreeAlerts() {
-    const status = await this.getSubscriptionStatus();
-    
-    if (status.isActive) {
-      return Infinity; // Subscribed users have unlimited alerts
-    }
-    
-    return Math.max(0, status.freeAlertsLimit - status.freeAlertsUsed);
-  }
-  
-  // Get payment methods
-  async getPaymentMethods() {
-    try {
-      const response = await fetch(`${this.apiUrl}/payment-methods`, {
-        headers: authService.getAuthHeaders()
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to get payment methods');
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting payment methods:', error);
-      return { paymentMethods: [] };
-    }
-  }
-  
-  // Add payment method
-  async addPaymentMethod(paymentDetails) {
-    try {
-      const response = await fetch(`${this.apiUrl}/payment-methods`, {
-        method: 'POST',
-        headers: authService.getAuthHeaders(),
-        body: JSON.stringify(paymentDetails)
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to add payment method');
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error adding payment method:', error);
-      throw error;
-    }
-  }
-  
-  // Get subscription history
-  async getSubscriptionHistory() {
-    try {
-      const response = await fetch(`${this.apiUrl}/history`, {
-        headers: authService.getAuthHeaders()
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to get subscription history');
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting subscription history:', error);
-      return { history: [] };
-    }
-  }
-  
-  // Apply promo code
-  async applyPromoCode(code) {
-    try {
-      const response = await fetch(`${this.apiUrl}/promo`, {
-        method: 'POST',
-        headers: authService.getAuthHeaders(),
-        body: JSON.stringify({ code })
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Invalid promo code');
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error applying promo code:', error);
-      throw error;
-    }
-  }
-  
-  // Create mock payment method UI data for frontend
-  getMockPaymentUI() {
-    // In a real implementation, this would integrate with Stripe, PayPal, etc.
-    return {
-      paymentMethods: [
-        { type: 'credit_card', name: 'Visa', iconUrl: '/icons/visa.svg' },
-        { type: 'credit_card', name: 'Mastercard', iconUrl: '/icons/mastercard.svg' },
-        { type: 'paypal', name: 'PayPal', iconUrl: '/icons/paypal.svg' },
-        { type: 'apple_pay', name: 'Apple Pay', iconUrl: '/icons/apple-pay.svg' },
-        { type: 'google_pay', name: 'Google Pay', iconUrl: '/icons/google-pay.svg' }
-      ]
-    };
   }
 }
 
-export default new SubscriptionService();
+module.exports = new SubscriptionService();

@@ -1,120 +1,213 @@
 // src/components/Accessibility/Subscription/PlanCards.jsx
 
-import React, { useState, useEffect } from 'react';
-import subscriptionService from '../../../services/SubscriptionService';
+import React, { useState } from 'react';
+import { useSubscription } from '../../../hooks/useSubscription';
+import AccessibleButton from '../AccessibleButton';
+import { AccessibleInput } from '../AccessibleInput'; 
 
-function PlanCards({ onSelectPlan }) {
-  const [plans, setPlans] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+const PlanCards = () => {
+  const { isSubscribed, purchaseSubscription } = useSubscription();
+  const [selectedPlan, setSelectedPlan] = useState('monthly');
+  const [email, setEmail] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   
-  useEffect(() => {
-    const loadPlans = async () => {
-      setIsLoading(true);
-      
-      try {
-        // Updated to use the correct method from subscriptionService
-        const plansData = subscriptionService.getPlans();
-        setPlans(plansData || []);
-      } catch (err) {
-        console.error('Error loading subscription plans:', err);
-        setError('Failed to load subscription plans. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Plans configuration
+  const plans = {
+    monthly: {
+      id: 'monthly_premium',
+      name: 'Monthly Premium',
+      price: '$4.99',
+      period: 'per month',
+      features: [
+        'All premium flight deals',
+        'Unlimited deal alerts',
+        'Priority notifications'
+      ]
+    },
+    yearly: {
+      id: 'yearly_premium',
+      name: 'Yearly Premium',
+      price: '$49.99',
+      period: 'per year',
+      features: [
+        'All premium flight deals',
+        'Unlimited deal alerts',
+        'Priority notifications',
+        'Save $9.89 vs monthly plan'
+      ]
+    }
+  };
+  
+  const handlePlanSelect = (planId) => {
+    setSelectedPlan(planId);
+  };
+  
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+  
+  const handleSubscribe = async () => {
+    if (!email) {
+      setError('Please enter your email to receive purchase confirmation');
+      return;
+    }
     
-    loadPlans();
-  }, []);
-  
-  if (isLoading) {
-    return (
-      <div className="p-6 text-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-2">Loading subscription plans...</p>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="p-4 bg-red-100 text-red-700 rounded-md mb-4">
-          {error}
-        </div>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="px-4 py-2 bg-blue-600 text-white rounded-md"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-  
-  if (plans.length === 0) {
-    return (
-      <div className="p-6 max-w-4xl mx-auto text-center">
-        <p className="text-gray-600">No subscription plans are currently available.</p>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-8 text-center">
-        Choose Your Subscription Plan
-      </h1>
+    setIsProcessing(true);
+    setError(null);
+    
+    try {
+      const result = await purchaseSubscription(email, plans[selectedPlan].id);
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {plans.map((plan) => (
-          <div 
-            key={plan.id}
-            className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+      if (result.success) {
+        setSuccess({
+          message: 'Subscription successful! You now have premium access.',
+          mobileCode: result.mobileAccessCode
+        });
+      } else {
+        setError(result.error || 'Subscription failed. Please try again.');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      console.error('Subscription error:', err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  // Already subscribed state
+  if (isSubscribed) {
+    return (
+      <div className="plan-cards-container subscription-active">
+        <div className="subscribed-card">
+          <h2>You're subscribed!</h2>
+          <p>You already have access to all premium features.</p>
+          <AccessibleButton 
+            onClick={() => window.location.href = '/dashboard'}
+            className="primary-button"
           >
-            <div className="bg-gray-50 p-4 border-b">
-              <h2 className="text-xl font-semibold text-center">{plan.name}</h2>
-              <div className="mt-2 text-center">
-                <span className="text-3xl font-bold">${plan.price}</span>
-                <span className="text-gray-600">/{plan.interval}</span>
+            Go to Dashboard
+          </AccessibleButton>
+        </div>
+      </div>
+    );
+  }
+  
+  // Success state
+  if (success) {
+    return (
+      <div className="plan-cards-container subscription-success">
+        <div className="success-card">
+          <h2>Thank You for Subscribing!</h2>
+          <p>Your premium access is now active.</p>
+          {success.mobileCode && (
+            <div className="mobile-access-code">
+              <p>Use this code to activate on mobile:</p>
+              <div className="code-display">{success.mobileCode}</div>
+              <p className="code-instructions">
+                1. Open the app on your mobile device<br />
+                2. Tap "Already Subscribed"<br />
+                3. Enter this access code
+              </p>
+            </div>
+          )}
+          <AccessibleButton 
+            onClick={() => window.location.href = '/dashboard'}
+            className="primary-button"
+          >
+            Continue to Dashboard
+          </AccessibleButton>
+        </div>
+      </div>
+    );
+  }
+  
+  // Normal purchase flow
+  return (
+    <div className="plan-cards-container">
+      <h2>Choose Your Subscription Plan</h2>
+      <p className="subtitle">Get access to premium features with no account needed</p>
+      
+      {error && <div className="error-message">{error}</div>}
+      
+      <div className="plans-row">
+        {Object.entries(plans).map(([planId, plan]) => (
+          <div 
+            key={planId}
+            className={`plan-card ${selectedPlan === planId ? 'selected' : ''}`}
+            onClick={() => handlePlanSelect(planId)}
+          >
+            <div className="plan-header">
+              <h3>{plan.name}</h3>
+              <div className="plan-price">
+                <span className="amount">{plan.price}</span>
+                <span className="period">{plan.period}</span>
               </div>
             </div>
             
-            <div className="p-4">
-              <ul className="space-y-3 mb-6">
+            <div className="plan-features">
+              <ul>
                 {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-start">
-                    <svg 
-                      className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24" 
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M5 13l4 4L19 7" 
-                      />
-                    </svg>
-                    <span>{feature}</span>
-                  </li>
+                  <li key={index}>{feature}</li>
                 ))}
               </ul>
-              
-              <button
-                onClick={() => onSelectPlan(plan)}
-                className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Select Plan
-              </button>
+            </div>
+            
+            <div className="plan-select">
+              <div className="radio-container">
+                <input
+                  type="radio"
+                  id={`plan-${planId}`}
+                  name="subscription-plan"
+                  checked={selectedPlan === planId}
+                  onChange={() => handlePlanSelect(planId)}
+                />
+                <label htmlFor={`plan-${planId}`}>Select</label>
+              </div>
             </div>
           </div>
         ))}
       </div>
+      
+      <div className="subscription-form">
+        <div className="form-header">
+          <h3>Complete Your Purchase</h3>
+          <p>Enter your email to receive purchase confirmation and access instructions</p>
+        </div>
+        
+        <div className="form-group">
+          <AccessibleInput
+            id="subscription-email"
+            type="email"
+            label="Email"
+            value={email}
+            onChange={handleEmailChange}
+            required
+          />
+        </div>
+        
+        <div className="form-actions">
+          <AccessibleButton
+            onClick={handleSubscribe}
+            className="primary-button subscription-button"
+            disabled={isProcessing}
+          >
+            {isProcessing ? 'Processing...' : `Subscribe Now - ${plans[selectedPlan].price}`}
+          </AccessibleButton>
+        </div>
+        
+        <div className="form-footer">
+          <p className="security-note">
+            Secure payment processing by Stripe. No account required.
+          </p>
+          <p className="terms-note">
+            By subscribing, you agree to our Terms of Service and Privacy Policy.
+          </p>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default PlanCards;

@@ -1,97 +1,382 @@
 // src/components/CheapFlights/SubscriptionModal.jsx
 
-import React from 'react';
+import React, { useState, useContext } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import MobileSubscriptionContext from '../../context/MobileSubscriptionContext';
 
-function SubscriptionModal({ onClose, onSubscribe }) {
+const SubscriptionModal = ({ onClose }) => {
+  const {
+    isSubscribed,
+    products,
+    isProcessing,
+    error,
+    purchaseSubscription,
+    restorePurchases,
+    activateWithCode,
+    clearError
+  } = useContext(MobileSubscriptionContext);
+
+  const [activeTab, setActiveTab] = useState('subscribe');
+  const [selectedPlan, setSelectedPlan] = useState(products?.[0]?.productId || '');
+  const [accessCode, setAccessCode] = useState('');
+
+  // Handle subscription purchase
+  const handleSubscribe = async () => {
+    if (!selectedPlan) return;
+    const result = await purchaseSubscription(selectedPlan);
+    if (result.success) {
+      onClose();
+    }
+  };
+
+  // Handle restore purchases
+  const handleRestore = async () => {
+    const result = await restorePurchases();
+    if (result.success && result.isSubscribed) {
+      onClose();
+    }
+  };
+
+  // Handle code activation
+  const handleCodeActivation = async () => {
+    if (!accessCode) return;
+    const result = await activateWithCode(accessCode);
+    if (result.success) {
+      onClose();
+    }
+  };
+
+  // If already subscribed, show confirmation
+  if (isSubscribed) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.modalContent}>
+          <Text style={styles.title}>Subscription Active</Text>
+          <Text style={styles.description}>
+            You already have full access to all premium features.
+          </Text>
+          <TouchableOpacity style={styles.primaryButton} onPress={onClose}>
+            <Text style={styles.buttonText}>Continue</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-blue-600">Upgrade to Premium</h3>
-          <button 
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+    <View style={styles.container}>
+      <View style={styles.modalContent}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Premium Access</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.closeButtonText}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={clearError}>
+              <Text style={styles.dismissText}>Dismiss</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.tabs}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'subscribe' && styles.activeTab]}
+            onPress={() => setActiveTab('subscribe')}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-        
-        <div className="mb-6">
-          <div className="bg-blue-50 p-4 rounded-lg mb-4">
-            <p className="text-center text-blue-700">
-              You've used all your free notifications
-            </p>
-          </div>
-          
-          <h4 className="font-bold text-lg mb-3">
-            Premium Benefits:
-          </h4>
-          
-          <ul className="space-y-2">
-            <li className="flex items-start">
-              <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span>Unlimited deal notifications</span>
-            </li>
-            <li className="flex items-start">
-              <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span>Early access to exclusive flash deals</span>
-            </li>
-            <li className="flex items-start">
-              <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span>Personalized deal recommendations</span>
-            </li>
-            <li className="flex items-start">
-              <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span>No ads or promotional content</span>
-            </li>
-          </ul>
-        </div>
-        
-        <div className="bg-gray-50 p-4 rounded-lg mb-6">
-          <div className="flex items-baseline justify-center mb-2">
-            <span className="text-3xl font-bold text-blue-600">€4.99</span>
-            <span className="text-gray-600 ml-1">/ month</span>
-          </div>
-          <p className="text-center text-gray-500 text-sm">
-            Cancel anytime
-          </p>
-        </div>
-        
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={onSubscribe}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium flex items-center justify-center"
+            <Text style={[styles.tabText, activeTab === 'subscribe' && styles.activeTabText]}>
+              Subscribe
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'restore' && styles.activeTab]}
+            onPress={() => setActiveTab('restore')}
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-            </svg>
-            Subscribe Now
-          </button>
-          <button
-            onClick={onClose}
-            className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50"
+            <Text style={[styles.tabText, activeTab === 'restore' && styles.activeTabText]}>
+              Restore
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'code' && styles.activeTab]}
+            onPress={() => setActiveTab('code')}
           >
-            No Thanks
-          </button>
-        </div>
-        
-        <div className="mt-4 text-xs text-gray-500 text-center">
-          By subscribing, you agree to our Terms of Service and Privacy Policy.
-          Your subscription will automatically renew each month until canceled.
-        </div>
-      </div>
-    </div>
+            <Text style={[styles.tabText, activeTab === 'code' && styles.activeTabText]}>
+              Access Code
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Subscribe Tab */}
+        {activeTab === 'subscribe' && (
+          <View style={styles.tabContent}>
+            <Text style={styles.description}>
+              Get unlimited access to premium deals and alerts
+            </Text>
+
+            <View style={styles.planOptions}>
+              {products.map((product) => (
+                <TouchableOpacity
+                  key={product.productId}
+                  style={[
+                    styles.planOption,
+                    selectedPlan === product.productId && styles.selectedPlan
+                  ]}
+                  onPress={() => setSelectedPlan(product.productId)}
+                >
+                  <View style={styles.planDetails}>
+                    <Text style={styles.planTitle}>{product.title}</Text>
+                    <Text style={styles.planPrice}>{product.localizedPrice}</Text>
+                  </View>
+                  <View style={styles.planRadio}>
+                    {selectedPlan === product.productId && (
+                      <View style={styles.planRadioInner} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.primaryButton, isProcessing && styles.disabledButton]}
+              onPress={handleSubscribe}
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Subscribe Now</Text>
+              )}
+            </TouchableOpacity>
+
+            <Text style={styles.disclaimer}>
+              Payment will be charged to your App Store/Google Play account.
+              Subscriptions automatically renew unless canceled at least 24 hours
+              before the end of the current period.
+            </Text>
+          </View>
+        )}
+
+        {/* Restore Tab */}
+        {activeTab === 'restore' && (
+          <View style={styles.tabContent}>
+            <Text style={styles.description}>
+              Already purchased? Restore your subscription on this device.
+            </Text>
+
+            <TouchableOpacity
+              style={[styles.primaryButton, isProcessing && styles.disabledButton]}
+              onPress={handleRestore}
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Restore Purchases</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Access Code Tab */}
+        {activeTab === 'code' && (
+          <View style={styles.tabContent}>
+            <Text style={styles.description}>
+              Purchased on our website? Enter your access code to unlock premium features.
+            </Text>
+
+            <View style={styles.codeInputContainer}>
+              <TextInput
+                style={styles.codeInput}
+                value={accessCode}
+                onChangeText={setAccessCode}
+                placeholder="XXXX-XXXX-XXXX"
+                autoCapitalize="characters"
+                autoCorrect={false}
+                maxLength={14}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.primaryButton,
+                (!accessCode || isProcessing) && styles.disabledButton
+              ]}
+              onPress={handleCodeActivation}
+              disabled={!accessCode || isProcessing}
+            >
+              {isProcessing ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Activate</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  closeButton: {
+    padding: 5,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#888888',
+  },
+  errorContainer: {
+    backgroundColor: '#FFEBEE',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: '#D32F2F',
+    flex: 1,
+  },
+  dismissText: {
+    color: '#D32F2F',
+    fontWeight: 'bold',
+  },
+  tabs: {
+    flexDirection: 'row',
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#2196F3',
+  },
+  tabText: {
+    color: '#757575',
+  },
+  activeTabText: {
+    color: '#2196F3',
+    fontWeight: 'bold',
+  },
+  tabContent: {
+    marginTop: 10,
+  },
+  description: {
+    fontSize: 16,
+    color: '#555555',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  planOptions: {
+    marginBottom: 20,
+  },
+  planOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  selectedPlan: {
+    borderColor: '#2196F3',
+    backgroundColor: '#E3F2FD',
+  },
+  planDetails: {
+    flex: 1,
+  },
+  planTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333333',
+    marginBottom: 5,
+  },
+  planPrice: {
+    fontSize: 14,
+    color: '#555555',
+  },
+  planRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#2196F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  planRadioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#2196F3',
+  },
+  primaryButton: {
+    backgroundColor: '#2196F3',
+    paddingVertical: 12,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  disabledButton: {
+    backgroundColor: '#BBDEFB',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  disclaimer: {
+    fontSize: 12,
+    color: '#757575',
+    textAlign: 'center',
+  },
+  codeInputContainer: {
+    marginBottom: 20,
+  },
+  codeInput: {
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+});
 
 export default SubscriptionModal;

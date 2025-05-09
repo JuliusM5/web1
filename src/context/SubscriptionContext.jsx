@@ -1,136 +1,233 @@
 // src/context/SubscriptionContext.jsx
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import subscriptionService from '../services/SubscriptionService';
-import AuthContext from './AuthContext';
+import React, { createContext, useEffect, useState } from 'react';
+import { storageKeys } from '../constants/storageKeys';
 
-// Create context
-export const SubscriptionContext = createContext(null);
+export const SubscriptionContext = createContext();
 
 export const SubscriptionProvider = ({ children }) => {
-  const [subscription, setSubscription] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [plans, setPlans] = useState([]);
-  const [freeAlertsRemaining, setFreeAlertsRemaining] = useState(3);
-  
-  const { user, isAuthenticated } = useContext(AuthContext);
-  
-  // Load subscription status when user is authenticated
+  const [subscription, setSubscription] = useState({
+    isSubscribed: false,
+    isLoading: true,
+    plan: null,
+    expiresAt: null,
+    error: null
+  });
+
   useEffect(() => {
-    const loadSubscription = async () => {
-      if (!isAuthenticated) {
-        setSubscription(null);
-        setLoading(false);
+    // Check subscription status on mount
+    verifySubscription();
+  }, []);
+
+  const verifySubscription = async (showLoading = true) => {
+    const token = localStorage.getItem(storageKeys.SUBSCRIPTION_TOKEN);
+    
+    // No token, not subscribed
+    if (!token) {
+      setSubscription(prev => ({ 
+        ...prev, 
+        isSubscribed: false, 
+        isLoading: false 
+      }));
+      return;
+    }
+    
+    // Show loading state if requested
+    if (showLoading) {
+      setSubscription(prev => ({ ...prev, isLoading: true }));
+    }
+    
+    try {
+      // Check if token is expired
+      const expiryDate = localStorage.getItem(storageKeys.SUBSCRIPTION_EXPIRY);
+      
+      if (!expiryDate || new Date(expiryDate) <= new Date()) {
+        // Token expired, clear storage
+        localStorage.removeItem(storageKeys.SUBSCRIPTION_TOKEN);
+        localStorage.removeItem(storageKeys.SUBSCRIPTION_EXPIRY);
+        
+        setSubscription({
+          isSubscribed: false,
+          plan: null,
+          expiresAt: null,
+          isLoading: false,
+          error: 'Subscription expired'
+        });
         return;
       }
       
-      setLoading(true);
+      // Valid subscription
+      setSubscription({
+        isSubscribed: true,
+        // For development, assume plan from localStorage or default to monthly
+        plan: localStorage.getItem('subscription_plan') || 'monthly_premium',
+        expiresAt: expiryDate,
+        isLoading: false,
+        error: null
+      });
+    } catch (error) {
+      console.error('Subscription verification failed:', error);
       
-      try {
-        // Get current subscription
-        const status = await subscriptionService.getSubscriptionStatus();
-        setSubscription(status);
-        
-        // Get remaining free alerts
-        if (!status.isActive) {
-          const remainingAlerts = await subscriptionService.getRemainingFreeAlerts();
-          setFreeAlertsRemaining(remainingAlerts);
-        }
-        
-        // Get available plans
-        setPlans(subscriptionService.getPlans());
-      } catch (error) {
-        console.error('Error loading subscription:', error);
-        setError('Failed to load subscription details');
-      } finally {
-        setLoading(false);
+      // Fallback to local verification
+      const expiryDate = localStorage.getItem(storageKeys.SUBSCRIPTION_EXPIRY);
+      if (expiryDate && new Date(expiryDate) > new Date()) {
+        setSubscription(prev => ({
+          ...prev,
+          isSubscribed: true,
+          isOfflineVerified: true,
+          isLoading: false
+        }));
+      } else {
+        setSubscription(prev => ({
+          ...prev,
+          isSubscribed: false,
+          isLoading: false,
+          error: 'Failed to verify subscription status'
+        }));
       }
-    };
-    
-    loadSubscription();
-  }, [isAuthenticated, user]);
-  
-  // Subscribe to a plan
-  const subscribe = async (planId, paymentMethod) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const result = await subscriptionService.subscribe(planId, paymentMethod);
-      setSubscription(result);
-      return { success: true, subscription: result };
-    } catch (error) {
-      console.error('Subscription error:', error);
-      setError(error.message || 'Failed to create subscription');
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
     }
   };
-  
-  // Cancel subscription
+
+  const purchaseSubscription = async (email, plan) => {
+    setSubscription(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      // For development, simulate a successful subscription
+      // In production, this would create a checkout session with Stripe
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Generate mock data
+      const token = 'token_' + Date.now();
+      const expiryDate = new Date();
+      
+      // Set expiration based on plan
+      if (plan === 'yearly_premium') {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      } else {
+        expiryDate.setMonth(expiryDate.getMonth() + 1);
+      }
+      
+      // Store in localStorage
+      localStorage.setItem(storageKeys.SUBSCRIPTION_TOKEN, token);
+      localStorage.setItem(storageKeys.SUBSCRIPTION_EXPIRY, expiryDate.toISOString());
+      localStorage.setItem('subscription_plan', plan);
+      
+      // Generate a mock mobile access code
+      const mobileAccessCode = 'TEST-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-CODE';
+      
+      // Update subscription state
+      setSubscription({
+        isSubscribed: true,
+        plan: plan,
+        expiresAt: expiryDate.toISOString(),
+        isLoading: false,
+        error: null
+      });
+      
+      return {
+        success: true,
+        mobileAccessCode
+      };
+    } catch (error) {
+      console.error('Purchase subscription error:', error);
+      
+      setSubscription(prev => ({
+        ...prev,
+        isLoading: false,
+        error: 'Failed to process subscription'
+      }));
+      
+      return {
+        success: false,
+        error: 'Failed to process subscription'
+      };
+    }
+  };
+
+  const activateTokenFromEmail = async (token) => {
+    setSubscription(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      // For development, simulate activation
+      // In production, this would verify the token with your server
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Store token in localStorage
+      localStorage.setItem(storageKeys.SUBSCRIPTION_TOKEN, token);
+      
+      // Set expiry to 30 days from now (for demo)
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30);
+      localStorage.setItem(storageKeys.SUBSCRIPTION_EXPIRY, expiryDate.toISOString());
+      
+      // Update subscription state
+      setSubscription({
+        isSubscribed: true,
+        plan: 'monthly_premium', // Assume monthly plan for activation
+        expiresAt: expiryDate.toISOString(),
+        isLoading: false,
+        error: null
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Token activation failed:', error);
+      
+      setSubscription(prev => ({
+        ...prev,
+        isLoading: false,
+        error: 'Failed to activate subscription'
+      }));
+      
+      return {
+        success: false,
+        error: 'Failed to activate subscription'
+      };
+    }
+  };
+
   const cancelSubscription = async () => {
-    setLoading(true);
-    setError(null);
-    
     try {
-      const result = await subscriptionService.cancelSubscription();
-      setSubscription(prev => ({ ...prev, isActive: false }));
-      return { success: true, result };
+      // For development, just remove from localStorage
+      // In production, this would call your backend to cancel in Stripe
+      
+      // Clear local storage
+      localStorage.removeItem(storageKeys.SUBSCRIPTION_TOKEN);
+      localStorage.removeItem(storageKeys.SUBSCRIPTION_EXPIRY);
+      localStorage.removeItem('subscription_plan');
+      
+      // Update state
+      setSubscription({
+        isSubscribed: false,
+        plan: null,
+        expiresAt: null,
+        isLoading: false,
+        error: null
+      });
+      
+      return { success: true };
     } catch (error) {
-      console.error('Cancellation error:', error);
-      setError(error.message || 'Failed to cancel subscription');
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
+      console.error('Cancel subscription error:', error);
+      
+      return {
+        success: false,
+        error: 'Failed to cancel subscription'
+      };
     }
   };
-  
-  // Use a free alert
-  const useFreeAlert = async () => {
-    if (subscription?.isActive) {
-      return { success: true, unlimited: true };
-    }
-    
-    if (freeAlertsRemaining <= 0) {
-      return { success: false, reason: 'no-alerts-remaining' };
-    }
-    
-    try {
-      const result = await subscriptionService.useFreeAlert();
-      setFreeAlertsRemaining(prev => Math.max(0, prev - 1));
-      return { success: true, remaining: freeAlertsRemaining - 1 };
-    } catch (error) {
-      console.error('Error using free alert:', error);
-      return { success: false, error: error.message };
-    }
-  };
-  
-  // Check if a user can create an alert (either subscribed or has free alerts)
-  const canCreateAlert = () => {
-    if (subscription?.isActive) {
-      return true;
-    }
-    
-    return freeAlertsRemaining > 0;
-  };
-  
+
   return (
-    <SubscriptionContext.Provider
-      value={{
-        subscription,
-        loading,
-        error,
-        plans,
-        freeAlertsRemaining,
-        subscribe,
-        cancelSubscription,
-        useFreeAlert,
-        canCreateAlert,
-        isSubscribed: subscription?.isActive || false
-      }}
-    >
+    <SubscriptionContext.Provider value={{
+      ...subscription,
+      purchaseSubscription,
+      activateTokenFromEmail,
+      refreshSubscription: verifySubscription,
+      cancelSubscription
+    }}>
       {children}
     </SubscriptionContext.Provider>
   );

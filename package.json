@@ -3,13 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "assert": "^2.1.0",
     "autoprefixer": "^10.4.21",
+    "browserify-zlib": "^0.2.0",
+    "https-browserify": "^1.0.0",
+    "localforage": "^1.10.0",
+    "path-browserify": "^1.0.1",
     "postcss": "^8.5.3",
+    "process": "^0.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-native-web": "^0.20.0",
     "react-router-dom": "^7.5.3",
     "react-scripts": "5.0.1",
-    "tailwindcss": "^3.4.17"
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "tailwindcss": "^3.4.17",
+    "url": "^0.11.4",
+    "util": "^0.12.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -35,6 +46,7 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^6.3.0"
+    "gh-pages": "^6.3.0",
+    "react-app-rewired": "^2.2.1"
   }
 }

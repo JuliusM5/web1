@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import subscriptionService from '../../../services/SubscriptionService';
 import { useSubscription } from '../../../hooks/useSubscription';
+import TokenizedSubscription from '../../../models/TokenizedSubscription';
 
 function Checkout({ onBack }) {
   const { planId } = useParams();
-  const { updateSubscription } = useSubscription();
+  const { refreshSubscription } = useSubscription();
   
   const [plan, setPlan] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
@@ -30,7 +31,7 @@ function Checkout({ onBack }) {
       setIsLoading(true);
       
       try {
-        // Using getPlans method instead of getSubscriptionPlan
+        // Using getPlans method
         const plans = subscriptionService.getPlans();
         const selectedPlan = plans.find(p => p.id === planId);
         setPlan(selectedPlan);
@@ -61,27 +62,41 @@ function Checkout({ onBack }) {
     setIsProcessing(true);
     
     try {
+      // Simple validation
+      if (paymentMethod === 'credit_card' && (!cardDetails.name || !cardDetails.number || !cardDetails.expiry || !cardDetails.cvc)) {
+        setError('Please fill in all card details');
+        setIsProcessing(false);
+        return;
+      }
+      
       // In a real app, you would process payment securely
       // This is just a simplified example
-      const result = await subscriptionService.subscribe(
-        planId,
-        {
-          type: paymentMethod,
-          details: cardDetails
-        }
-      );
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      if (result && !result.error) {
-        setSuccess(true);
-        // Update subscription context
-        updateSubscription();
+      // Generate tokens and codes
+      const token = TokenizedSubscription.generateToken();
+      const mobileAccessCode = TokenizedSubscription.generateMobileAccessCode();
+      
+      // Calculate expiry date based on plan
+      const expiryDate = new Date();
+      if (plan?.id === 'yearly_premium') {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       } else {
-        setError(result?.error || 'Failed to process payment. Please try again.');
+        expiryDate.setMonth(expiryDate.getMonth() + 1);
       }
+      
+      // Store subscription data
+      TokenizedSubscription.storeSubscription(token, plan?.id || 'monthly_premium', expiryDate);
+      
+      // Store mobile access code temporarily for the success page
+      sessionStorage.setItem('mobile_access_code', mobileAccessCode);
+      
+      // Redirect to success page
+      window.location.href = '/subscription/success?plan=' + encodeURIComponent(plan?.id || 'monthly_premium');
     } catch (err) {
       console.error('Error processing payment:', err);
       setError('An unexpected error occurred. Please try again later.');
-    } finally {
       setIsProcessing(false);
     }
   };
