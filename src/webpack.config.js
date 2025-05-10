@@ -1,33 +1,33 @@
-// webpack.config.js
-const webpack = require('webpack');
+// src/webpack.config.js
 const path = require('path');
 
 module.exports = {
-  // Maintain your existing webpack config if you have one
-  // This just adds the necessary polyfills for Axios
+  // ... your existing webpack config
   
   resolve: {
-    alias: {
-    'react-native$': 'react-native-web',
-    '@react-native-async-storage/async-storage': 'localforage',
-    // Add more aliases as needed
-    },
     fallback: {
+      // Provide polyfills for Node.js core modules
+      "path": require.resolve("path-browserify"),
+      "fs": false,
+      "os": require.resolve("os-browserify/browser"),
+      "crypto": require.resolve("crypto-browserify"),
+      "stream": require.resolve("stream-browserify"),
+      "buffer": require.resolve("buffer/"),
+      "util": require.resolve("util/"),
+      "assert": require.resolve("assert/"),
       "http": require.resolve("stream-http"),
       "https": require.resolve("https-browserify"),
-      "util": require.resolve("util/"),
-      "zlib": require.resolve("browserify-zlib"),
-      "stream": require.resolve("stream-browserify"),
-      "url": require.resolve("url/"),
-      "assert": require.resolve("assert/"),
-      'fs': false,
-      'path': require.resolve('path-browserify'),
-    }
+      "url": require.resolve("url/")
+    },
+    extensions: ['.js', '.jsx', '.ts', '.tsx']
   },
   plugins: [
-    // Add any existing plugins here
+    // ... your existing plugins
+    
+    // Add ProvidePlugin to automatically provide Buffer
     new webpack.ProvidePlugin({
-      process: 'process/browser',
-    }),
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser'
+    })
   ]
 };

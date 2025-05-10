@@ -1,100 +1,126 @@
 // src/services/ApiClient.js
+// Simple API client using native fetch instead of axios
 
-import { API_CONFIG, API_ENDPOINTS } from '../constants/apiEndpoints';
+import { captureError } from '../utils/errorMonitoring';
 
 class ApiClient {
   constructor() {
-    this.rapidApiKey = API_CONFIG.RAPIDAPI_KEY;
-    this.rapidApiHost = API_CONFIG.RAPIDAPI_HOST;
-    this.baseUrl = API_ENDPOINTS.SKYSCANNER.BASE_URL;
-    
-    // Track API usage for monitoring
-    this.apiUsage = {
-      totalCalls: 0,
-      callsByEndpoint: {},
-      lastReset: new Date().getTime(),
+    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+    this.defaultHeaders = {
+      'Content-Type': 'application/json'
     };
   }
-  
-  async get(endpoint, params = {}, useRapidApi = true) {
-    return this.request('GET', endpoint, params, null, useRapidApi);
+
+  // Helper to get full URL
+  getUrl(endpoint) {
+    return `${this.baseURL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
   }
-  
-  async post(endpoint, data = {}, useRapidApi = true) {
-    return this.request('POST', endpoint, {}, data, useRapidApi);
-  }
-  
-  async request(method, endpoint, params = {}, data = null, useRapidApi = true) {
-    // Track API usage
-    this.apiUsage.totalCalls++;
-    this.apiUsage.callsByEndpoint[endpoint] = (this.apiUsage.callsByEndpoint[endpoint] || 0) + 1;
+
+  // Helper to prepare request options
+  getRequestOptions(method, data, customHeaders = {}) {
+    // Get device ID for request
+    const deviceId = localStorage.getItem('deviceId');
     
-    // Build URL with query parameters
-    const url = new URL(`${this.baseUrl}${endpoint}`);
+    // Prepare headers
+    const headers = {
+      ...this.defaultHeaders,
+      ...customHeaders
+    };
     
-    if (params && Object.keys(params).length > 0) {
-      Object.keys(params).forEach(key => 
-        url.searchParams.append(key, params[key])
-      );
+    // Add device ID to headers if available
+    if (deviceId) {
+      headers['X-Device-ID'] = deviceId;
     }
     
-    // Set up request options
+    // Prepare options
     const options = {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-      }
+      headers,
+      credentials: 'include' // Include cookies in requests
     };
     
-    // Add RapidAPI headers if needed
-    if (useRapidApi) {
-      options.headers['x-rapidapi-key'] = this.rapidApiKey;
-      options.headers['x-rapidapi-host'] = this.rapidApiHost;
-    }
-    
-    // Add body for POST requests
-    if (method !== 'GET' && data) {
+    // Add body for non-GET requests
+    if (data && method !== 'GET') {
       options.body = JSON.stringify(data);
     }
     
-    // Make the request
-    try {
-      const response = await fetch(url, options);
+    return options;
+  }
+
+  // Helper to handle responses
+  async handleResponse(response) {
+    // Check if the request was successful
+    if (!response.ok) {
+      const error = new Error(`HTTP error ${response.status}`);
+      error.status = response.status;
       
-      // Check for HTTP errors
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `API request failed with status ${response.status}`
-        );
+      try {
+        // Try to parse error response
+        error.responseData = await response.json();
+      } catch (e) {
+        // If parsing fails, use text response
+        error.responseText = await response.text();
       }
       
-      return response.json();
+      throw error;
+    }
+    
+    // Check content type to determine how to parse the response
+    const contentType = response.headers.get('Content-Type') || '';
+    
+    if (contentType.includes('application/json')) {
+      return await response.json();
+    } else if (contentType.includes('text/')) {
+      return await response.text();
+    } else {
+      // For other types (like blobs), return the response
+      return response;
+    }
+  }
+
+  // Main request method
+  async request(endpoint, method, data, customHeaders) {
+    try {
+      const url = this.getUrl(endpoint);
+      const options = this.getRequestOptions(method, data, customHeaders);
+      
+      const response = await fetch(url, options);
+      return await this.handleResponse(response);
     } catch (error) {
-      console.error(`API request to ${endpoint} failed:`, error);
+      // Log the error
+      console.error(`API ${method} request to ${endpoint} failed:`, error);
+      
+      // Capture for monitoring
+      captureError(error, {
+        context: 'API request',
+        endpoint,
+        method
+      });
+      
+      // Rethrow for handling by caller
       throw error;
     }
   }
-  
-  // Get API usage statistics
-  getApiUsage() {
-    const now = new Date().getTime();
-    const daysSinceReset = Math.floor((now - this.apiUsage.lastReset) / (1000 * 60 * 60 * 24));
-    
-    return {
-      ...this.apiUsage,
-      daysSinceReset,
-      dailyAverage: this.apiUsage.totalCalls / Math.max(1, daysSinceReset)
-    };
+
+  // Convenience methods for common HTTP methods
+  async get(endpoint, customHeaders) {
+    return this.request(endpoint, 'GET', null, customHeaders);
   }
-  
-  // Reset API usage tracking (e.g., at the start of a new billing period)
-  resetApiUsage() {
-    this.apiUsage = {
-      totalCalls: 0,
-      callsByEndpoint: {},
-      lastReset: new Date().getTime(),
-    };
+
+  async post(endpoint, data, customHeaders) {
+    return this.request(endpoint, 'POST', data, customHeaders);
+  }
+
+  async put(endpoint, data, customHeaders) {
+    return this.request(endpoint, 'PUT', data, customHeaders);
+  }
+
+  async patch(endpoint, data, customHeaders) {
+    return this.request(endpoint, 'PATCH', data, customHeaders);
+  }
+
+  async delete(endpoint, customHeaders) {
+    return this.request(endpoint, 'DELETE', null, customHeaders);
   }
 }
 

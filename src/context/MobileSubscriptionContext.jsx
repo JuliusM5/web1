@@ -1,186 +1,125 @@
 // src/context/MobileSubscriptionContext.jsx
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { isMobileDevice, isIOS, isAndroid } from '../utils/deviceDetection';
 
-import React, { createContext, useEffect, useState } from 'react';
-import MobileSubscriptionService from '../services/MobileSubscriptionService';
+// Create context
+export const MobileSubscriptionContext = createContext(null);
 
-export const MobileSubscriptionContext = createContext();
-
+// Provider component
 export const MobileSubscriptionProvider = ({ children }) => {
-  const [subscription, setSubscription] = useState({
-    isSubscribed: false,
-    isLoading: true,
-    products: [],
-    plan: null,
-    expiresAt: null
-  });
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Detect device platform
+  const isMobile = isMobileDevice();
+  const platform = isIOS() ? 'ios' : (isAndroid() ? 'android' : 'web');
+
+  // Function to check mobile subscription status
+  const checkMobileSubscription = useCallback(() => {
+    setLoading(true);
+    try {
+      // Check localStorage for any mobile subscription code
+      const mobileCode = localStorage.getItem('mobileSubscriptionCode');
+      
+      if (mobileCode) {
+        // In a real app, this would verify the code with a server
+        setSubscription({
+          status: 'active',
+          platform,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+          activatedAt: localStorage.getItem('mobileSubscriptionActivated') || new Date().toISOString()
+        });
+      } else {
+        setSubscription(null);
+      }
+      
+      setError(null);
+    } catch (err) {
+      console.error('Error checking mobile subscription:', err);
+      setError('Failed to check mobile subscription status');
+      setSubscription(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [platform]);
+
+  // Check for mobile subscription on mount
   useEffect(() => {
-    // Initial setup - load products and check subscription status
-    const initializeSubscription = async () => {
-      try {
-        // Load available subscription products
-        const products = await MobileSubscriptionService.getProducts();
-        
-        // Check existing subscription status
-        const status = await MobileSubscriptionService.verifySubscription();
-        
-        setSubscription({
-          isSubscribed: status.isSubscribed,
-          plan: status.plan,
-          expiresAt: status.expiresAt,
-          products,
-          isLoading: false
-        });
-      } catch (error) {
-        console.error('Subscription initialization failed:', error);
-        setSubscription(prev => ({
-          ...prev,
-          isLoading: false,
-          error: error.message
-        }));
-      }
-    };
+    if (isMobile) {
+      checkMobileSubscription();
+    } else {
+      // Not a mobile device, still check for activation codes
+      checkMobileSubscription();
+      setLoading(false);
+    }
+  }, [isMobile, checkMobileSubscription]);
 
-    initializeSubscription();
-  }, []);
+  // Refresh subscription data - can be called from outside to force a refresh
+  const refreshSubscription = useCallback(() => {
+    checkMobileSubscription();
+  }, [checkMobileSubscription]);
 
-  // Purchase a subscription
-  const purchaseSubscription = async (productId) => {
-    setSubscription(prev => ({ ...prev, isProcessing: true }));
+  // Activate subscription
+  const activateSubscription = async (code) => {
+    setLoading(true);
     try {
-      const result = await MobileSubscriptionService.purchaseSubscription(productId);
+      // In a real app, this would verify the code with a server
+      localStorage.setItem('mobileSubscriptionCode', code);
+      localStorage.setItem('mobileSubscriptionActivated', new Date().toISOString());
       
-      if (result.success) {
-        setSubscription({
-          ...subscription,
-          isSubscribed: true,
-          plan: productId,
-          expiresAt: result.expiresAt,
-          isProcessing: false
-        });
-      } else {
-        setSubscription(prev => ({
-          ...prev,
-          isProcessing: false,
-          error: result.error
-        }));
-      }
+      const newSubscription = {
+        status: 'active',
+        platform,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+        activatedAt: new Date().toISOString()
+      };
       
-      return result;
-    } catch (error) {
-      setSubscription(prev => ({
-        ...prev,
-        isProcessing: false,
-        error: error.message
-      }));
-      return { success: false, error: error.message };
+      setSubscription(newSubscription);
+      setError(null);
+      setLoading(false);
+      return newSubscription;
+    } catch (err) {
+      console.error('Error activating mobile subscription:', err);
+      setError('Failed to activate mobile subscription');
+      setLoading(false);
+      throw err;
     }
   };
 
-  // Restore previous purchases
-  const restorePurchases = async () => {
-    setSubscription(prev => ({ ...prev, isProcessing: true }));
+  // Deactivate subscription
+  const deactivateSubscription = async () => {
+    setLoading(true);
     try {
-      const result = await MobileSubscriptionService.restorePurchases();
+      localStorage.removeItem('mobileSubscriptionCode');
+      localStorage.removeItem('mobileSubscriptionActivated');
       
-      if (result.success && result.isSubscribed) {
-        // Verify the restored subscription
-        const status = await MobileSubscriptionService.verifySubscription();
-        
-        setSubscription({
-          ...subscription,
-          isSubscribed: status.isSubscribed,
-          plan: status.plan,
-          expiresAt: status.expiresAt,
-          isProcessing: false,
-          restorationComplete: true
-        });
-      } else {
-        setSubscription(prev => ({
-          ...prev,
-          isProcessing: false,
-          restorationComplete: true,
-          error: result.error
-        }));
-      }
-      
-      return result;
-    } catch (error) {
-      setSubscription(prev => ({
-        ...prev,
-        isProcessing: false,
-        restorationComplete: true,
-        error: error.message
-      }));
-      return { success: false, error: error.message };
+      setSubscription(null);
+      setError(null);
+      setLoading(false);
+      return true;
+    } catch (err) {
+      console.error('Error deactivating mobile subscription:', err);
+      setError('Failed to deactivate mobile subscription');
+      setLoading(false);
+      throw err;
     }
   };
 
-  // Activate with code (cross-platform support)
-  const activateWithCode = async (accessCode) => {
-    setSubscription(prev => ({ ...prev, isProcessing: true }));
-    try {
-      const result = await MobileSubscriptionService.activateWithCode(accessCode);
-      
-      if (result.success) {
-        setSubscription({
-          ...subscription,
-          isSubscribed: true,
-          plan: result.plan,
-          expiresAt: result.expiresAt,
-          isProcessing: false
-        });
-      } else {
-        setSubscription(prev => ({
-          ...prev,
-          isProcessing: false,
-          error: result.error
-        }));
-      }
-      
-      return result;
-    } catch (error) {
-      setSubscription(prev => ({
-        ...prev,
-        isProcessing: false,
-        error: error.message
-      }));
-      return { success: false, error: error.message };
-    }
-  };
-
-  // Refresh subscription status
-  const refreshSubscription = async () => {
-    try {
-      const status = await MobileSubscriptionService.verifySubscription();
-      
-      setSubscription(prev => ({
-        ...prev,
-        isSubscribed: status.isSubscribed,
-        plan: status.plan,
-        expiresAt: status.expiresAt
-      }));
-      
-      return status;
-    } catch (error) {
-      console.error('Refresh failed:', error);
-      return { isSubscribed: subscription.isSubscribed };
-    }
-  };
-
-  const clearError = () => {
-    setSubscription(prev => ({ ...prev, error: null }));
+  // Context value
+  const value = {
+    subscription,
+    loading,
+    error,
+    activateSubscription,
+    deactivateSubscription,
+    refreshSubscription, // Add the refresh function
+    hasActiveSubscription: Boolean(subscription && subscription.status === 'active'),
+    platform
   };
 
   return (
-    <MobileSubscriptionContext.Provider value={{
-      ...subscription,
-      purchaseSubscription,
-      restorePurchases,
-      activateWithCode,
-      refreshSubscription,
-      clearError
-    }}>
+    <MobileSubscriptionContext.Provider value={value}>
       {children}
     </MobileSubscriptionContext.Provider>
   );

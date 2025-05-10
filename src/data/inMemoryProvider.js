@@ -1,234 +1,212 @@
 // src/data/inMemoryProvider.js
-const fs = require('fs').promises;
-const path = require('path');
-const bcrypt = require('bcryptjs');
+// Simple in-memory storage without any external dependencies
 
-// Directory for data files
-const dataDir = path.join(__dirname, '..', '..', 'data');
+// In-memory storage using localStorage for persistence
+const STORAGE_KEY = 'subscription_data';
 
-// Ensure data directory exists
-const ensureDataDir = async () => {
+// Initialize or load existing data
+const loadData = () => {
   try {
-    await fs.mkdir(dataDir, { recursive: true });
-  } catch (err) {
-    console.error('Error creating data directory:', err);
+    const storedData = localStorage.getItem(STORAGE_KEY);
+    return storedData ? JSON.parse(storedData) : { subscriptions: [] };
+  } catch (e) {
+    console.error('Error loading data from localStorage:', e);
+    return { subscriptions: [] };
   }
 };
 
-// Save data to a JSON file
-const saveData = async (filename, data) => {
-  await ensureDataDir();
-  const filePath = path.join(dataDir, `${filename}.json`);
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-};
-
-// Load data from a JSON file
-const loadData = async (filename, defaultData = []) => {
-  await ensureDataDir();
-  const filePath = path.join(dataDir, `${filename}.json`);
-  
+// Save data to localStorage
+const saveData = (data) => {
   try {
-    const fileData = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(fileData);
-  } catch (err) {
-    // If file doesn't exist or is invalid, return default data
-    if (err.code === 'ENOENT' || err instanceof SyntaxError) {
-      await saveData(filename, defaultData); // Create the file with default data
-      return defaultData;
-    }
-    throw err;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error('Error saving data to localStorage:', e);
   }
 };
 
-// In-memory storage with file persistence
-let users = [];
-let subscriptions = [];
-let nextUserId = 1;
-
-// Initialize data
-const initData = async () => {
-  users = await loadData('users', []);
-  subscriptions = await loadData('subscriptions', []);
-  
-  // Set nextUserId to be one more than the maximum id
-  nextUserId = users.length > 0 
-    ? Math.max(...users.map(user => user.id)) + 1 
-    : 1;
+// Generate a simple random ID
+const generateId = () => {
+  return Math.random().toString(36).substring(2, 15) + 
+         Math.random().toString(36).substring(2, 15);
 };
 
-// Initialize on module load
-initData();
+// Generate an access code
+const generateAccessCode = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  
+  for (let i = 0; i < 12; i++) {
+    if (i === 4 || i === 8) {
+      code += '-';
+    }
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  return code;
+};
 
-// User methods
-const userMethods = {
-  async findById(id) {
-    return users.find(user => user.id === parseInt(id)) || null;
-  },
-  
-  async findByEmail(email) {
-    return users.find(user => user.email === email) || null;
-  },
-  
-  async create(userData) {
-    // Check if user exists
-    if (await this.findByEmail(userData.email)) {
-      throw new Error('User already exists');
+const inMemoryProvider = {
+  // Subscription methods
+  async createSubscription(subscriptionData) {
+    try {
+      const data = loadData();
+      
+      // Generate an ID and access code if not provided
+      const id = subscriptionData.id || generateId();
+      const accessCode = subscriptionData.accessCode || generateAccessCode();
+      
+      const newSubscription = {
+        ...subscriptionData,
+        id,
+        accessCode,
+        createdAt: subscriptionData.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      data.subscriptions.push(newSubscription);
+      saveData(data);
+      
+      return { ...newSubscription };
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      throw error;
     }
-    
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userData.password, salt);
-    
-    // Create user
-    const newUser = {
-      id: nextUserId++,
-      name: userData.name,
-      email: userData.email,
-      password: hashedPassword,
-      createdAt: new Date()
-    };
-    
-    users.push(newUser);
-    
-    // Save to file
-    await saveData('users', users);
-    
-    // Return user without password
-    const { password, ...userWithoutPassword } = newUser;
-    return userWithoutPassword;
   },
-  
-  async update(id, updates) {
-    const index = users.findIndex(user => user.id === parseInt(id));
-    
-    if (index === -1) {
-      throw new Error('User not found');
+
+  async getSubscriptionByAccessCode(accessCode) {
+    try {
+      const data = loadData();
+      const subscription = data.subscriptions.find(sub => sub.accessCode === accessCode);
+      return subscription ? { ...subscription } : null;
+    } catch (error) {
+      console.error('Error finding subscription by access code:', error);
+      throw error;
     }
-    
-    // Update fields
-    users[index] = { ...users[index], ...updates };
-    
-    // Save to file
-    await saveData('users', users);
-    
-    // Return user without password
-    const { password, ...userWithoutPassword } = users[index];
-    return userWithoutPassword;
   },
-  
-  async changePassword(id, newPassword) {
-    const index = users.findIndex(user => user.id === parseInt(id));
-    
-    if (index === -1) {
-      throw new Error('User not found');
+
+  async getSubscriptionByTransactionId(transactionId) {
+    try {
+      const data = loadData();
+      const subscription = data.subscriptions.find(sub => 
+        sub.originalTransactionId === transactionId
+      );
+      return subscription ? { ...subscription } : null;
+    } catch (error) {
+      console.error('Error finding subscription by transaction ID:', error);
+      throw error;
     }
-    
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-    
-    // Update password
-    users[index].password = hashedPassword;
-    
-    // Save to file
-    await saveData('users', users);
-    
-    return true;
   },
-  
-  async comparePassword(userId, candidatePassword) {
-    const user = await this.findById(userId);
-    if (!user) return false;
-    
-    return bcrypt.compare(candidatePassword, user.password);
+
+  async updateSubscription(accessCode, updates) {
+    try {
+      const data = loadData();
+      const index = data.subscriptions.findIndex(sub => sub.accessCode === accessCode);
+      
+      if (index === -1) {
+        throw new Error('Subscription not found');
+      }
+      
+      // Update the subscription
+      const updatedSubscription = {
+        ...data.subscriptions[index],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+      
+      data.subscriptions[index] = updatedSubscription;
+      saveData(data);
+      
+      return { ...updatedSubscription };
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      throw error;
+    }
+  },
+
+  async activateSubscriptionOnDevice(accessCode, deviceId, platform) {
+    try {
+      const subscription = await this.getSubscriptionByAccessCode(accessCode);
+      
+      if (!subscription) {
+        throw new Error('Subscription not found');
+      }
+      
+      // Initialize activations array if it doesn't exist
+      if (!subscription.activations) {
+        subscription.activations = [];
+      }
+      
+      // Check if maximum activations reached
+      if (subscription.activations.length >= (subscription.maxActivations || 3)) {
+        throw new Error('Maximum device activations reached');
+      }
+      
+      // Check if device is already activated
+      const isDeviceActivated = subscription.activations.some(a => a.deviceId === deviceId);
+      
+      if (!isDeviceActivated) {
+        subscription.activations.push({
+          deviceId,
+          platform,
+          activatedAt: new Date().toISOString()
+        });
+      }
+      
+      // Update the subscription
+      return await this.updateSubscription(accessCode, {
+        activations: subscription.activations
+      });
+    } catch (error) {
+      console.error('Error activating subscription on device:', error);
+      throw error;
+    }
+  },
+
+  async deactivateSubscriptionOnDevice(accessCode, deviceId) {
+    try {
+      const subscription = await this.getSubscriptionByAccessCode(accessCode);
+      
+      if (!subscription) {
+        throw new Error('Subscription not found');
+      }
+      
+      // Filter out the device
+      const activations = (subscription.activations || []).filter(a => a.deviceId !== deviceId);
+      
+      // Update the subscription
+      return await this.updateSubscription(accessCode, {
+        activations
+      });
+    } catch (error) {
+      console.error('Error deactivating subscription on device:', error);
+      throw error;
+    }
+  },
+
+  async getAllSubscriptions() {
+    try {
+      const data = loadData();
+      return [...data.subscriptions];
+    } catch (error) {
+      console.error('Error getting all subscriptions:', error);
+      throw error;
+    }
+  },
+
+  async getActiveSubscriptions() {
+    try {
+      const data = loadData();
+      return data.subscriptions.filter(sub => sub.status === 'active');
+    } catch (error) {
+      console.error('Error getting active subscriptions:', error);
+      throw error;
+    }
+  },
+
+  // For development/testing only
+  _clearSubscriptions() {
+    saveData({ subscriptions: [] });
   }
 };
 
-// Subscription methods
-const subscriptionMethods = {
-  async findByUserId(userId) {
-    return subscriptions.find(sub => sub.userId === parseInt(userId)) || null;
-  },
-  
-  async create(subscriptionData) {
-    const subscription = {
-      id: Date.now().toString(),
-      userId: parseInt(subscriptionData.userId),
-      plan: subscriptionData.plan,
-      startDate: subscriptionData.startDate || new Date(),
-      endDate: subscriptionData.endDate,
-      status: 'active',
-      features: this.getFeaturesForPlan(subscriptionData.plan)
-    };
-    
-    subscriptions.push(subscription);
-    
-    // Save to file
-    await saveData('subscriptions', subscriptions);
-    
-    return subscription;
-  },
-  
-  async update(id, updates) {
-    const index = subscriptions.findIndex(sub => sub.id === id);
-    
-    if (index === -1) {
-      return null;
-    }
-    
-    subscriptions[index] = { ...subscriptions[index], ...updates };
-    
-    // Save to file
-    await saveData('subscriptions', subscriptions);
-    
-    return subscriptions[index];
-  },
-  
-  async cancel(id) {
-    const index = subscriptions.findIndex(sub => sub.id === id);
-    
-    if (index === -1) {
-      return false;
-    }
-    
-    subscriptions[index].status = 'cancelled';
-    
-    // Save to file
-    await saveData('subscriptions', subscriptions);
-    
-    return true;
-  },
-  
-  getFeaturesForPlan(plan) {
-    switch (plan) {
-      case 'free':
-        return {
-          dealAlerts: 3,
-          destinations: 2,
-          customAlerts: false,
-          adFree: false
-        };
-      case 'monthly':
-      case 'yearly':
-      case 'premium':
-        return {
-          dealAlerts: -1, // unlimited
-          destinations: -1, // unlimited
-          customAlerts: true,
-          adFree: true
-        };
-      default:
-        return {
-          dealAlerts: 0,
-          destinations: 0,
-          customAlerts: false,
-          adFree: false
-        };
-    }
-  }
-};
-
-module.exports = {
-  user: userMethods,
-  subscription: subscriptionMethods
-};
+export default inMemoryProvider;

@@ -1,17 +1,14 @@
 // src/data/dataProvider.js
-const config = require('../config/config');
-const inMemoryProvider = require('./inMemoryProvider');
-const mongoProvider = require('./mongoProvider');
 
-// Determine which provider to use based on config
-const getProvider = () => {
-  if (config.useDatabase === 'mongodb') {
-    return mongoProvider;
-  }
-  return inMemoryProvider;
-};
+import inMemoryProvider from './inMemoryProvider';
 
-// Export the selected provider's methods
-const provider = getProvider();
+// Determine which provider to use based on environment variable
+// In a browser environment, we need to check window or use a build flag
 
-module.exports = provider;
+
+// Export the appropriate data provider
+const dataProvider = inMemoryProvider;
+
+console.log('Using in-memory data provider');
+
+export default dataProvider;

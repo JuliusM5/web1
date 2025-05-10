@@ -1,149 +1,197 @@
 // src/components/Subscription/MobileCodeActivation.jsx
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSubscription } from '../../hooks/useSubscription';
-import TokenizedSubscription from '../../models/TokenizedSubscription';
+import { useMobileSubscription } from '../../hooks/useMobileSubscription';
+import { isMobileDevice } from '../../utils/deviceDetection';
 
-const MobileCodeActivation = () => {
-  const [code, setCode] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+const MobileCodeActivation = ({ onSuccess, onCancel }) => {
+  const [code1, setCode1] = useState('');
+  const [code2, setCode2] = useState('');
+  const [code3, setCode3] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const { refreshSubscription } = useSubscription();
-  const navigate = useNavigate();
+  const [activationSuccess, setActivationSuccess] = useState(false);
   
-  const handleCodeChange = (e) => {
-    // Format as user types: add dashes after every 4 chars
-    let value = e.target.value.replace(/-/g, ''); // Remove existing dashes
-    value = value.replace(/[^A-Z0-9]/gi, '').toUpperCase(); // Keep only alphanumeric, uppercase
-    
-    // Add dashes
-    let formattedValue = '';
-    for (let i = 0; i < value.length && i < 12; i++) {
-      if (i > 0 && i % 4 === 0) {
-        formattedValue += '-';
-      }
-      formattedValue += value[i];
+  // Get subscription hooks based on platform
+  const isMobile = isMobileDevice();
+  const webSubscription = useSubscription();
+  const mobileSubscription = useMobileSubscription();
+  
+  // Use the appropriate subscription service
+  const subscription = isMobile ? mobileSubscription.subscription : webSubscription.subscription;
+  const activateWithCode = isMobile ? mobileSubscription.activateSubscription : webSubscription.activateWithCode;
+  
+  // Refs for input fields
+  const input1Ref = useRef(null);
+  const input2Ref = useRef(null);
+  const input3Ref = useRef(null);
+  
+  // Redirect if already subscribed
+  useEffect(() => {
+    if (subscription && subscription.status === 'active' && onSuccess) {
+      onSuccess();
     }
-    
-    setCode(formattedValue);
-  };
+  }, [subscription, onSuccess]);
   
+  // Handle form submission
   const handleActivate = async (e) => {
     e.preventDefault();
+    setError('');
     
-    // Validate code format
-    if (!code.match(/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
-      setError('Please enter a valid code in the format XXXX-XXXX-XXXX');
+    // Validate input
+    if (!code1 || !code2 || !code3 || 
+        code1.length !== 4 || code2.length !== 4 || code3.length !== 4) {
+      setError('Please enter a valid activation code');
       return;
     }
     
-    setIsProcessing(true);
-    setError('');
+    // Format access code
+    const accessCode = `${code1}-${code2}-${code3}`;
     
+    // Activate subscription
+    setIsLoading(true);
     try {
-      // Verify the mobile access code
-      const result = await TokenizedSubscription.verifyMobileCode(code);
+      await activateWithCode(accessCode);
+      setActivationSuccess(true);
       
-      if (!result.valid) {
-        throw new Error(result.error || 'Invalid or expired code');
+      // Call onSuccess if provided
+      if (onSuccess) {
+        onSuccess();
       }
-      
-      // Store the subscription data
-      TokenizedSubscription.storeSubscription(
-        result.accessToken,
-        result.plan,
-        new Date(result.expiresAt)
-      );
-      
-      // Show success state
-      setSuccess(true);
-      
-      // Refresh subscription context
-      refreshSubscription();
     } catch (error) {
-      console.error('Code activation failed:', error);
-      setError(error.message || 'Failed to activate subscription. Please try again.');
+      console.error('Activation error:', error);
+      setError(error.message || 'Failed to activate subscription');
     } finally {
-      setIsProcessing(false);
+      setIsLoading(false);
     }
   };
   
-  if (success) {
+  // Auto-focus next input when current is filled
+  const handleInputChange = (setter, value, nextRef) => {
+    // Only allow alphanumeric characters
+    const cleanValue = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    setter(cleanValue);
+    
+    // Auto-advance to next field when full
+    if (cleanValue.length === 4 && nextRef && nextRef.current) {
+      nextRef.current.focus();
+    }
+  };
+  
+  // Handle pasting an entire code
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    
+    // Try to parse the pasted text as an activation code
+    const cleanText = pastedText.replace(/[^A-Za-z0-9-]/g, '').toUpperCase();
+    const parts = cleanText.split('-');
+    
+    if (parts.length === 3) {
+      setCode1(parts[0].substring(0, 4));
+      setCode2(parts[1].substring(0, 4));
+      setCode3(parts[2].substring(0, 4));
+      
+      // Focus last input
+      if (input3Ref.current) {
+        input3Ref.current.focus();
+      }
+    } else if (cleanText.length === 12) {
+      // Handle codes without dashes
+      setCode1(cleanText.substring(0, 4));
+      setCode2(cleanText.substring(4, 8));
+      setCode3(cleanText.substring(8, 12));
+      
+      // Focus last input
+      if (input3Ref.current) {
+        input3Ref.current.focus();
+      }
+    }
+  };
+  
+  if (activationSuccess) {
     return (
-      <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-md">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Success!</h2>
-          <p className="text-gray-600">
-            Your premium subscription has been activated successfully. You now have access to all premium features.
-          </p>
-        </div>
-        
-        <button
-          onClick={() => navigate('/')}
-          className="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Start Using Premium Features
+      <div className="activation-success">
+        <h2>Activation Successful!</h2>
+        <p>Your premium subscription has been activated on this device.</p>
+        <button onClick={onSuccess} className="primary-button">
+          Continue
         </button>
       </div>
     );
   }
   
   return (
-    <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Activate Subscription</h2>
+    <div className="code-activation-container">
+      <h2>Enter your activation code</h2>
+      <p>Enter the code you received after purchasing a subscription.</p>
       
-      <p className="text-gray-600 mb-6">
-        Enter your access code from the web subscription to activate premium features on this device.
-      </p>
+      {error && <div className="error-message">{error}</div>}
       
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
-      
-      <form onSubmit={handleActivate}>
-        <div className="mb-6">
-          <label htmlFor="accessCode" className="block text-gray-700 font-medium mb-2">
-            Access Code
-          </label>
+      <form onSubmit={handleActivate} className="activation-form">
+        <div className="code-input-group">
           <input
-            id="accessCode"
+            ref={input1Ref}
             type="text"
-            value={code}
-            onChange={handleCodeChange}
-            placeholder="XXXX-XXXX-XXXX"
-            className="w-full px-4 py-3 border border-gray-300 rounded-md text-center font-mono text-lg"
-            maxLength="14" // 12 chars + 2 dashes
-            autoComplete="off"
-            disabled={isProcessing}
-            required
+            value={code1}
+            onChange={(e) => handleInputChange(setCode1, e.target.value, input2Ref)}
+            onPaste={handlePaste}
+            placeholder="XXXX"
+            maxLength={4}
+            className="code-input"
+            disabled={isLoading}
+            autoFocus
           />
-          <p className="mt-2 text-sm text-gray-500">
-            Enter the 12-character code you received when subscribing on the web.
-          </p>
+          <span className="code-separator">-</span>
+          <input
+            ref={input2Ref}
+            type="text"
+            value={code2}
+            onChange={(e) => handleInputChange(setCode2, e.target.value, input3Ref)}
+            placeholder="XXXX"
+            maxLength={4}
+            className="code-input"
+            disabled={isLoading}
+          />
+          <span className="code-separator">-</span>
+          <input
+            ref={input3Ref}
+            type="text"
+            value={code3}
+            onChange={(e) => handleInputChange(setCode3, e.target.value, null)}
+            placeholder="XXXX"
+            maxLength={4}
+            className="code-input"
+            disabled={isLoading}
+          />
         </div>
         
-        <button
-          type="submit"
-          className={`w-full py-3 rounded-md font-medium ${
-            isProcessing
-              ? 'bg-gray-400 text-white cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
-          disabled={isProcessing}
-        >
-          {isProcessing ? 'Activating...' : 'Activate Subscription'}
-        </button>
+        <div className="button-group">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="secondary-button"
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            className="primary-button"
+            disabled={isLoading || !code1 || !code2 || !code3}
+          >
+            {isLoading ? 'Activating...' : 'Activate'}
+          </button>
+        </div>
       </form>
+      
+      <div className="help-text">
+        <p>
+          Don't have a code? <a href="/subscription">Purchase a subscription</a> to get access to premium features.
+        </p>
+      </div>
     </div>
   );
 };

@@ -1,236 +1,243 @@
-// src/services/subscriptionService.js
+// src/services/SubscriptionService.js
+// Simplified subscription service without external dependencies
 
-const TokenizedSubscription = require('../models/TokenizedSubscription');
-// Or use the in-memory version for development
-// const TokenizedSubscription = require('../models/inMemoryTokenizedSubscription');
+import dataProvider from '../data/dataProvider';
+import stripeService from './stripeService';
+import analyticsService from './analyticsService';
+import { captureError } from '../utils/errorMonitoring';
 
-const appleReceiptVerifier = require('./platforms/appleReceiptVerifier');
-const googleReceiptVerifier = require('./platforms/googleReceiptVerifier');
-
-/**
- * Service for managing accountless subscriptions
- */
 class SubscriptionService {
-  /**
-   * Create a new subscription from web purchase
-   * @param {string} email - User's email (only for receipts)
-   * @param {string} plan - Subscription plan ID
-   * @param {string} paymentId - Reference to payment processor's transaction ID
-   * @returns {Promise<Object>} - Created subscription details
-   */
-  async createSubscription(email, plan, paymentId) {
+  constructor() {
+    this.currentSubscription = null;
+    this.deviceId = this.getOrCreateDeviceId();
+  }
+
+  // Get or create a unique device ID for this browser
+  getOrCreateDeviceId() {
+    let deviceId = localStorage.getItem('deviceId');
+    if (!deviceId) {
+      deviceId = Math.random().toString(36).substring(2, 15) + 
+                Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('deviceId', deviceId);
+    }
+    return deviceId;
+  }
+
+  // Create a new subscription using Stripe
+  async createSubscription(planId, paymentMethodId) {
     try {
-      // Calculate expiry date
-      const expiresAt = this.calculateExpiryDate(plan);
+      // Create a subscription with Stripe (or mock it for testing)
+      const stripeSubscription = paymentMethodId 
+        ? await stripeService.createSubscription(paymentMethodId, planId)
+        : stripeService.mockCreateSubscription(planId);
       
-      // For MongoDB implementation
-      // Create new subscription document
-      const subscription = await TokenizedSubscription.create({
-        email,
-        accessToken: TokenizedSubscription.generateToken(),
-        mobileAccessCode: TokenizedSubscription.generateMobileAccessCode(),
-        plan,
-        expiresAt,
-        paymentId,
-        active: true
+      // Generate a unique access code
+      const accessCode = this.generateAccessCode();
+      
+      // Store the subscription in our database
+      const subscription = await dataProvider.createSubscription({
+        accessCode,
+        platform: 'web',
+        originalTransactionId: stripeSubscription.id,
+        status: 'active',
+        expiresAt: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
+        planId,
+        deviceId: this.deviceId,
+        activations: [
+          {
+            deviceId: this.deviceId,
+            platform: 'web',
+            activatedAt: new Date().toISOString()
+          }
+        ]
       });
       
-      return {
-        success: true,
-        accessToken: subscription.accessToken,
-        mobileAccessCode: subscription.mobileAccessCode,
-        expiresAt: subscription.expiresAt
-      };
+      // Set as current subscription
+      this.currentSubscription = subscription;
+      localStorage.setItem('accessCode', accessCode);
       
-      // For in-memory implementation
-      /*
-      return await TokenizedSubscription.create({
-        email,
-        plan,
-        expiresAt,
-        paymentId
-      });
-      */
-    } catch (error) {
-      console.error('Failed to create subscription:', error);
-      return { success: false, error: 'Subscription creation failed' };
-    }
-  }
-
-  /**
-   * Verify a subscription token
-   * @param {string} token - Subscription access token
-   * @returns {Promise<Object>} - Verification result
-   */
-  async verifyToken(token) {
-    try {
-      return await TokenizedSubscription.verifyToken(token);
-    } catch (error) {
-      console.error('Token verification failed:', error);
-      return { valid: false, error: 'Verification failed' };
-    }
-  }
-
-  /**
-   * Verify an Apple receipt
-   * @param {string} receipt - Apple receipt data
-   * @returns {Promise<Object>} - Verification result
-   */
-  async verifyAppleReceipt(receipt) {
-    try {
-      // Use Apple's verification service
-      const verificationResult = await appleReceiptVerifier.verify(receipt);
-      
-      if (verificationResult.valid) {
-        // Store the verified receipt for future reference
-        // This could be in a separate collection/table
-        
-        return {
-          verified: true,
-          expiresAt: verificationResult.expiresAt,
-          productId: verificationResult.productId
-        };
-      }
-      
-      return { verified: false };
-    } catch (error) {
-      console.error('Apple receipt verification failed:', error);
-      return { verified: false, error: error.message };
-    }
-  }
-
-  /**
-   * Verify a Google Play receipt
-   * @param {string|Object} receipt - Google Play receipt data
-   * @returns {Promise<Object>} - Verification result
-   */
-  async verifyGoogleReceipt(receipt) {
-    try {
-      // Parse the receipt if it's a string
-      const receiptData = typeof receipt === 'string' ? JSON.parse(receipt) : receipt;
-      
-      // Use Google's API to verify
-      const verificationResult = await googleReceiptVerifier.verify(
-        receiptData.packageName,
-        receiptData.productId,
-        receiptData.purchaseToken
+      // Track the subscription event
+      analyticsService.trackSubscriptionStarted(
+        planId, 
+        stripeSubscription.plan.amount / 100,
+        'web'
       );
       
-      if (verificationResult.valid) {
-        // Store the verified receipt for future reference
-        
-        return {
-          verified: true,
-          expiresAt: verificationResult.expiresAt,
-          productId: receiptData.productId
-        };
-      }
-      
-      return { verified: false };
+      return subscription;
     } catch (error) {
-      console.error('Google receipt verification failed:', error);
-      return { verified: false, error: error.message };
+      captureError(error, { context: 'Creating subscription' });
+      throw error;
     }
   }
 
-  /**
-   * Activate subscription on mobile with web access code
-   * @param {string} accessCode - Mobile access code from web purchase
-   * @param {string} platform - Mobile platform ('ios' or 'android')
-   * @returns {Promise<Object>} - Activation result
-   */
-  async activateWithCode(accessCode, platform) {
+  // Activate a subscription using an access code
+  async activateWithCode(accessCode) {
     try {
-      // Find the subscription by mobile access code
-      const verification = await TokenizedSubscription.verifyMobileCode(accessCode);
-      
-      if (!verification.valid) {
-        return { success: false, error: 'Invalid or expired code' };
-      }
-      
-      // Create a "web receipt" that can be stored on the mobile device
-      const webReceipt = JSON.stringify({
-        accessToken: verification.accessToken,
-        code: accessCode,
-        platform
-      });
-      
-      return {
-        success: true,
-        webReceipt,
-        plan: verification.plan,
-        expiresAt: verification.expiresAt
-      };
-    } catch (error) {
-      console.error('Code activation failed:', error);
-      return { success: false, error: 'Activation failed' };
-    }
-  }
-
-  /**
-   * Verify a "web receipt" from mobile device
-   * @param {string|Object} webReceipt - Web receipt data
-   * @returns {Promise<Object>} - Verification result
-   */
-  async verifyWebReceipt(webReceipt) {
-    try {
-      // Parse the receipt if it's a string
-      const receiptData = typeof webReceipt === 'string' ? JSON.parse(webReceipt) : webReceipt;
-      
-      // Verify the access token
-      return await this.verifyToken(receiptData.accessToken);
-    } catch (error) {
-      console.error('Web receipt verification failed:', error);
-      return { verified: false, error: error.message };
-    }
-  }
-
-  /**
-   * Cancel a subscription
-   * @param {string} token - Subscription token
-   * @returns {Promise<Object>} - Cancellation result
-   */
-  async cancelSubscription(token) {
-    try {
-      // For MongoDB implementation
-      const subscription = await TokenizedSubscription.findOne({ accessToken: token });
+      // Check if the code is valid
+      const subscription = await dataProvider.getSubscriptionByAccessCode(accessCode);
       
       if (!subscription) {
-        return { success: false, error: 'Subscription not found' };
+        throw new Error('Invalid access code');
       }
       
-      subscription.active = false;
-      await subscription.save();
+      if (subscription.status !== 'active') {
+        throw new Error('Subscription is not active');
+      }
       
-      return { success: true };
+      // If the subscription has an expiration date, check if it's expired
+      if (subscription.expiresAt) {
+        const expiresAt = new Date(subscription.expiresAt);
+        if (expiresAt < new Date()) {
+          await dataProvider.updateSubscription(accessCode, { status: 'expired' });
+          throw new Error('Subscription has expired');
+        }
+      }
       
-      // For in-memory implementation
-      /*
-      return await TokenizedSubscription.cancelSubscription(token);
-      */
+      // Activate the subscription on this device
+      const activatedSubscription = await dataProvider.activateSubscriptionOnDevice(
+        accessCode,
+        this.deviceId,
+        'web'
+      );
+      
+      // Set as current subscription
+      this.currentSubscription = activatedSubscription;
+      localStorage.setItem('accessCode', accessCode);
+      
+      // Track code activation
+      const daysRemaining = Math.ceil(
+        (new Date(subscription.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)
+      );
+      analyticsService.trackCodeActivated('web', daysRemaining);
+      
+      return activatedSubscription;
     } catch (error) {
-      console.error('Cancellation failed:', error);
-      return { success: false, error: 'Failed to cancel subscription' };
+      captureError(error, { context: 'Activating subscription with code' });
+      throw error;
     }
   }
 
-  /**
-   * Calculate subscription expiry date based on plan
-   * @param {string} plan - Subscription plan ID
-   * @returns {Date} - Expiry date
-   */
-  calculateExpiryDate(plan) {
-    const now = new Date();
-    
-    if (plan === 'monthly_premium') {
-      return new Date(now.setMonth(now.getMonth() + 1));
-    } else if (plan === 'yearly_premium') {
-      return new Date(now.setFullYear(now.getFullYear() + 1));
-    } else {
-      // Default to 1 month if plan is unknown
-      return new Date(now.setMonth(now.getMonth() + 1));
+  // Cancel a subscription
+  async cancelSubscription() {
+    try {
+      if (!this.currentSubscription) {
+        throw new Error('No active subscription');
+      }
+      
+      // Cancel with Stripe if it's a web subscription
+      if (this.currentSubscription.platform === 'web' && 
+          this.currentSubscription.originalTransactionId) {
+        await stripeService.cancelSubscription(this.currentSubscription.originalTransactionId);
+      }
+      
+      // Update subscription status in database
+      const updatedSubscription = await dataProvider.updateSubscription(
+        this.currentSubscription.accessCode,
+        { status: 'cancelled' }
+      );
+      
+      // Track cancellation
+      const createdAt = new Date(this.currentSubscription.createdAt);
+      const daysSinceSubscribed = Math.floor(
+        (new Date() - createdAt) / (1000 * 60 * 60 * 24)
+      );
+      
+      analyticsService.trackSubscriptionCancelled(
+        this.currentSubscription.planId,
+        'user_initiated',
+        daysSinceSubscribed
+      );
+      
+      // Clear current subscription
+      this.currentSubscription = null;
+      localStorage.removeItem('accessCode');
+      
+      return updatedSubscription;
+    } catch (error) {
+      captureError(error, { context: 'Cancelling subscription' });
+      throw error;
     }
+  }
+
+  // Check current subscription status
+  async checkSubscription() {
+    try {
+      const accessCode = localStorage.getItem('accessCode');
+      
+      if (!accessCode) {
+        return null;
+      }
+      
+      const subscription = await dataProvider.getSubscriptionByAccessCode(accessCode);
+      
+      if (!subscription || subscription.status !== 'active') {
+        localStorage.removeItem('accessCode');
+        this.currentSubscription = null;
+        return null;
+      }
+      
+      // Check if subscription is expired
+      if (subscription.expiresAt) {
+        const expiresAt = new Date(subscription.expiresAt);
+        if (expiresAt < new Date()) {
+          // Update subscription status to expired
+          await dataProvider.updateSubscription(accessCode, { status: 'expired' });
+          localStorage.removeItem('accessCode');
+          this.currentSubscription = null;
+          return null;
+        }
+      }
+      
+      this.currentSubscription = subscription;
+      return subscription;
+    } catch (error) {
+      captureError(error, { context: 'Checking subscription' });
+      // Return null instead of throwing, to prevent app crashes on status checks
+      return null;
+    }
+  }
+
+  // Check if a specific feature is available with the current subscription
+  async isFeatureAvailable(featureName) {
+    try {
+      const subscription = await this.checkSubscription();
+      
+      if (!subscription) {
+        return false;
+      }
+      
+      // In a real implementation, you would check if the specific plan includes this feature
+      // For now, we'll assume all subscriptions include all premium features
+      
+      // Track premium feature usage
+      analyticsService.trackPremiumFeatureUsed(featureName);
+      
+      return true;
+    } catch (error) {
+      captureError(error, { context: 'Checking feature availability' });
+      return false;
+    }
+  }
+
+  // Get current subscription
+  async getCurrentSubscription() {
+    return await this.checkSubscription();
+  }
+
+  // Generate a random access code (format: XXXX-XXXX-XXXX)
+  generateAccessCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    
+    for (let i = 0; i < 12; i++) {
+      if (i === 4 || i === 8) {
+        code += '-';
+      }
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    return code;
   }
 }
 
-module.exports = new SubscriptionService();
+export default new SubscriptionService();

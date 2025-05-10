@@ -1,5 +1,4 @@
 // src/App.jsx
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
@@ -9,6 +8,7 @@ import Header from './components/UI/Header';
 import CheapFlightsDashboard from './components/CheapFlights/CheapFlightsDashboard';
 import { SettingsProvider } from './context/SettingsContext';
 import { SubscriptionProvider } from './context/SubscriptionContext';
+import { MobileSubscriptionProvider } from './context/MobileSubscriptionContext';
 import { AuthProvider } from './context/AuthContext';
 import { I18nProvider } from './utils/i18n';
 import AppSettingsWrapper from './components/UI/AppSettingsWrapper';
@@ -17,14 +17,14 @@ import MobileNavigation from './components/UI/MobileNavigation';
 import { useDeviceDetection } from './utils/deviceDetection';
 import PremiumFeaturesNotice from './components/CheapFlights/PremiumFeaturesNotice';
 import NotificationSettings from './components/Settings/NotificationSettings';
-
+// Initialize error monitoring
+import initErrorMonitoring from './utils/errorMonitoring';
 // Import the subscription components with the correct path
 import PlanCards from './components/Accessibility/Subscription/PlanCards';
 import Checkout from './components/Accessibility/Subscription/Checkout';
 import ManageSubscription from './components/Accessibility/Subscription/ManageSubscription';
 import SubscriptionConfirmation from './components/Accessibility/Subscription/SubscriptionConfirmation';
 import SubscriptionSuccess from './components/Subscription/SubscriptionSuccess';
-
 // Import the missing components
 import MobileCodeActivation from './components/Subscription/MobileCodeActivation';
 import PremiumFeatures from './components/Subscription/PremiumFeatures';
@@ -32,9 +32,11 @@ import PremiumFeatureShowcase from './components/Subscription/PremiumFeatureShow
 import MockCheckout from './components/Subscription/MockCheckout';
 // Import the TripTemplates component
 import TemplateManager from './components/TripTemplates/TemplateManager';
-
 // Import Premium Content Guard
 import PremiumContentGuard from './components/Subscription/PremiumContentGuard';
+
+// Now initialize error monitoring AFTER all imports
+initErrorMonitoring();
 
 // Internal route-based hook for syncing view state
 function useViewStateSync(setView) {
@@ -163,7 +165,6 @@ function AppRoutes() {
         <Route path="/subscription/activate-code" element={<MobileCodeActivation />} />
         <Route path="/premium-features" element={<PremiumFeatures />} />
         <Route path="/premium-features/:featureId" element={<PremiumFeatureShowcase />} />
-        <Route path="/premium-features/:featureId" element={<PremiumFeatureShowcase />} />
         <Route path="/mock-checkout" element={<MockCheckout />} />
         
         {/* Settings routes */}
@@ -191,13 +192,15 @@ function App() {
     <Router>
       <AuthProvider>
         <SubscriptionProvider>
-          <SettingsProvider>
-            <I18nProvider>
-              <AppSettingsWrapper>
-                <AppRoutes />
-              </AppSettingsWrapper>
-            </I18nProvider>
-          </SettingsProvider>
+          <MobileSubscriptionProvider>
+            <SettingsProvider>
+              <I18nProvider>
+                <AppSettingsWrapper>
+                  <AppRoutes />
+                </AppSettingsWrapper>
+              </I18nProvider>
+            </SettingsProvider>
+          </MobileSubscriptionProvider>
         </SubscriptionProvider>
       </AuthProvider>
     </Router>
