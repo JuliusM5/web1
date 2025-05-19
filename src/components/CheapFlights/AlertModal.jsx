@@ -1,329 +1,192 @@
-import React, { useState, useEffect } from 'react';
-import { useI18n } from '../../utils/i18n';
 
-function CreateAlertModal({ onClose, onCreateAlert, userLocation }) {
+import React from 'react';
+import { useSubscription } from '../../hooks/useSubscription';
+import { useI18n } from '../../utils/i18n';
+import { useAppSettings } from '../../utils/useAppSettings';
+
+function DealCard({ 
+  deal, 
+  onSetAlert, 
+  onSave, 
+  onRemove, 
+  isSaved = false, 
+  showRemoveButton = false
+}) {
+  const { isSubscribed } = useSubscription();
   const { t } = useI18n();
-  const [formData, setFormData] = useState({
-    origin: userLocation || '',
-    destination: '',
-    dateType: 'flexible', // 'flexible' or 'specific'
-    startDate: '',
-    endDate: '',
-    maxPrice: 100,
-    tripLength: { min: 3, max: 14 }
-  });
+  const { currency, date } = useAppSettings();
   
-  const [popularDestinations, setPopularDestinations] = useState([
-    { code: 'LON', name: 'London' },
-    { code: 'PAR', name: 'Paris' },
-    { code: 'BCN', name: 'Barcelona' },
-    { code: 'ROM', name: 'Rome' },
-    { code: 'BER', name: 'Berlin' },
-    { code: 'MAD', name: 'Madrid' },
-    { code: 'VIE', name: 'Vienna' },
-    { code: 'AMS', name: 'Amsterdam' }
-  ]);
+  // Format duration in hours and minutes
+  const formatDuration = (minutes) => {
+    if (!minutes) return '';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  };
   
-  const [errors, setErrors] = useState({});
-  
-  // Set default dates (next weekend)
-  useEffect(() => {
+  // Calculate days until departure
+  const getDaysUntilDeparture = () => {
+    if (!deal.departureDate) return null;
+    
     const now = new Date();
-    const friday = new Date(now);
-    friday.setDate(now.getDate() + (5 - now.getDay() + 7) % 7); // Next Friday
+    const departure = new Date(deal.departureDate);
+    const diffTime = Math.abs(departure - now);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    const sunday = new Date(friday);
-    sunday.setDate(friday.getDate() + 2); // Sunday after the Friday
-    
-    setFormData(prev => ({
-      ...prev,
-      startDate: friday.toISOString().split('T')[0],
-      endDate: sunday.toISOString().split('T')[0]
-    }));
-  }, []);
-  
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    return diffDays;
   };
   
-  const handleTripLengthChange = (type, value) => {
-    setFormData(prev => ({
-      ...prev,
-      tripLength: {
-        ...prev.tripLength,
-        [type]: parseInt(value, 10)
-      }
-    }));
+  // Get deal badge text and color
+  const getDealBadge = () => {
+    if (deal.lastMinute) {
+      return {
+        text: t('flightDeals.lastMinuteDeal'),
+        bgColor: 'bg-orange-500',
+        textColor: 'text-white'
+      };
+    }
+    
+    if (deal.discountPercent >= 40) {
+      return {
+        text: t('flightDeals.hugeDeal'),
+        bgColor: 'bg-green-500',
+        textColor: 'text-white'
+      };
+    }
+    
+    if (deal.discountPercent >= 25) {
+      return {
+        text: t('flightDeals.greatDeal'),
+        bgColor: 'bg-green-400',
+        textColor: 'text-white'
+      };
+    }
+    
+    return {
+      text: t('flightDeals.goodDeal'),
+      bgColor: 'bg-blue-100',
+      textColor: 'text-blue-800'
+    };
   };
   
-  const handleDestinationSelect = (destination) => {
-    setFormData(prev => ({
-      ...prev,
-      destination
-    }));
-  };
-  
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.origin) {
-      newErrors.origin = t('dealAlerts.errors.originRequired');
-    }
-    
-    if (!formData.destination) {
-      newErrors.destination = t('dealAlerts.errors.destinationRequired');
-    }
-    
-    if (formData.dateType === 'specific') {
-      if (!formData.startDate) {
-        newErrors.startDate = t('dealAlerts.errors.startDateRequired');
-      }
-      
-      if (!formData.endDate) {
-        newErrors.endDate = t('dealAlerts.errors.endDateRequired');
-      }
-      
-      if (formData.startDate && formData.endDate && new Date(formData.startDate) > new Date(formData.endDate)) {
-        newErrors.endDate = t('dealAlerts.errors.endDateAfterStart');
-      }
-    }
-    
-    if (formData.tripLength.min > formData.tripLength.max) {
-      newErrors.tripLength = t('dealAlerts.errors.invalidTripLength');
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-  
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (validateForm()) {
-      onCreateAlert(formData);
-    }
-  };
+  const badge = getDealBadge();
+  const daysUntilDeparture = getDaysUntilDeparture();
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold">{t('dealAlerts.createNewAlert')}</h3>
-          <button 
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
+    <div className="deal-card bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
+      <div className="p-4 md:p-5">
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="flex items-center mb-2">
+              <span className={`${badge.bgColor} ${badge.textColor} text-xs font-bold px-2 py-1 rounded mr-2`}>
+                {badge.text}
+              </span>
+              {deal.discountPercent && (
+                <span className="text-green-600 font-semibold text-sm">
+                  {deal.discountPercent}% {t('flightDeals.off')}
+                </span>
+              )}
+            </div>
+            
+            <h3 className="text-xl font-bold mb-1">
+              {deal.origin} → {deal.destinationName || deal.destination}
+            </h3>
+            
+            <div className="text-sm text-gray-500 mb-3">
+              {deal.airline && (
+                <span className="mr-2">{deal.airline}</span>
+              )}
+              {deal.duration && (
+                <span>• {formatDuration(deal.duration)}</span>
+              )}
+            </div>
+          </div>
+          
+          <div className="text-right">
+            <div className="text-2xl font-bold text-blue-600">
+              {currency(deal.price)}
+            </div>
+            {deal.averagePrice && (
+              <span className="text-sm text-gray-500 line-through">
+                {currency(deal.averagePrice)}
+              </span>
+            )}
+            {daysUntilDeparture && (
+              <div className="text-xs text-gray-500 mt-1">
+                {t('flightDeals.inDays', { days: daysUntilDeparture })}
+              </div>
+            )}
+          </div>
         </div>
         
-        <form onSubmit={handleSubmit}>
-          {/* Origin */}
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-medium mb-1">
-              {t('dealAlerts.origin')}
-            </label>
-            <input
-              type="text"
-              name="origin"
-              value={formData.origin}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md ${errors.origin ? 'border-red-500' : 'border-gray-300'}`}
-              placeholder={t('dealAlerts.originPlaceholder')}
-            />
-            {errors.origin && <p className="text-red-500 text-xs mt-1">{errors.origin}</p>}
-          </div>
-          
-          {/* Destination */}
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-medium mb-1">
-              {t('dealAlerts.destination')}
-            </label>
-            <input
-              type="text"
-              name="destination"
-              value={formData.destination}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md ${errors.destination ? 'border-red-500' : 'border-gray-300'}`}
-              placeholder={t('dealAlerts.destinationPlaceholder')}
-            />
-            {errors.destination && <p className="text-red-500 text-xs mt-1">{errors.destination}</p>}
+        <div className="mt-3 border-t pt-3">
+          <div className="flex justify-between items-center">
+            <div>
+              {deal.departureDate && (
+                <div className="text-sm">
+                  <span className="text-gray-500">{t('flightDeals.departureDate')}:</span> {date(deal.departureDate)}
+                </div>
+              )}
+              {deal.returnDate && (
+                <div className="text-sm">
+                  <span className="text-gray-500">{t('flightDeals.returnDate')}:</span> {date(deal.returnDate)}
+                </div>
+              )}
+            </div>
             
-            {/* Popular destinations */}
-            <div className="mt-2">
-              <p className="text-xs text-gray-500 mb-1">{t('dealAlerts.popularDestinations')}</p>
-              <div className="flex flex-wrap gap-2">
-                {popularDestinations.map(dest => (
-                  <button
-                    key={dest.code}
-                    type="button"
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      formData.destination === dest.name ? 
-                      'bg-primary text-white' : 
-                      'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                    onClick={() => handleDestinationSelect(dest.name)}
-                  >
-                    {dest.name}
-                  </button>
-                ))}
+            <div className="flex space-x-2">
+              {!isSaved && (
                 <button
-                  type="button"
-                  className={`text-xs px-2 py-1 rounded-full ${
-                    formData.destination === 'Anywhere' ? 
-                    'bg-primary text-white' : 
-                    'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                  onClick={() => handleDestinationSelect('Anywhere')}
+                  onClick={onSave}
+                  className="text-blue-600 hover:text-blue-800"
+                  title={t('flightDeals.saveDeal')}
                 >
-                  {t('dealAlerts.anywhere')}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
                 </button>
-              </div>
+              )}
+              
+              {showRemoveButton && (
+                <button
+                  onClick={onRemove}
+                  className="text-red-600 hover:text-red-800"
+                  title={t('flightDeals.removeDeal')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
+              
+              <button
+                onClick={() => window.open(deal.deepLink, '_blank')}
+                className="text-blue-600 hover:text-blue-800"
+                title={t('flightDeals.viewDeal')}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </button>
+              
+              <button
+                onClick={onSetAlert}
+                className={`${
+                  isSubscribed ? 'text-blue-600 hover:text-blue-800' : 'text-gray-400 cursor-not-allowed'
+                }`}
+                disabled={!isSubscribed}
+                title={isSubscribed ? t('flightDeals.setAlert') : t('flightDeals.premiumFeature')}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </button>
             </div>
           </div>
-          
-          {/* Date Selection Type */}
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-medium mb-1">
-              {t('dealAlerts.dateType')}
-            </label>
-            <div className="flex gap-3">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="dateType"
-                  value="flexible"
-                  checked={formData.dateType === 'flexible'}
-                  onChange={handleChange}
-                  className="mr-1"
-                />
-                <span className="text-sm">{t('dealAlerts.flexible')}</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="dateType"
-                  value="specific"
-                  checked={formData.dateType === 'specific'}
-                  onChange={handleChange}
-                  className="mr-1"
-                />
-                <span className="text-sm">{t('dealAlerts.specific')}</span>
-              </label>
-            </div>
-          </div>
-          
-          {/* Date Range (for specific dates) */}
-          {formData.dateType === 'specific' && (
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-1">
-                  {t('dealAlerts.startDate')}
-                </label>
-                <input
-                  type="date"
-                  name="startDate"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-md ${errors.startDate ? 'border-red-500' : 'border-gray-300'}`}
-                  min={new Date().toISOString().split('T')[0]}
-                />
-                {errors.startDate && <p className="text-red-500 text-xs mt-1">{errors.startDate}</p>}
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-1">
-                  {t('dealAlerts.endDate')}
-                </label>
-                <input
-                  type="date"
-                  name="endDate"
-                  value={formData.endDate}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-md ${errors.endDate ? 'border-red-500' : 'border-gray-300'}`}
-                  min={formData.startDate}
-                />
-                {errors.endDate && <p className="text-red-500 text-xs mt-1">{errors.endDate}</p>}
-              </div>
-            </div>
-          )}
-          
-          {/* Trip Length (for flexible dates) */}
-          {formData.dateType === 'flexible' && (
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-medium mb-1">
-                {t('dealAlerts.tripLength')}
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  value={formData.tripLength.min}
-                  onChange={(e) => handleTripLengthChange('min', e.target.value)}
-                  className="w-16 px-2 py-1 border border-gray-300 rounded-md"
-                  min="1"
-                  max="30"
-                />
-                <span className="text-gray-500">-</span>
-                <input
-                  type="number"
-                  value={formData.tripLength.max}
-                  onChange={(e) => handleTripLengthChange('max', e.target.value)}
-                  className="w-16 px-2 py-1 border border-gray-300 rounded-md"
-                  min="1"
-                  max="30"
-                />
-                <span className="text-gray-700 text-sm">{t('dealAlerts.days')}</span>
-              </div>
-              {errors.tripLength && <p className="text-red-500 text-xs mt-1">{errors.tripLength}</p>}
-            </div>
-          )}
-          
-          {/* Price Threshold */}
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-medium mb-1">
-              {t('dealAlerts.maxPrice')}: €{formData.maxPrice}
-            </label>
-            <input
-              type="range"
-              name="maxPrice"
-              value={formData.maxPrice}
-              onChange={handleChange}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              min="50"
-              max="500"
-              step="10"
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>€50</span>
-              <span>€500</span>
-            </div>
-          </div>
-          
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              {t('dealAlerts.cancel')}
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-md"
-            >
-              {t('dealAlerts.createAlert')}
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
 }
 
-export default CreateAlertModal;
+export default DealCard;
